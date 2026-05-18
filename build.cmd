@@ -1,12 +1,7 @@
-@echo off
-:: Standard Nuke bootstrap. Invokes the local build host (build\_build.csproj).
-:: All arguments are forwarded to the build host.
+:; set -eo pipefail
+:; SCRIPT_DIR=$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
+:; ${SCRIPT_DIR}/build.sh "$@"
+:; exit $?
 
-setlocal
-pushd "%~dp0"
-
-dotnet run --project .\build\_build.csproj -- %*
-
-set EXITCODE=%ERRORLEVEL%
-popd
-endlocal & exit /b %EXITCODE%
+@ECHO OFF
+powershell -ExecutionPolicy ByPass -NoProfile -File "%~dp0build.ps1" %*

@@ -8,7 +8,6 @@ emit:
   - "@ancplua/typespec-emit-duckdb"
   - "@ancplua/typespec-emit-ts-types"
   - "@typespec/http-client-csharp"
-  - "@typespec/http-client-js"
   - "@typespec/http-server-csharp"
   - "@typespec/json-schema"
 
@@ -29,10 +28,6 @@ options:
     generate-convenience-methods: true
     disable-xml-docs: false
     new-project: false
-
-  "@typespec/http-client-js":
-    emitter-output-dir: "{project-root}/generated/js-client"
-    package-name: "@ancplua/otelconventions-api-client"
 
   "@typespec/json-schema":
     emitter-output-dir: "{project-root}/generated/json-schema"

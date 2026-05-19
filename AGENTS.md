@@ -64,7 +64,7 @@ The `github-packages` environment must exist in repo settings before the first r
 
 ## Nuke (planned)
 
-The `Nuke.OpenTelemetry.Conventions` shared package will land an `IDomainConventionsApi` component that this repo's `Build.cs` will implement. Targets: `RestoreTypeSpecDeps`, `VerifyKeysLockstep` (assert `generated/otel-keys.gen.tsp` matches the locked `@ancplua/typespec-otel-semconv` version), `CompileDomainSpec`, `EmitAll`, `VerifyEmitDeterministic`, `BuildCSharpEmit`, `VerifyNoManualEditsToGenerated`, `PackApiPackage`, `PublishApiPackage`. Until that lands, the npm scripts above are the source of truth.
+The `ANcpLua.OpenTelemetry.Conventions.Nuke` shared package (repo: O-ANcppLua/ANcpLua.OpenTelemetry.Conventions.Nuke) will land an `IDomainConventionsApi` component that this repo's `Build.cs` will implement. Targets: `RestoreTypeSpecDeps`, `VerifyKeysLockstep` (assert `generated/otel-keys.gen.tsp` matches the locked `@ancplua/typespec-otel-semconv` version), `CompileDomainSpec`, `EmitAll`, `VerifyEmitDeterministic`, `BuildCSharpEmit`, `VerifyNoManualEditsToGenerated`, `PackApiPackage`, `PublishApiPackage`. Until that lands, the npm scripts above are the source of truth.
 
 ## What not to do
 

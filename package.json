@@ -78,7 +78,7 @@
     "@typespec/streams": "0.82.0",
     "@typespec/versioning": "0.82.0",
     "typescript": "6.0.3",
-    "vitest": "4.1.6"
+    "vitest": "4.1.7"
   },
   "dependencies": {
     "@azure-tools/typespec-azure-core": "^0.68.0-dev.5",

@@ -2,7 +2,7 @@ import { setTypeSpecNamespace } from "@typespec/compiler";
 import { $duckdbColumn, $duckdbIndex, $duckdbPrimaryKey, $duckdbRowTimestamp, $duckdbTable, $duckdbType } from "./decorators.js";
 
 setTypeSpecNamespace(
-  "ANcpLua.OtelConventions.Emit.DuckDb",
+  "Qyl.Api.Schema.Emit.DuckDb",
   $duckdbTable,
   $duckdbColumn,
   $duckdbType,

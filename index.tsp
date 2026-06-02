@@ -1,5 +1,5 @@
 // =============================================================================
-// @o-ancpplua/otel-conventions-api — published entry point
+// @o-ancpplua/qyl-api-schema — published entry point
 // =============================================================================
 // Consumer-facing barrel. Mirrors main.tsp minus the emit-config / emit-duckdb
 // routing — those depend on local `file:` emitter packages

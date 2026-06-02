@@ -132,7 +132,7 @@ function renderDdlContent(tables: Table[]): string {
 }
 
 function renderClass(tables: Table[], version: number): string {
-  const out: string[] = [HEADER, "namespace ANcpLua.OtelConventions.Collector.Storage;\n"];
+  const out: string[] = [HEADER, "namespace Qyl.Api.Contracts.Collector.Storage;\n"];
   out.push("/// <summary>DuckDB schema generated from TypeSpec models.</summary>");
   out.push("public static partial class DuckDbSchema\n{");
   out.push(`    public const int Version = ${version};\n`);

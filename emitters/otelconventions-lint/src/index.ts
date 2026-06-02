@@ -72,10 +72,10 @@ export function $ancpluaAttr(
     map.set(target, bucket);
 }
 
-// Bind the decorator implementation to the `ANcpLua.OtelConventions.Semconv` namespace declared in lib/main.tsp.
+// Bind the decorator implementation to the `Qyl.Api.Schema.Semconv` namespace declared in lib/main.tsp.
 // Without this, TypeSpec auto-registers `$ancpluaAttr` at global scope and the fixture's
-// `using ANcpLua.OtelConventions.Semconv;` then finds the decorator in two scopes → `ambiguous-symbol`.
-setTypeSpecNamespace("ANcpLua.OtelConventions.Semconv", $ancpluaAttr);
+// `using Qyl.Api.Schema.Semconv;` then finds the decorator in two scopes → `ambiguous-symbol`.
+setTypeSpecNamespace("Qyl.Api.Schema.Semconv", $ancpluaAttr);
 
 /**
  * Compiler-invoked validator. Runs AFTER all decorators have applied, so the

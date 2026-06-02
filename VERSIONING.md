@@ -1,6 +1,6 @@
-# TypeSpec versioning in ANcpLua
+# TypeSpec Versioning In qyl-api-schema
 
-This repository uses `@typespec/versioning` to record when schema elements were added or removed across OpenTelemetry semantic-convention versions. The annotations live in TypeSpec and make schema evolution reviewable in this sandbox.
+This repository uses `@typespec/versioning` to record when schema elements were added or removed across qyl API versions and OpenTelemetry compatibility-model pins. The annotations live in TypeSpec so schema evolution is reviewable at the contract source.
 
 ## Where it is used
 
@@ -16,7 +16,7 @@ import "@typespec/versioning";
 using TypeSpec.Versioning;
 
 @versioned(GenAiVersions)
-namespace ANcpLua.OtelConventions.Domains.AI.GenAi;
+namespace Qyl.Api.Contracts.Domains.AI.GenAi;
 
 enum GenAiVersions {
   v1_27: "1.27.0",
@@ -26,18 +26,19 @@ enum GenAiVersions {
   v1_38: "1.38.0",
   v1_39: "1.39.0",
   v1_40: "1.40.0",
+  v1_41: "1.41.0",
 }
 
 model GenAiSpanAttributes {
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.GenAi.System)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.GenAi.System)
   @removed(GenAiVersions.v1_37)
   system?: string;
 
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.GenAi.UsagePromptTokens)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.GenAi.UsagePromptTokens)
   @removed(GenAiVersions.v1_28)
   usagePromptTokens?: TokenCount;
 
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.GenAi.UsageInputTokens)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.GenAi.UsageInputTokens)
   usageInputTokens?: TokenCount;
 
   @encodedName("application/json", "gen_ai.usage.input_tokens.cached")

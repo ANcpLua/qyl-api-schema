@@ -13,10 +13,10 @@ import "./enums.tsp";
 
 using TypeSpec.OpenAPI;
 using TypeSpec.JsonSchema;
-using ANcpLua.OtelConventions.Common;
-using ANcpLua.OtelConventions.OTel.Enums;
+using Qyl.Api.Contracts.Common;
+using Qyl.Api.Contracts.OTel.Enums;
 
-namespace ANcpLua.OtelConventions.Storage;
+namespace Qyl.Api.Contracts.Storage;
 
 // =============================================================================
 // SpanRecord - Primary Storage Model

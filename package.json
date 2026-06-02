@@ -1,22 +1,22 @@
 {
-  "name": "@o-ancpplua/otel-conventions-api",
-  "version": "0.1.1",
-  "description": "TypeSpec library projecting OpenTelemetry semantic conventions into a reusable API surface. Distributed under the ANcpLua namespace via GitHub Packages; not an official OpenTelemetry artifact.",
+  "name": "@o-ancpplua/qyl-api-schema",
+  "version": "0.1.0",
+  "description": "TypeSpec source of truth for qyl API contracts. Emits OpenAPI, JSON Schema, Qyl.Api.Contracts DTOs, and storage/schema artifacts; not an OpenTelemetry package and not a server implementation.",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/O-ANcppLua/ANcpLua.OtelConventions.Api.git"
+    "url": "git+https://github.com/O-ANcppLua/qyl-api-schema.git"
   },
-  "homepage": "https://github.com/O-ANcppLua/ANcpLua.OtelConventions.Api#readme",
+  "homepage": "https://github.com/O-ANcppLua/qyl-api-schema#readme",
   "bugs": {
-    "url": "https://github.com/O-ANcppLua/ANcpLua.OtelConventions.Api/issues"
+    "url": "https://github.com/O-ANcppLua/qyl-api-schema/issues"
   },
   "keywords": [
     "typespec",
-    "opentelemetry",
-    "semantic-conventions",
-    "otel",
-    "ancplua"
+    "qyl",
+    "observability",
+    "contracts",
+    "openapi"
   ],
   "type": "module",
   "exports": {
@@ -64,12 +64,12 @@
     "@ancplua/typespec-emit-csharp": "file:./emitters/csharp",
     "@ancplua/typespec-emit-duckdb": "file:./emitters/duckdb",
     "@ancplua/typespec-emit-ts-types": "file:./emitters/ts-types",
+    "@ancplua/typespec-otel-semconv": "1.41.0-2",
     "@ancplua/typespec-otelconventions-lint": "file:./emitters/otelconventions-lint",
     "@types/node": "25.9.1",
     "@typespec/compiler": "1.12.0",
     "@typespec/events": "0.82.0",
     "@typespec/http": "1.12.0",
-    "@typespec/http-server-csharp": "0.58.0-dev.3",
     "@typespec/json-schema": "1.12.0",
     "@typespec/openapi": "1.12.0",
     "@typespec/openapi3": "1.12.0",
@@ -82,8 +82,6 @@
   },
   "dependencies": {
     "@azure-tools/typespec-azure-core": "^0.68.0-dev.5",
-    "@azure-tools/typespec-client-generator-core": "^0.68.0-dev.18",
-    "@typespec/http-client-csharp": "^1.0.0-alpha.20260501.5",
     "@typespec/xml": "^0.82.0-dev.2"
   }
 }

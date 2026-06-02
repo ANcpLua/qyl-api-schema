@@ -10,126 +10,126 @@ import "./models/issues.tsp";
 import "./models/workflow.tsp";
 import "./models/workspace.tsp";
 
-using ANcpLua.OtelConventions.Emit.DuckDb;
+using Qyl.Api.Schema.Emit.DuckDb;
 
-// ANcpLua.OtelConventions.Domains.Alerting.AlertFiringEntity -> alert_firings
-@@duckdbTable(ANcpLua.OtelConventions.Domains.Alerting.AlertFiringEntity, "alert_firings");
-@@duckdbRowTimestamp(ANcpLua.OtelConventions.Domains.Alerting.AlertFiringEntity);
-@@duckdbType(ANcpLua.OtelConventions.Domains.Alerting.AlertFiringEntity.contextJson, "JSON");
+// Qyl.Api.Contracts.Domains.Alerting.AlertFiringEntity -> alert_firings
+@@duckdbTable(Qyl.Api.Contracts.Domains.Alerting.AlertFiringEntity, "alert_firings");
+@@duckdbRowTimestamp(Qyl.Api.Contracts.Domains.Alerting.AlertFiringEntity);
+@@duckdbType(Qyl.Api.Contracts.Domains.Alerting.AlertFiringEntity.contextJson, "JSON");
 
-// ANcpLua.OtelConventions.Domains.Alerting.AlertRuleEntity -> alert_rules
-@@duckdbTable(ANcpLua.OtelConventions.Domains.Alerting.AlertRuleEntity, "alert_rules");
-@@duckdbRowTimestamp(ANcpLua.OtelConventions.Domains.Alerting.AlertRuleEntity);
-@@duckdbType(ANcpLua.OtelConventions.Domains.Alerting.AlertRuleEntity.conditionJson, "JSON");
-@@duckdbType(ANcpLua.OtelConventions.Domains.Alerting.AlertRuleEntity.thresholdJson, "JSON");
-@@duckdbType(ANcpLua.OtelConventions.Domains.Alerting.AlertRuleEntity.targetFilterJson, "JSON");
-@@duckdbType(ANcpLua.OtelConventions.Domains.Alerting.AlertRuleEntity.notificationChannelsJson, "JSON");
+// Qyl.Api.Contracts.Domains.Alerting.AlertRuleEntity -> alert_rules
+@@duckdbTable(Qyl.Api.Contracts.Domains.Alerting.AlertRuleEntity, "alert_rules");
+@@duckdbRowTimestamp(Qyl.Api.Contracts.Domains.Alerting.AlertRuleEntity);
+@@duckdbType(Qyl.Api.Contracts.Domains.Alerting.AlertRuleEntity.conditionJson, "JSON");
+@@duckdbType(Qyl.Api.Contracts.Domains.Alerting.AlertRuleEntity.thresholdJson, "JSON");
+@@duckdbType(Qyl.Api.Contracts.Domains.Alerting.AlertRuleEntity.targetFilterJson, "JSON");
+@@duckdbType(Qyl.Api.Contracts.Domains.Alerting.AlertRuleEntity.notificationChannelsJson, "JSON");
 
-// ANcpLua.OtelConventions.Domains.Alerting.FixRunEntity -> fix_runs
-@@duckdbTable(ANcpLua.OtelConventions.Domains.Alerting.FixRunEntity, "fix_runs");
-@@duckdbRowTimestamp(ANcpLua.OtelConventions.Domains.Alerting.FixRunEntity);
+// Qyl.Api.Contracts.Domains.Alerting.FixRunEntity -> fix_runs
+@@duckdbTable(Qyl.Api.Contracts.Domains.Alerting.FixRunEntity, "fix_runs");
+@@duckdbRowTimestamp(Qyl.Api.Contracts.Domains.Alerting.FixRunEntity);
 
-// ANcpLua.OtelConventions.Domains.Configurator.GenerationJobEntity -> generation_jobs
-@@duckdbTable(ANcpLua.OtelConventions.Domains.Configurator.GenerationJobEntity, "generation_jobs");
-@@duckdbRowTimestamp(ANcpLua.OtelConventions.Domains.Configurator.GenerationJobEntity);
+// Qyl.Api.Contracts.Domains.Configurator.GenerationJobEntity -> generation_jobs
+@@duckdbTable(Qyl.Api.Contracts.Domains.Configurator.GenerationJobEntity, "generation_jobs");
+@@duckdbRowTimestamp(Qyl.Api.Contracts.Domains.Configurator.GenerationJobEntity);
 
-// ANcpLua.OtelConventions.Domains.Configurator.GenerationProfileEntity -> generation_profiles
-@@duckdbTable(ANcpLua.OtelConventions.Domains.Configurator.GenerationProfileEntity, "generation_profiles");
-@@duckdbRowTimestamp(ANcpLua.OtelConventions.Domains.Configurator.GenerationProfileEntity);
-@@duckdbType(ANcpLua.OtelConventions.Domains.Configurator.GenerationProfileEntity.featuresJson, "JSON");
-@@duckdbType(ANcpLua.OtelConventions.Domains.Configurator.GenerationProfileEntity.templateOverridesJson, "JSON");
+// Qyl.Api.Contracts.Domains.Configurator.GenerationProfileEntity -> generation_profiles
+@@duckdbTable(Qyl.Api.Contracts.Domains.Configurator.GenerationProfileEntity, "generation_profiles");
+@@duckdbRowTimestamp(Qyl.Api.Contracts.Domains.Configurator.GenerationProfileEntity);
+@@duckdbType(Qyl.Api.Contracts.Domains.Configurator.GenerationProfileEntity.featuresJson, "JSON");
+@@duckdbType(Qyl.Api.Contracts.Domains.Configurator.GenerationProfileEntity.templateOverridesJson, "JSON");
 
-// ANcpLua.OtelConventions.Domains.Configurator.GenerationSelectionEntity -> generation_selections
-@@duckdbTable(ANcpLua.OtelConventions.Domains.Configurator.GenerationSelectionEntity, "generation_selections");
-@@duckdbRowTimestamp(ANcpLua.OtelConventions.Domains.Configurator.GenerationSelectionEntity);
-@@duckdbType(ANcpLua.OtelConventions.Domains.Configurator.GenerationSelectionEntity.configJson, "JSON");
+// Qyl.Api.Contracts.Domains.Configurator.GenerationSelectionEntity -> generation_selections
+@@duckdbTable(Qyl.Api.Contracts.Domains.Configurator.GenerationSelectionEntity, "generation_selections");
+@@duckdbRowTimestamp(Qyl.Api.Contracts.Domains.Configurator.GenerationSelectionEntity);
+@@duckdbType(Qyl.Api.Contracts.Domains.Configurator.GenerationSelectionEntity.configJson, "JSON");
 
-// ANcpLua.OtelConventions.Domains.Issues.ErrorBreadcrumbEntity -> error_breadcrumbs
-@@duckdbTable(ANcpLua.OtelConventions.Domains.Issues.ErrorBreadcrumbEntity, "error_breadcrumbs");
-@@duckdbRowTimestamp(ANcpLua.OtelConventions.Domains.Issues.ErrorBreadcrumbEntity);
-@@duckdbType(ANcpLua.OtelConventions.Domains.Issues.ErrorBreadcrumbEntity.dataJson, "JSON");
+// Qyl.Api.Contracts.Domains.Issues.ErrorBreadcrumbEntity -> error_breadcrumbs
+@@duckdbTable(Qyl.Api.Contracts.Domains.Issues.ErrorBreadcrumbEntity, "error_breadcrumbs");
+@@duckdbRowTimestamp(Qyl.Api.Contracts.Domains.Issues.ErrorBreadcrumbEntity);
+@@duckdbType(Qyl.Api.Contracts.Domains.Issues.ErrorBreadcrumbEntity.dataJson, "JSON");
 
-// ANcpLua.OtelConventions.Domains.Issues.ErrorIssueEntity -> error_issues
-@@duckdbTable(ANcpLua.OtelConventions.Domains.Issues.ErrorIssueEntity, "error_issues");
-@@duckdbRowTimestamp(ANcpLua.OtelConventions.Domains.Issues.ErrorIssueEntity);
-@@duckdbType(ANcpLua.OtelConventions.Domains.Issues.ErrorIssueEntity.tagsJson, "JSON");
-@@duckdbType(ANcpLua.OtelConventions.Domains.Issues.ErrorIssueEntity.metadataJson, "JSON");
+// Qyl.Api.Contracts.Domains.Issues.ErrorIssueEntity -> error_issues
+@@duckdbTable(Qyl.Api.Contracts.Domains.Issues.ErrorIssueEntity, "error_issues");
+@@duckdbRowTimestamp(Qyl.Api.Contracts.Domains.Issues.ErrorIssueEntity);
+@@duckdbType(Qyl.Api.Contracts.Domains.Issues.ErrorIssueEntity.tagsJson, "JSON");
+@@duckdbType(Qyl.Api.Contracts.Domains.Issues.ErrorIssueEntity.metadataJson, "JSON");
 
-// ANcpLua.OtelConventions.Domains.Issues.ErrorIssueEventEntity -> error_issue_events
-@@duckdbTable(ANcpLua.OtelConventions.Domains.Issues.ErrorIssueEventEntity, "error_issue_events");
-@@duckdbRowTimestamp(ANcpLua.OtelConventions.Domains.Issues.ErrorIssueEventEntity);
-@@duckdbType(ANcpLua.OtelConventions.Domains.Issues.ErrorIssueEventEntity.stackFramesJson, "JSON");
-@@duckdbType(ANcpLua.OtelConventions.Domains.Issues.ErrorIssueEventEntity.contextJson, "JSON");
-@@duckdbType(ANcpLua.OtelConventions.Domains.Issues.ErrorIssueEventEntity.tagsJson, "JSON");
+// Qyl.Api.Contracts.Domains.Issues.ErrorIssueEventEntity -> error_issue_events
+@@duckdbTable(Qyl.Api.Contracts.Domains.Issues.ErrorIssueEventEntity, "error_issue_events");
+@@duckdbRowTimestamp(Qyl.Api.Contracts.Domains.Issues.ErrorIssueEventEntity);
+@@duckdbType(Qyl.Api.Contracts.Domains.Issues.ErrorIssueEventEntity.stackFramesJson, "JSON");
+@@duckdbType(Qyl.Api.Contracts.Domains.Issues.ErrorIssueEventEntity.contextJson, "JSON");
+@@duckdbType(Qyl.Api.Contracts.Domains.Issues.ErrorIssueEventEntity.tagsJson, "JSON");
 
-// ANcpLua.OtelConventions.Domains.Observe.Error.ErrorEntity -> errors
-@@duckdbTable(ANcpLua.OtelConventions.Domains.Observe.Error.ErrorEntity, "errors");
-@@duckdbRowTimestamp(ANcpLua.OtelConventions.Domains.Observe.Error.ErrorEntity);
+// Qyl.Api.Contracts.Domains.Observe.Error.ErrorEntity -> errors
+@@duckdbTable(Qyl.Api.Contracts.Domains.Observe.Error.ErrorEntity, "errors");
+@@duckdbRowTimestamp(Qyl.Api.Contracts.Domains.Observe.Error.ErrorEntity);
 
-// ANcpLua.OtelConventions.Domains.Observe.Session.SessionEntity -> session_entities
-@@duckdbTable(ANcpLua.OtelConventions.Domains.Observe.Session.SessionEntity, "session_entities");
-@@duckdbRowTimestamp(ANcpLua.OtelConventions.Domains.Observe.Session.SessionEntity);
+// Qyl.Api.Contracts.Domains.Observe.Session.SessionEntity -> session_entities
+@@duckdbTable(Qyl.Api.Contracts.Domains.Observe.Session.SessionEntity, "session_entities");
+@@duckdbRowTimestamp(Qyl.Api.Contracts.Domains.Observe.Session.SessionEntity);
 
-// ANcpLua.OtelConventions.Domains.Ops.Deployment.DeploymentEntity -> deployments
-@@duckdbTable(ANcpLua.OtelConventions.Domains.Ops.Deployment.DeploymentEntity, "deployments");
-@@duckdbRowTimestamp(ANcpLua.OtelConventions.Domains.Ops.Deployment.DeploymentEntity);
+// Qyl.Api.Contracts.Domains.Ops.Deployment.DeploymentEntity -> deployments
+@@duckdbTable(Qyl.Api.Contracts.Domains.Ops.Deployment.DeploymentEntity, "deployments");
+@@duckdbRowTimestamp(Qyl.Api.Contracts.Domains.Ops.Deployment.DeploymentEntity);
 
-// ANcpLua.OtelConventions.Domains.Workflow.WorkflowEventEntity -> workflow_events
-@@duckdbTable(ANcpLua.OtelConventions.Domains.Workflow.WorkflowEventEntity, "workflow_events");
-@@duckdbRowTimestamp(ANcpLua.OtelConventions.Domains.Workflow.WorkflowEventEntity);
-@@duckdbType(ANcpLua.OtelConventions.Domains.Workflow.WorkflowEventEntity.payloadJson, "JSON");
+// Qyl.Api.Contracts.Domains.Workflow.WorkflowEventEntity -> workflow_events
+@@duckdbTable(Qyl.Api.Contracts.Domains.Workflow.WorkflowEventEntity, "workflow_events");
+@@duckdbRowTimestamp(Qyl.Api.Contracts.Domains.Workflow.WorkflowEventEntity);
+@@duckdbType(Qyl.Api.Contracts.Domains.Workflow.WorkflowEventEntity.payloadJson, "JSON");
 
-// ANcpLua.OtelConventions.Domains.Workflow.WorkflowNodeEntity -> workflow_nodes
-@@duckdbTable(ANcpLua.OtelConventions.Domains.Workflow.WorkflowNodeEntity, "workflow_nodes");
-@@duckdbRowTimestamp(ANcpLua.OtelConventions.Domains.Workflow.WorkflowNodeEntity);
-@@duckdbType(ANcpLua.OtelConventions.Domains.Workflow.WorkflowNodeEntity.inputJson, "JSON");
-@@duckdbType(ANcpLua.OtelConventions.Domains.Workflow.WorkflowNodeEntity.outputJson, "JSON");
+// Qyl.Api.Contracts.Domains.Workflow.WorkflowNodeEntity -> workflow_nodes
+@@duckdbTable(Qyl.Api.Contracts.Domains.Workflow.WorkflowNodeEntity, "workflow_nodes");
+@@duckdbRowTimestamp(Qyl.Api.Contracts.Domains.Workflow.WorkflowNodeEntity);
+@@duckdbType(Qyl.Api.Contracts.Domains.Workflow.WorkflowNodeEntity.inputJson, "JSON");
+@@duckdbType(Qyl.Api.Contracts.Domains.Workflow.WorkflowNodeEntity.outputJson, "JSON");
 
-// ANcpLua.OtelConventions.Domains.Workflow.WorkflowRunEntity -> workflow_runs
-@@duckdbTable(ANcpLua.OtelConventions.Domains.Workflow.WorkflowRunEntity, "workflow_runs");
-@@duckdbRowTimestamp(ANcpLua.OtelConventions.Domains.Workflow.WorkflowRunEntity);
-@@duckdbType(ANcpLua.OtelConventions.Domains.Workflow.WorkflowRunEntity.inputJson, "JSON");
-@@duckdbType(ANcpLua.OtelConventions.Domains.Workflow.WorkflowRunEntity.outputJson, "JSON");
+// Qyl.Api.Contracts.Domains.Workflow.WorkflowRunEntity -> workflow_runs
+@@duckdbTable(Qyl.Api.Contracts.Domains.Workflow.WorkflowRunEntity, "workflow_runs");
+@@duckdbRowTimestamp(Qyl.Api.Contracts.Domains.Workflow.WorkflowRunEntity);
+@@duckdbType(Qyl.Api.Contracts.Domains.Workflow.WorkflowRunEntity.inputJson, "JSON");
+@@duckdbType(Qyl.Api.Contracts.Domains.Workflow.WorkflowRunEntity.outputJson, "JSON");
 
-// ANcpLua.OtelConventions.Domains.Workspace.HandshakeSessionEntity -> handshake_sessions
-@@duckdbTable(ANcpLua.OtelConventions.Domains.Workspace.HandshakeSessionEntity, "handshake_sessions");
-@@duckdbRowTimestamp(ANcpLua.OtelConventions.Domains.Workspace.HandshakeSessionEntity);
+// Qyl.Api.Contracts.Domains.Workspace.HandshakeSessionEntity -> handshake_sessions
+@@duckdbTable(Qyl.Api.Contracts.Domains.Workspace.HandshakeSessionEntity, "handshake_sessions");
+@@duckdbRowTimestamp(Qyl.Api.Contracts.Domains.Workspace.HandshakeSessionEntity);
 
-// ANcpLua.OtelConventions.Domains.Workspace.ProjectEntity -> projects
-@@duckdbTable(ANcpLua.OtelConventions.Domains.Workspace.ProjectEntity, "projects");
-@@duckdbRowTimestamp(ANcpLua.OtelConventions.Domains.Workspace.ProjectEntity);
+// Qyl.Api.Contracts.Domains.Workspace.ProjectEntity -> projects
+@@duckdbTable(Qyl.Api.Contracts.Domains.Workspace.ProjectEntity, "projects");
+@@duckdbRowTimestamp(Qyl.Api.Contracts.Domains.Workspace.ProjectEntity);
 
-// ANcpLua.OtelConventions.Domains.Workspace.ProjectEnvironmentEntity -> project_environments
-@@duckdbTable(ANcpLua.OtelConventions.Domains.Workspace.ProjectEnvironmentEntity, "project_environments");
-@@duckdbRowTimestamp(ANcpLua.OtelConventions.Domains.Workspace.ProjectEnvironmentEntity);
+// Qyl.Api.Contracts.Domains.Workspace.ProjectEnvironmentEntity -> project_environments
+@@duckdbTable(Qyl.Api.Contracts.Domains.Workspace.ProjectEnvironmentEntity, "project_environments");
+@@duckdbRowTimestamp(Qyl.Api.Contracts.Domains.Workspace.ProjectEnvironmentEntity);
 
-// ANcpLua.OtelConventions.Domains.Workspace.WorkspaceEnvelopeEntity -> workspace_envelopes
-@@duckdbTable(ANcpLua.OtelConventions.Domains.Workspace.WorkspaceEnvelopeEntity, "workspace_envelopes");
-@@duckdbRowTimestamp(ANcpLua.OtelConventions.Domains.Workspace.WorkspaceEnvelopeEntity);
-@@duckdbType(ANcpLua.OtelConventions.Domains.Workspace.WorkspaceEnvelopeEntity.configJson, "JSON");
+// Qyl.Api.Contracts.Domains.Workspace.WorkspaceEnvelopeEntity -> workspace_envelopes
+@@duckdbTable(Qyl.Api.Contracts.Domains.Workspace.WorkspaceEnvelopeEntity, "workspace_envelopes");
+@@duckdbRowTimestamp(Qyl.Api.Contracts.Domains.Workspace.WorkspaceEnvelopeEntity);
+@@duckdbType(Qyl.Api.Contracts.Domains.Workspace.WorkspaceEnvelopeEntity.configJson, "JSON");
 
-// ANcpLua.OtelConventions.Storage.ProfileRecord -> profiles
-@@duckdbTable(ANcpLua.OtelConventions.Storage.ProfileRecord, "profiles");
-@@duckdbRowTimestamp(ANcpLua.OtelConventions.Storage.ProfileRecord);
-@@duckdbPrimaryKey(ANcpLua.OtelConventions.Storage.ProfileRecord.profileId);
-@@duckdbIndex(ANcpLua.OtelConventions.Storage.ProfileRecord.traceId, "idx_profiles_trace_id");
-@@duckdbIndex(ANcpLua.OtelConventions.Storage.ProfileRecord.sessionId, "idx_profiles_session_id");
-@@duckdbIndex(ANcpLua.OtelConventions.Storage.ProfileRecord.timeUnixNano, "idx_profiles_time");
-@@duckdbIndex(ANcpLua.OtelConventions.Storage.ProfileRecord.sampleType, "idx_profiles_sample_type");
-@@duckdbIndex(ANcpLua.OtelConventions.Storage.ProfileRecord.serviceName, "idx_profiles_service");
-@@duckdbType(ANcpLua.OtelConventions.Storage.ProfileRecord.schemaUrl, "VARCHAR(256)");
-@@duckdbType(ANcpLua.OtelConventions.Storage.ProfileRecord.createdAt, "TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
+// Qyl.Api.Contracts.Storage.ProfileRecord -> profiles
+@@duckdbTable(Qyl.Api.Contracts.Storage.ProfileRecord, "profiles");
+@@duckdbRowTimestamp(Qyl.Api.Contracts.Storage.ProfileRecord);
+@@duckdbPrimaryKey(Qyl.Api.Contracts.Storage.ProfileRecord.profileId);
+@@duckdbIndex(Qyl.Api.Contracts.Storage.ProfileRecord.traceId, "idx_profiles_trace_id");
+@@duckdbIndex(Qyl.Api.Contracts.Storage.ProfileRecord.sessionId, "idx_profiles_session_id");
+@@duckdbIndex(Qyl.Api.Contracts.Storage.ProfileRecord.timeUnixNano, "idx_profiles_time");
+@@duckdbIndex(Qyl.Api.Contracts.Storage.ProfileRecord.sampleType, "idx_profiles_sample_type");
+@@duckdbIndex(Qyl.Api.Contracts.Storage.ProfileRecord.serviceName, "idx_profiles_service");
+@@duckdbType(Qyl.Api.Contracts.Storage.ProfileRecord.schemaUrl, "VARCHAR(256)");
+@@duckdbType(Qyl.Api.Contracts.Storage.ProfileRecord.createdAt, "TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
 
-// ANcpLua.OtelConventions.Storage.SpanRecord -> spans
-@@duckdbTable(ANcpLua.OtelConventions.Storage.SpanRecord, "spans");
-@@duckdbRowTimestamp(ANcpLua.OtelConventions.Storage.SpanRecord);
-@@duckdbPrimaryKey(ANcpLua.OtelConventions.Storage.SpanRecord.spanId);
-@@duckdbIndex(ANcpLua.OtelConventions.Storage.SpanRecord.traceId, "idx_spans_trace_id");
-@@duckdbIndex(ANcpLua.OtelConventions.Storage.SpanRecord.sessionId, "idx_spans_session_id");
-@@duckdbIndex(ANcpLua.OtelConventions.Storage.SpanRecord.startTimeUnixNano, "idx_spans_start_time");
-@@duckdbIndex(ANcpLua.OtelConventions.Storage.SpanRecord.serviceName, "idx_spans_service_name");
-@@duckdbIndex(ANcpLua.OtelConventions.Storage.SpanRecord.genAiProviderName, "idx_spans_gen_ai_provider_name");
-@@duckdbIndex(ANcpLua.OtelConventions.Storage.SpanRecord.genAiRequestModel, "idx_spans_gen_ai_request_model");
-@@duckdbType(ANcpLua.OtelConventions.Storage.SpanRecord.schemaUrl, "VARCHAR(256)");
-@@duckdbType(ANcpLua.OtelConventions.Storage.SpanRecord.createdAt, "TIMESTAMP DEFAULT now()");
+// Qyl.Api.Contracts.Storage.SpanRecord -> spans
+@@duckdbTable(Qyl.Api.Contracts.Storage.SpanRecord, "spans");
+@@duckdbRowTimestamp(Qyl.Api.Contracts.Storage.SpanRecord);
+@@duckdbPrimaryKey(Qyl.Api.Contracts.Storage.SpanRecord.spanId);
+@@duckdbIndex(Qyl.Api.Contracts.Storage.SpanRecord.traceId, "idx_spans_trace_id");
+@@duckdbIndex(Qyl.Api.Contracts.Storage.SpanRecord.sessionId, "idx_spans_session_id");
+@@duckdbIndex(Qyl.Api.Contracts.Storage.SpanRecord.startTimeUnixNano, "idx_spans_start_time");
+@@duckdbIndex(Qyl.Api.Contracts.Storage.SpanRecord.serviceName, "idx_spans_service_name");
+@@duckdbIndex(Qyl.Api.Contracts.Storage.SpanRecord.genAiProviderName, "idx_spans_gen_ai_provider_name");
+@@duckdbIndex(Qyl.Api.Contracts.Storage.SpanRecord.genAiRequestModel, "idx_spans_gen_ai_request_model");
+@@duckdbType(Qyl.Api.Contracts.Storage.SpanRecord.schemaUrl, "VARCHAR(256)");
+@@duckdbType(Qyl.Api.Contracts.Storage.SpanRecord.createdAt, "TIMESTAMP DEFAULT now()");
 

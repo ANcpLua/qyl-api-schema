@@ -9,7 +9,7 @@ import "./types.tsp";
 
 using TypeSpec.Http;
 
-namespace ANcpLua.OtelConventions.Common.Pagination;
+namespace Qyl.Api.Contracts.Common.Pagination;
 
 // =============================================================================
 // Cursor-Based Pagination (Preferred for Large Datasets)

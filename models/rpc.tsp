@@ -6,9 +6,9 @@
 
 import "../common/types.tsp";
 
-using ANcpLua.OtelConventions.Common;
+using Qyl.Api.Contracts.Common;
 
-namespace ANcpLua.OtelConventions.Domains.Transport.Rpc;
+namespace Qyl.Api.Contracts.Domains.Transport.Rpc;
 
 // =============================================================================
 // RPC Span Attributes
@@ -17,23 +17,23 @@ namespace ANcpLua.OtelConventions.Domains.Transport.Rpc;
 @doc("RPC span attributes")
 model RpcAttributes {
   @doc("The RPC system (e.g., grpc, wcf, java_rmi)")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Rpc.System)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Rpc.System)
   system: RpcSystem;
 
   @doc("The RPC service name")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Rpc.Service)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Rpc.Service)
   service?: string;
 
   @doc("The RPC method name")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Rpc.Method)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Rpc.Method)
   method?: string;
 
   @doc("Server address")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Server.Address)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Server.Address)
   serverAddress?: string;
 
   @doc("Server port")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Server.Port)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Server.Port)
   serverPort?: Port;
 
   // ---------------------------------------------------------------------------
@@ -41,15 +41,15 @@ model RpcAttributes {
   // ---------------------------------------------------------------------------
 
   @doc("gRPC status code")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Rpc.GrpcStatusCode)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Rpc.GrpcStatusCode)
   grpcStatusCode?: GrpcStatusCode;
 
   @doc("gRPC request metadata. Keys map to rpc.grpc.request.metadata.<key>")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Rpc.GrpcRequestMetadata)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Rpc.GrpcRequestMetadata)
   grpcRequestMetadata?: Record<string[]>;
 
   @doc("gRPC response metadata. Keys map to rpc.grpc.response.metadata.<key>")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Rpc.GrpcResponseMetadata)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Rpc.GrpcResponseMetadata)
   grpcResponseMetadata?: Record<string[]>;
 
   // ---------------------------------------------------------------------------
@@ -57,19 +57,19 @@ model RpcAttributes {
   // ---------------------------------------------------------------------------
 
   @doc("Message type (SENT or RECEIVED)")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Rpc.MessageType)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Rpc.MessageType)
   messageType?: RpcMessageType;
 
   @doc("Message ID (sequence number)")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Rpc.MessageId)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Rpc.MessageId)
   messageId?: int64;
 
   @doc("Compressed message size in bytes")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Rpc.MessageCompressedSize)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Rpc.MessageCompressedSize)
   messageCompressedSize?: ByteSize;
 
   @doc("Uncompressed message size in bytes")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Rpc.MessageUncompressedSize)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Rpc.MessageUncompressedSize)
   messageUncompressedSize?: ByteSize;
 
   // ---------------------------------------------------------------------------
@@ -77,7 +77,7 @@ model RpcAttributes {
   // ---------------------------------------------------------------------------
 
   @doc("Connect RPC error code")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Rpc.ConnectRpcErrorCode)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Rpc.ConnectRpcErrorCode)
   connectRpcErrorCode?: ConnectRpcErrorCode;
 
   // ---------------------------------------------------------------------------
@@ -85,19 +85,19 @@ model RpcAttributes {
   // ---------------------------------------------------------------------------
 
   @doc("JSON-RPC error code")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Rpc.JsonrpcErrorCode)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Rpc.JsonrpcErrorCode)
   jsonrpcErrorCode?: int32;
 
   @doc("JSON-RPC error message")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Rpc.JsonrpcErrorMessage)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Rpc.JsonrpcErrorMessage)
   jsonrpcErrorMessage?: string;
 
   @doc("JSON-RPC request ID")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Rpc.JsonrpcRequestId)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Rpc.JsonrpcRequestId)
   jsonrpcRequestId?: string;
 
   @doc("JSON-RPC version")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Rpc.JsonrpcVersion)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Rpc.JsonrpcVersion)
   jsonrpcVersion?: string;
 }
 
@@ -259,19 +259,19 @@ model RpcServerDurationMetric {
   unit: "s";
 
   @doc("RPC system")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Rpc.System)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Rpc.System)
   system: RpcSystem;
 
   @doc("RPC service")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Rpc.Service)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Rpc.Service)
   service: string;
 
   @doc("RPC method")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Rpc.Method)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Rpc.Method)
   method: string;
 
   @doc("gRPC status code")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Rpc.GrpcStatusCode)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Rpc.GrpcStatusCode)
   grpcStatusCode?: GrpcStatusCode;
 }
 
@@ -284,26 +284,26 @@ model RpcClientDurationMetric {
   unit: "s";
 
   @doc("RPC system")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Rpc.System)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Rpc.System)
   system: RpcSystem;
 
   @doc("RPC service")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Rpc.Service)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Rpc.Service)
   service: string;
 
   @doc("RPC method")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Rpc.Method)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Rpc.Method)
   method: string;
 
   @doc("Server address")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Server.Address)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Server.Address)
   serverAddress: string;
 
   @doc("Server port")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Server.Port)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Server.Port)
   serverPort: Port;
 
   @doc("gRPC status code")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Rpc.GrpcStatusCode)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Rpc.GrpcStatusCode)
   grpcStatusCode?: GrpcStatusCode;
 }

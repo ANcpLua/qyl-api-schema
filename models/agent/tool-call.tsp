@@ -19,10 +19,10 @@ import "../../common/types.tsp";
 import "../../otel/enums.tsp";
 
 using TypeSpec.OpenAPI;
-using ANcpLua.OtelConventions.Common;
-using ANcpLua.OtelConventions.OTel.Enums;
+using Qyl.Api.Contracts.Common;
+using Qyl.Api.Contracts.OTel.Enums;
 
-namespace ANcpLua.OtelConventions.Domains.Agent.ToolCall;
+namespace Qyl.Api.Contracts.Domains.Agent.ToolCall;
 
 // =============================================================================
 // Tool Call Status

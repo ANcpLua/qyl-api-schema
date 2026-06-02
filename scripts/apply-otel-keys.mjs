@@ -2,7 +2,7 @@
 // apply-otel-keys.mjs
 //
 // Replace hand-typed `@encodedName("application/json", "<dotted.otel.key>")` with
-// `@encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.<Domain>.<Ident>)` in ANcpLua
+// `@encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.<Domain>.<Ident>)` in qyl
 // TypeSpec source files.
 //
 // The mapping comes from generated/otel-keys.gen.tsp, which is generated from
@@ -10,7 +10,7 @@
 // convention keys is forbidden; update the generated projection first.
 //
 // The script only rewrites keys that exist in the generated map. Non-OTel
-// snake_case keys (e.g. "workflow_id", "access_token") are ANcpLua-internal JSON
+// snake_case keys (e.g. "workflow_id", "access_token") are qyl-internal JSON
 // serialization names and are left as string literals.
 //
 // Usage:
@@ -32,7 +32,7 @@ const args = process.argv.slice(2);
 const dryRun = args.includes("--dry-run");
 const explicitFiles = args.filter((a) => !a.startsWith("--"));
 
-// ── Build {dotted.key → "ANcpLua.OtelConventions.OTel.Keys.<Domain>.<Ident>"} from the generated TSP.
+// ── Build {dotted.key → "ANcpLua.OpenTelemetry.SemanticConventions.Keys.<Domain>.<Ident>"} from the generated TSP.
 let generated;
 try {
   generated = readFileSync(GENERATED, "utf8");
@@ -41,7 +41,7 @@ try {
   process.exit(1);
 }
 const keyMap = new Map();
-const nsRe = /^namespace (ANcpLua\.OtelConventions\.OTel\.Keys\.[A-Za-z0-9]+) \{/;
+const nsRe = /^namespace (ANcpLua\.OpenTelemetry\.SemanticConventions\.Keys\.[A-Za-z0-9]+) \{/;
 const constRe = /^\s*const ([A-Z][A-Za-z0-9_]+): string = "([^"]+)"/;
 let currentNs = null;
 for (const line of generated.split("\n")) {
@@ -118,7 +118,7 @@ for (const [f, c] of perFile) console.log(`  ${c.toString().padStart(4)}  ${f}`)
 
 if (skippedKeys.size > 0) {
   console.log(
-    `\nDotted keys not in the OTel map (left as literals — likely ANcpLua-specific or upstream-typo):`,
+    `\nDotted keys not in the OTel map (left as literals — likely qyl-specific or upstream-typo):`,
   );
   for (const [k, c] of [...skippedKeys].sort((a, b) => b[1] - a[1])) {
     console.log(`  ${c.toString().padStart(4)}  ${k}`);

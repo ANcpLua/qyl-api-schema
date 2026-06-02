@@ -7,10 +7,10 @@
 import "../common/types.tsp";
 import "../otel/resource.tsp";
 
-using ANcpLua.OtelConventions.Common;
-using ANcpLua.OtelConventions.OTel.Resource;
+using Qyl.Api.Contracts.Common;
+using Qyl.Api.Contracts.OTel.Resource;
 
-namespace ANcpLua.OtelConventions.Domains.Runtime.System;
+namespace Qyl.Api.Contracts.Domains.Runtime.System;
 
 // =============================================================================
 // OS Resource Attributes
@@ -19,23 +19,23 @@ namespace ANcpLua.OtelConventions.Domains.Runtime.System;
 @doc("Operating system resource attributes")
 model OsAttributes {
   @doc("Operating system type")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Os.Type)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Os.Type)
   osType?: OsType;
 
   @doc("Operating system description")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Os.Description)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Os.Description)
   description?: string;
 
   @doc("Operating system name")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Os.Name)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Os.Name)
   name?: string;
 
   @doc("Operating system version")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Os.Version)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Os.Version)
   version?: string;
 
   @doc("Operating system build ID")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Os.BuildId)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Os.BuildId)
   buildId?: string;
 }
 
@@ -52,11 +52,11 @@ model SystemCpuUtilizationMetric {
   unit: "1";
 
   @doc("CPU state")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.System.CpuState)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.System.CpuState)
   cpuState: SystemCpuState;
 
   @doc("CPU logical number")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.System.CpuLogicalNumber)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.System.CpuLogicalNumber)
   cpuLogicalNumber?: int32;
 }
 
@@ -69,11 +69,11 @@ model SystemCpuTimeMetric {
   unit: "s";
 
   @doc("CPU state")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.System.CpuState)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.System.CpuState)
   cpuState: SystemCpuState;
 
   @doc("CPU logical number")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.System.CpuLogicalNumber)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.System.CpuLogicalNumber)
   cpuLogicalNumber?: int32;
 }
 
@@ -86,7 +86,7 @@ model SystemCpuFrequencyMetric {
   unit: "Hz";
 
   @doc("CPU logical number")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.System.CpuLogicalNumber)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.System.CpuLogicalNumber)
   cpuLogicalNumber?: int32;
 }
 
@@ -99,7 +99,7 @@ model SystemMemoryUsageMetric {
   unit: "By";
 
   @doc("Memory state")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.System.MemoryState)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.System.MemoryState)
   memoryState: SystemMemoryState;
 }
 
@@ -112,7 +112,7 @@ model SystemMemoryUtilizationMetric {
   unit: "1";
 
   @doc("Memory state")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.System.MemoryState)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.System.MemoryState)
   memoryState: SystemMemoryState;
 }
 
@@ -176,15 +176,15 @@ model SystemFilesystemUsageMetric {
   device: string;
 
   @doc("Filesystem mount point")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.System.FilesystemMountpoint)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.System.FilesystemMountpoint)
   mountpoint: string;
 
   @doc("Filesystem type")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.System.FilesystemType)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.System.FilesystemType)
   fsType: string;
 
   @doc("Filesystem state")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.System.FilesystemState)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.System.FilesystemState)
   state: SystemFilesystemState;
 }
 
@@ -218,7 +218,7 @@ model SystemNetworkConnectionsMetric {
   protocol: string;
 
   @doc("Network state")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Network.ConnectionState)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Network.ConnectionState)
   state: SystemNetworkState;
 }
 
@@ -231,7 +231,7 @@ model SystemPagingUsageMetric {
   unit: "By";
 
   @doc("Paging state")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.System.PagingState)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.System.PagingState)
   pagingState: SystemPagingState;
 
   @doc("Paging device")
@@ -248,11 +248,11 @@ model SystemPagingOperationsMetric {
   unit: "{operation}";
 
   @doc("Paging type")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.System.PagingType)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.System.PagingType)
   pagingType: SystemPagingType;
 
   @doc("Paging direction")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.System.PagingDirection)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.System.PagingDirection)
   pagingDirection: string;
 }
 
@@ -265,7 +265,7 @@ model SystemProcessCountMetric {
   unit: "{process}";
 
   @doc("Process status")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.System.ProcessStatus)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.System.ProcessStatus)
   processStatus: SystemProcessStatus;
 }
 

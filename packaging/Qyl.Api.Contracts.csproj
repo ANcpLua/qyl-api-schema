@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <!-- Packs the C# contracts emitted by @ancplua/typespec-emit-csharp (into ../generated/contracts)
-       as the ANcpLua.OtelConventions.Api NuGet. The emitted code is BCL-only POCOs (no usings,
+       as the Qyl.Api.Contracts NuGet. The emitted code is BCL-only POCOs (no usings,
        relies on ImplicitUsings; no System.Text.Json), file-scoped namespaces + required/init —
        net10.0 compiles it without polyfills. Run the C# emitter (npm run compile, or the
        EmitCSharp / PackContractsNuget Nuke targets) before packing. -->
@@ -13,12 +13,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
 
-    <PackageId>ANcpLua.OtelConventions.Api</PackageId>
-    <Version>0.1.1</Version>
+    <PackageId>Qyl.Api.Contracts</PackageId>
+    <Version>0.1.0</Version>
     <Authors>ancplua</Authors>
-    <Description>Generated C# contract types (requests, responses, enums) for the ANcpLua OpenTelemetry conventions API surface, emitted from the @o-ancpplua/otel-conventions-api TypeSpec contract.</Description>
-    <PackageTags>opentelemetry;semantic-conventions;contracts;typespec</PackageTags>
-    <RepositoryUrl>https://github.com/O-ANcppLua/ANcpLua.OtelConventions.Api</RepositoryUrl>
+    <Description>Generated C# request, response, enum, and storage contract types for the qyl observability API, emitted from @o-ancpplua/qyl-api-schema.</Description>
+    <PackageTags>qyl;observability;contracts;typespec</PackageTags>
+    <RepositoryUrl>https://github.com/O-ANcppLua/qyl-api-schema</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <IsPackable>true</IsPackable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- Emitted partial XML-doc coverage; the source is generated, not hand-maintained. -->
@@ -27,6 +28,7 @@
 
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)../generated/contracts/**/*.cs" />
+    <None Include="$(MSBuildThisFileDirectory)../README.md" Pack="true" PackagePath="README.md" />
   </ItemGroup>
 
 </Project>

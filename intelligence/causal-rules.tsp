@@ -11,7 +11,7 @@ import "@typespec/openapi";
 
 using TypeSpec.OpenAPI;
 
-namespace ANcpLua.OtelConventions.Intelligence;
+namespace Qyl.Api.Contracts.Intelligence;
 
 @doc("Directed causal relationship between two diagnostic patterns")
 model CausalRule {

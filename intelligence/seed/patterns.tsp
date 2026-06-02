@@ -11,7 +11,7 @@
 //   - Computed fields (occurrence_rate, span_count_under_parent, etc.)
 // =============================================================================
 
-namespace ANcpLua.OtelConventions.Intelligence.Seed;
+namespace Qyl.Api.Contracts.Intelligence.Seed;
 
 // ---------------------------------------------------------------------------
 // Pattern: genai_rate_limit

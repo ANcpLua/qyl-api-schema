@@ -5,7 +5,7 @@
 // These compile to static registries in CausalRules.g.cs.
 // =============================================================================
 
-namespace ANcpLua.OtelConventions.Intelligence.Seed;
+namespace Qyl.Api.Contracts.Intelligence.Seed;
 
 // ---------------------------------------------------------------------------
 // Rule: deploy_causes_regression

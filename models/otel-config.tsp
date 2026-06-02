@@ -6,9 +6,9 @@
 
 import "../common/types.tsp";
 
-using ANcpLua.OtelConventions.Common;
+using Qyl.Api.Contracts.Common;
 
-namespace ANcpLua.OtelConventions.Domains.Observe.Otel;
+namespace Qyl.Api.Contracts.Domains.Observe.Otel;
 
 // =============================================================================
 // Telemetry SDK Attributes
@@ -17,26 +17,26 @@ namespace ANcpLua.OtelConventions.Domains.Observe.Otel;
 @doc("Telemetry SDK resource attributes")
 model TelemetrySdkAttributes {
   @doc("SDK name")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Telemetry.SdkName)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Telemetry.SdkName)
   name: string;
 
   @doc("SDK language")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Telemetry.SdkLanguage)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Telemetry.SdkLanguage)
   language: TelemetrySdkLanguage;
 
   @doc("SDK version")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Telemetry.SdkVersion)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Telemetry.SdkVersion)
   version: SemVer;
 }
 
 @doc("Telemetry distro attributes")
 model TelemetryDistroAttributes {
   @doc("Distro name")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Telemetry.DistroName)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Telemetry.DistroName)
   name?: string;
 
   @doc("Distro version")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Telemetry.DistroVersion)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Telemetry.DistroVersion)
   version?: SemVer;
 }
 

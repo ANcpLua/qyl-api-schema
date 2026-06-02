@@ -1,6 +1,6 @@
 import "@ancplua/typespec-emit-ts-types";
 
-using ANcpLua.OtelConventions.Emit.TsTypes;
+using Qyl.Api.Schema.Emit.TsTypes;
 
 @tsBrand
 scalar TraceId extends string;

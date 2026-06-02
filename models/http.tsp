@@ -8,10 +8,10 @@ import "@typespec/versioning";
 import "../common/types.tsp";
 
 using TypeSpec.Versioning;
-using ANcpLua.OtelConventions.Common;
+using Qyl.Api.Contracts.Common;
 
 @versioned(HttpVersions)
-namespace ANcpLua.OtelConventions.Domains.Transport.Http;
+namespace Qyl.Api.Contracts.Domains.Transport.Http;
 
 // =============================================================================
 // Version History
@@ -43,25 +43,25 @@ model HttpAttributes {
   // ---------------------------------------------------------------------------
 
   @doc("HTTP request method")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Http.RequestMethod)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Http.RequestMethod)
   requestMethod: HttpMethod;
 
   @doc("Original HTTP method (before any rewrites)")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Http.RequestMethodOriginal)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Http.RequestMethodOriginal)
   requestMethodOriginal?: string;
 
   @doc("HTTP response status code")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Http.ResponseStatusCode)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Http.ResponseStatusCode)
   @minValue(100)
   @maxValue(599)
   responseStatusCode?: int32;
 
   @doc("Error type if request failed")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Error.Type)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Error.Type)
   errorType?: HttpErrorType;
 
   @doc("HTTP protocol version")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Network.ProtocolVersion)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Network.ProtocolVersion)
   networkProtocolVersion?: HttpProtocolVersion;
 
   // ---------------------------------------------------------------------------
@@ -69,15 +69,15 @@ model HttpAttributes {
   // ---------------------------------------------------------------------------
 
   @doc("The matched route template (e.g., '/users/{userId}')")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Http.Route)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Http.Route)
   route?: string;
 
   @doc("Server address (hostname or IP)")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Server.Address)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Server.Address)
   serverAddress?: string;
 
   @doc("Server port")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Server.Port)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Server.Port)
   serverPort?: Port;
 
   // ---------------------------------------------------------------------------
@@ -85,19 +85,19 @@ model HttpAttributes {
   // ---------------------------------------------------------------------------
 
   @doc("Full request target URL")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Url.Full)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Url.Full)
   urlFull?: UrlString;
 
   @doc("URL path component")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Url.Path)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Url.Path)
   urlPath?: UrlPath;
 
   @doc("URL query string (without leading ?)")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Url.Query)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Url.Query)
   urlQuery?: UrlQuery;
 
   @doc("URL scheme (http or https)")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Url.Scheme)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Url.Scheme)
   urlScheme?: UrlScheme;
 
   // ---------------------------------------------------------------------------
@@ -105,7 +105,7 @@ model HttpAttributes {
   // ---------------------------------------------------------------------------
 
   @doc("Size of the request body in bytes")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Http.RequestBodySize)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Http.RequestBodySize)
   requestBodySize?: ByteSize;
 
   @doc("Request content length header value")
@@ -117,7 +117,7 @@ model HttpAttributes {
   requestContentType?: ContentType;
 
   @doc("Request User-Agent header")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.UserAgent.Original)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.UserAgent.Original)
   userAgentOriginal?: UserAgent;
 
   @doc("Request Accept header")
@@ -137,7 +137,7 @@ model HttpAttributes {
   // ---------------------------------------------------------------------------
 
   @doc("Size of the response body in bytes")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Http.ResponseBodySize)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Http.ResponseBodySize)
   responseBodySize?: ByteSize;
 
   @doc("Response content length header value")
@@ -153,11 +153,11 @@ model HttpAttributes {
   // ---------------------------------------------------------------------------
 
   @doc("HTTP request headers. Keys map to http.request.header.<key>")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Http.RequestHeader)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Http.RequestHeader)
   requestHeaders?: Record<string[]>;
 
   @doc("HTTP response headers. Keys map to http.response.header.<key>")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Http.ResponseHeader)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Http.ResponseHeader)
   responseHeaders?: Record<string[]>;
 
   // ---------------------------------------------------------------------------
@@ -165,11 +165,11 @@ model HttpAttributes {
   // ---------------------------------------------------------------------------
 
   @doc("Client address (IP, hostname, or Unix socket path)")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Client.Address)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Client.Address)
   clientAddress?: IpAddress | string;
 
   @doc("Client port")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Client.Port)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Client.Port)
   clientPort?: Port;
 
   // ---------------------------------------------------------------------------
@@ -177,11 +177,11 @@ model HttpAttributes {
   // ---------------------------------------------------------------------------
 
   @doc("State of the HTTP connection")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Http.ConnectionState)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Http.ConnectionState)
   connectionState?: HttpConnectionState;
 
   @doc("Number of retries for the request")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Http.RequestResendCount)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Http.RequestResendCount)
   requestResendCount?: int32;
 
   // ---------------------------------------------------------------------------
@@ -189,32 +189,32 @@ model HttpAttributes {
   // ---------------------------------------------------------------------------
 
   @doc("Request target (deprecated - use url.path + url.query)")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Http.Target)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Http.Target)
   @removed(HttpVersions.v1_23)
   target?: string;
 
   @doc("Request URL (deprecated - use url.full)")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Http.Url)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Http.Url)
   @removed(HttpVersions.v1_23)
   url?: UrlString;
 
   @doc("HTTP method (deprecated - use http.request.method)")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Http.Method)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Http.Method)
   @removed(HttpVersions.v1_23)
   method?: string;
 
   @doc("Status code (deprecated - use http.response.status_code)")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Http.StatusCode)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Http.StatusCode)
   @removed(HttpVersions.v1_23)
   statusCode?: int32;
 
   @doc("Request content length (deprecated)")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Http.RequestContentLength)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Http.RequestContentLength)
   @removed(HttpVersions.v1_23)
   requestContentLengthLegacy?: ByteSize;
 
   @doc("Response content length (deprecated)")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Http.ResponseContentLength)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Http.ResponseContentLength)
   @removed(HttpVersions.v1_23)
   responseContentLengthLegacy?: ByteSize;
 }
@@ -439,19 +439,19 @@ model HttpServerRequestDurationMetric {
   unit: "s";
 
   @doc("HTTP method")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Http.RequestMethod)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Http.RequestMethod)
   requestMethod: HttpMethod;
 
   @doc("HTTP route")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Http.Route)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Http.Route)
   route: string;
 
   @doc("Response status code")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Http.ResponseStatusCode)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Http.ResponseStatusCode)
   responseStatusCode: int32;
 
   @doc("URL scheme")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Url.Scheme)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Url.Scheme)
   urlScheme: UrlScheme;
 }
 
@@ -464,15 +464,15 @@ model HttpServerActiveRequestsMetric {
   unit: "{request}";
 
   @doc("HTTP method")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Http.RequestMethod)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Http.RequestMethod)
   requestMethod: HttpMethod;
 
   @doc("HTTP route")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Http.Route)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Http.Route)
   route?: string;
 
   @doc("URL scheme")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Url.Scheme)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Url.Scheme)
   urlScheme: UrlScheme;
 }
 
@@ -485,23 +485,23 @@ model HttpClientRequestDurationMetric {
   unit: "s";
 
   @doc("HTTP method")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Http.RequestMethod)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Http.RequestMethod)
   requestMethod: HttpMethod;
 
   @doc("Server address")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Server.Address)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Server.Address)
   serverAddress: string;
 
   @doc("Server port")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Server.Port)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Server.Port)
   serverPort: Port;
 
   @doc("Response status code")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Http.ResponseStatusCode)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Http.ResponseStatusCode)
   responseStatusCode?: int32;
 
   @doc("Error type if failed")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Error.Type)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Error.Type)
   errorType?: HttpErrorType;
 }
 

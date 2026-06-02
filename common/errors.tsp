@@ -8,7 +8,7 @@ import "@typespec/http";
 
 using TypeSpec.Http;
 
-namespace ANcpLua.OtelConventions.Common.Errors;
+namespace Qyl.Api.Contracts.Common.Errors;
 
 // =============================================================================
 // RFC 7807 Problem Details Base

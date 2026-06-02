@@ -8,9 +8,9 @@ import "@typespec/openapi";
 import "../common/types.tsp";
 
 using TypeSpec.OpenAPI;
-using ANcpLua.OtelConventions.Common;
+using Qyl.Api.Contracts.Common;
 
-namespace ANcpLua.OtelConventions.Domains.Search;
+namespace Qyl.Api.Contracts.Domains.Search;
 
 // =============================================================================
 // Search Document

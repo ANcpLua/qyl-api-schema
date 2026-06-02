@@ -34,67 +34,67 @@ import "./models/workflow.tsp";
 import "./models/workspace.tsp";
 import "./intelligence/main.tsp";
 
-using ANcpLua.OtelConventions.Emit.CSharp;
-using ANcpLua.OtelConventions.Emit.DuckDb;
-using ANcpLua.OtelConventions.Emit.TsTypes;
+using Qyl.Api.Schema.Emit.CSharp;
+using Qyl.Api.Schema.Emit.DuckDb;
+using Qyl.Api.Schema.Emit.TsTypes;
 
 // -----------------------------------------------------------------------------
 // C# namespace routing — one @@csharpNamespace per namespace declared in any
 // hand-authored .tsp file. Values mirror NamespaceRoutingTable.cs exactly.
 // -----------------------------------------------------------------------------
 
-@@csharpNamespace(ANcpLua.OtelConventions.Api, "ANcpLua.OtelConventions.Api");
-@@csharpNamespace(ANcpLua.OtelConventions.Api.Streaming, "ANcpLua.OtelConventions.Api.Streaming");
+@@csharpNamespace(Qyl.Api.Contracts, "Qyl.Api.Contracts");
+@@csharpNamespace(Qyl.Api.Contracts.Streaming, "Qyl.Api.Contracts.Streaming");
 
-@@csharpNamespace(ANcpLua.OtelConventions.Common, "ANcpLua.OtelConventions.Common");
-@@csharpNamespace(ANcpLua.OtelConventions.Common.Errors, "ANcpLua.OtelConventions.Common.Errors");
-@@csharpNamespace(ANcpLua.OtelConventions.Common.Pagination, "ANcpLua.OtelConventions.Common.Pagination");
+@@csharpNamespace(Qyl.Api.Contracts.Common, "Qyl.Api.Contracts.Common");
+@@csharpNamespace(Qyl.Api.Contracts.Common.Errors, "Qyl.Api.Contracts.Common.Errors");
+@@csharpNamespace(Qyl.Api.Contracts.Common.Pagination, "Qyl.Api.Contracts.Common.Pagination");
 
-@@csharpNamespace(ANcpLua.OtelConventions.Intelligence, "ANcpLua.OtelConventions.Intelligence");
+@@csharpNamespace(Qyl.Api.Contracts.Intelligence, "Qyl.Api.Contracts.Intelligence");
 
-@@csharpNamespace(ANcpLua.OtelConventions.Domains, "ANcpLua.OtelConventions.Domains");
-@@csharpNamespace(ANcpLua.OtelConventions.Domains.AI.GenAi, "ANcpLua.OtelConventions.Domains.AI.GenAi");
-@@csharpNamespace(ANcpLua.OtelConventions.Domains.Agent.Run, "ANcpLua.OtelConventions.Domains.Agent.Run");
-@@csharpNamespace(ANcpLua.OtelConventions.Domains.Agent.ToolCall, "ANcpLua.OtelConventions.Domains.Agent.ToolCall");
-@@csharpNamespace(ANcpLua.OtelConventions.Domains.Agent.Checkpoint, "ANcpLua.OtelConventions.Domains.Agent.Checkpoint");
-@@csharpNamespace(ANcpLua.OtelConventions.Domains.Agent.Workflow, "ANcpLua.OtelConventions.Domains.Agent.Workflow");
-@@csharpNamespace(ANcpLua.OtelConventions.Domains.Alerting, "ANcpLua.OtelConventions.Domains.Alerting");
-@@csharpNamespace(ANcpLua.OtelConventions.Domains.Configurator, "ANcpLua.OtelConventions.Domains.Configurator");
-@@csharpNamespace(ANcpLua.OtelConventions.Domains.Data.Db, "ANcpLua.OtelConventions.Domains.Data.Db");
-@@csharpNamespace(ANcpLua.OtelConventions.Domains.Identity, "ANcpLua.OtelConventions.Domains.Identity");
-@@csharpNamespace(ANcpLua.OtelConventions.Domains.Issues, "ANcpLua.OtelConventions.Domains.Issues");
-@@csharpNamespace(ANcpLua.OtelConventions.Domains.Loom.Triage, "ANcpLua.OtelConventions.Domains.Loom.Triage");
-@@csharpNamespace(ANcpLua.OtelConventions.Domains.Observe.Error, "ANcpLua.OtelConventions.Domains.Observe.Error");
-@@csharpNamespace(ANcpLua.OtelConventions.Domains.Observe.Log, "ANcpLua.OtelConventions.Domains.Observe.Log");
-@@csharpNamespace(ANcpLua.OtelConventions.Domains.Observe.Otel, "ANcpLua.OtelConventions.Domains.Observe.Otel");
-@@csharpNamespace(ANcpLua.OtelConventions.Domains.Observe.Session, "ANcpLua.OtelConventions.Domains.Observe.Session");
-@@csharpNamespace(ANcpLua.OtelConventions.Domains.Observe.Test, "ANcpLua.OtelConventions.Domains.Observe.Test");
-@@csharpNamespace(ANcpLua.OtelConventions.Domains.Ops.Deployment, "ANcpLua.OtelConventions.Domains.Ops.Deployment");
-@@csharpNamespace(ANcpLua.OtelConventions.Domains.Ops.Retention, "ANcpLua.OtelConventions.Domains.Ops.Retention");
-@@csharpNamespace(ANcpLua.OtelConventions.Domains.Runtime.System, "ANcpLua.OtelConventions.Domains.Runtime.System");
-@@csharpNamespace(ANcpLua.OtelConventions.Domains.Search, "ANcpLua.OtelConventions.Domains.Search");
-@@csharpNamespace(ANcpLua.OtelConventions.Domains.Transport.Http, "ANcpLua.OtelConventions.Domains.Transport.Http");
-@@csharpNamespace(ANcpLua.OtelConventions.Domains.Transport.Messaging, "ANcpLua.OtelConventions.Domains.Transport.Messaging");
-@@csharpNamespace(ANcpLua.OtelConventions.Domains.Transport.Rpc, "ANcpLua.OtelConventions.Domains.Transport.Rpc");
-@@csharpNamespace(ANcpLua.OtelConventions.Domains.Workflow, "ANcpLua.OtelConventions.Domains.Workflow");
-@@csharpNamespace(ANcpLua.OtelConventions.Domains.Workspace, "ANcpLua.OtelConventions.Domains.Workspace");
+@@csharpNamespace(Qyl.Api.Contracts.Domains, "Qyl.Api.Contracts.Domains");
+@@csharpNamespace(Qyl.Api.Contracts.Domains.AI.GenAi, "Qyl.Api.Contracts.Domains.AI.GenAi");
+@@csharpNamespace(Qyl.Api.Contracts.Domains.Agent.Run, "Qyl.Api.Contracts.Domains.Agent.Run");
+@@csharpNamespace(Qyl.Api.Contracts.Domains.Agent.ToolCall, "Qyl.Api.Contracts.Domains.Agent.ToolCall");
+@@csharpNamespace(Qyl.Api.Contracts.Domains.Agent.Checkpoint, "Qyl.Api.Contracts.Domains.Agent.Checkpoint");
+@@csharpNamespace(Qyl.Api.Contracts.Domains.Agent.Workflow, "Qyl.Api.Contracts.Domains.Agent.Workflow");
+@@csharpNamespace(Qyl.Api.Contracts.Domains.Alerting, "Qyl.Api.Contracts.Domains.Alerting");
+@@csharpNamespace(Qyl.Api.Contracts.Domains.Configurator, "Qyl.Api.Contracts.Domains.Configurator");
+@@csharpNamespace(Qyl.Api.Contracts.Domains.Data.Db, "Qyl.Api.Contracts.Domains.Data.Db");
+@@csharpNamespace(Qyl.Api.Contracts.Domains.Identity, "Qyl.Api.Contracts.Domains.Identity");
+@@csharpNamespace(Qyl.Api.Contracts.Domains.Issues, "Qyl.Api.Contracts.Domains.Issues");
+@@csharpNamespace(Qyl.Api.Contracts.Domains.Loom.Triage, "Qyl.Api.Contracts.Domains.Loom.Triage");
+@@csharpNamespace(Qyl.Api.Contracts.Domains.Observe.Error, "Qyl.Api.Contracts.Domains.Observe.Error");
+@@csharpNamespace(Qyl.Api.Contracts.Domains.Observe.Log, "Qyl.Api.Contracts.Domains.Observe.Log");
+@@csharpNamespace(Qyl.Api.Contracts.Domains.Observe.Otel, "Qyl.Api.Contracts.Domains.Observe.Otel");
+@@csharpNamespace(Qyl.Api.Contracts.Domains.Observe.Session, "Qyl.Api.Contracts.Domains.Observe.Session");
+@@csharpNamespace(Qyl.Api.Contracts.Domains.Observe.Test, "Qyl.Api.Contracts.Domains.Observe.Test");
+@@csharpNamespace(Qyl.Api.Contracts.Domains.Ops.Deployment, "Qyl.Api.Contracts.Domains.Ops.Deployment");
+@@csharpNamespace(Qyl.Api.Contracts.Domains.Ops.Retention, "Qyl.Api.Contracts.Domains.Ops.Retention");
+@@csharpNamespace(Qyl.Api.Contracts.Domains.Runtime.System, "Qyl.Api.Contracts.Domains.Runtime.System");
+@@csharpNamespace(Qyl.Api.Contracts.Domains.Search, "Qyl.Api.Contracts.Domains.Search");
+@@csharpNamespace(Qyl.Api.Contracts.Domains.Transport.Http, "Qyl.Api.Contracts.Domains.Transport.Http");
+@@csharpNamespace(Qyl.Api.Contracts.Domains.Transport.Messaging, "Qyl.Api.Contracts.Domains.Transport.Messaging");
+@@csharpNamespace(Qyl.Api.Contracts.Domains.Transport.Rpc, "Qyl.Api.Contracts.Domains.Transport.Rpc");
+@@csharpNamespace(Qyl.Api.Contracts.Domains.Workflow, "Qyl.Api.Contracts.Domains.Workflow");
+@@csharpNamespace(Qyl.Api.Contracts.Domains.Workspace, "Qyl.Api.Contracts.Domains.Workspace");
 
-@@csharpNamespace(ANcpLua.OtelConventions.OTel, "ANcpLua.OtelConventions.OTel");
-@@csharpNamespace(ANcpLua.OtelConventions.OTel.Enums, "ANcpLua.OtelConventions.OTel.Enums");
-@@csharpNamespace(ANcpLua.OtelConventions.OTel.Logs, "ANcpLua.OtelConventions.OTel.Logs");
-@@csharpNamespace(ANcpLua.OtelConventions.OTel.Metrics, "ANcpLua.OtelConventions.OTel.Metrics");
-@@csharpNamespace(ANcpLua.OtelConventions.OTel.Profiles, "ANcpLua.OtelConventions.OTel.Profiles");
-@@csharpNamespace(ANcpLua.OtelConventions.OTel.Resource, "ANcpLua.OtelConventions.OTel.Resource");
-@@csharpNamespace(ANcpLua.OtelConventions.OTel.Traces, "ANcpLua.OtelConventions.OTel.Traces");
+@@csharpNamespace(Qyl.Api.Contracts.OTel, "Qyl.Api.Contracts.OTel");
+@@csharpNamespace(Qyl.Api.Contracts.OTel.Enums, "Qyl.Api.Contracts.OTel.Enums");
+@@csharpNamespace(Qyl.Api.Contracts.OTel.Logs, "Qyl.Api.Contracts.OTel.Logs");
+@@csharpNamespace(Qyl.Api.Contracts.OTel.Metrics, "Qyl.Api.Contracts.OTel.Metrics");
+@@csharpNamespace(Qyl.Api.Contracts.OTel.Profiles, "Qyl.Api.Contracts.OTel.Profiles");
+@@csharpNamespace(Qyl.Api.Contracts.OTel.Resource, "Qyl.Api.Contracts.OTel.Resource");
+@@csharpNamespace(Qyl.Api.Contracts.OTel.Traces, "Qyl.Api.Contracts.OTel.Traces");
 
-@@csharpNamespace(ANcpLua.OtelConventions.Storage, "ANcpLua.OtelConventions.Storage");
+@@csharpNamespace(Qyl.Api.Contracts.Storage, "Qyl.Api.Contracts.Storage");
 
 // -----------------------------------------------------------------------------
 // TypeScript brands for opaque string IDs. Mandate §Commit-4 exact list plus
 // any scalar in common/types.tsp with x-csharp-struct extension.
 // -----------------------------------------------------------------------------
 
-@@tsBrand(ANcpLua.OtelConventions.Common.TraceId);
-@@tsBrand(ANcpLua.OtelConventions.Common.SpanId);
-@@tsBrand(ANcpLua.OtelConventions.Common.SessionId);
-@@tsBrand(ANcpLua.OtelConventions.Common.UserId);
+@@tsBrand(Qyl.Api.Contracts.Common.TraceId);
+@@tsBrand(Qyl.Api.Contracts.Common.SpanId);
+@@tsBrand(Qyl.Api.Contracts.Common.SessionId);
+@@tsBrand(Qyl.Api.Contracts.Common.UserId);

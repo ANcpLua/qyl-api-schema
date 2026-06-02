@@ -7,7 +7,7 @@ import { Tester } from "./test-host.js";
 const LIB = "@ancplua/typespec-otelconventions-lint";
 
 async function codes(body: string): Promise<string[]> {
-    const ds = await Tester.diagnose(`using ANcpLua.OtelConventions.Semconv; model X {\n${body}\n}`);
+    const ds = await Tester.diagnose(`using Qyl.Api.Schema.Semconv; model X {\n${body}\n}`);
     return ds.map((d) => d.code);
 }
 

@@ -8,7 +8,7 @@
 // Query templates use DuckDB SQL against the telemetry data model schema.
 // =============================================================================
 
-namespace ANcpLua.OtelConventions.Intelligence.Seed;
+namespace Qyl.Api.Contracts.Intelligence.Seed;
 
 // ---------------------------------------------------------------------------
 // Strategy: investigate_error_issue

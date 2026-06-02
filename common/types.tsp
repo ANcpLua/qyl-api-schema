@@ -1,8 +1,8 @@
 // =============================================================================
-// ANcpLua v2.0 - Common Types & Scalars
+// qyl common types and scalars
 // =============================================================================
-// Foundational types used across all OTel semantic convention models.
-// OpenTelemetry Semantic Conventions v1.40 compliant.
+// Foundational types used across qyl API contracts and OTel-compatible models.
+// OpenTelemetry semantic-convention references are pinned to v1.41.0.
 // =============================================================================
 
 import "@typespec/versioning";
@@ -13,13 +13,13 @@ using TypeSpec.Versioning;
 using TypeSpec.JsonSchema;
 using TypeSpec.OpenAPI;
 
-namespace ANcpLua.OtelConventions.Common;
+namespace Qyl.Api.Contracts.Common;
 
 // =============================================================================
 // Version Enum - OTel Semantic Convention Versions
 // =============================================================================
 
-@doc("OpenTelemetry Semantic Convention versions supported by ANcpLua")
+@doc("OpenTelemetry semantic-convention versions supported by qyl compatibility models")
 enum OTelVersion {
   @doc("OTel Semconv v1.27 - Base version")
   v1_27: "1.27.0",
@@ -39,8 +39,11 @@ enum OTelVersion {
   @doc("OTel Semconv v1.39 - RPC metadata consolidation")
   v1_39: "1.39.0",
 
-  @doc("OTel Semconv v1.40 - Current version (Oracle DB split, RPC cleanup, GenAI cache tokens)")
+  @doc("OTel Semconv v1.40 - Oracle DB split, RPC cleanup, GenAI cache tokens")
   v1_40: "1.40.0",
+
+  @doc("OTel Semconv v1.41 - Current compatibility pin")
+  v1_41: "1.41.0",
 }
 
 // =============================================================================

@@ -13,7 +13,7 @@ This directory holds Weaver-generated TypeSpec files. **Do not edit by hand.**
 One TypeSpec namespace per OpenTelemetry root group, each declaring `const <Name>: string = "<dotted.key>"`. Extracted `.tsp` models reference these consts inside `@encodedName(...)` instead of hand-typing dotted attribute keys.
 
 ```tsp
-@encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.GenAi.System)
+@encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.GenAi.System)
 system?: string;
 ```
 

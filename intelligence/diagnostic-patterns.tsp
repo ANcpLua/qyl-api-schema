@@ -10,7 +10,7 @@ import "@typespec/openapi";
 
 using TypeSpec.OpenAPI;
 
-namespace ANcpLua.OtelConventions.Intelligence;
+namespace Qyl.Api.Contracts.Intelligence;
 
 @doc("Classification category for diagnostic patterns")
 enum PatternCategory {

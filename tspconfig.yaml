@@ -1,14 +1,12 @@
-# ANcpLua.OtelConventions.Api TypeSpec configuration.
-# Extracted from Alexander-Nachtmann/qyl after PR #255. Output paths are
-# intentionally local to this repository so compilation cannot write back into
-# the source repo.
+# qyl-api-schema TypeSpec configuration.
+# This repo is a contract source, not a server implementation. It emits schema
+# and DTO/storage artifacts only; qyl owns the running ASP.NET services.
 
 emit:
   - "@ancplua/typespec-emit-csharp"
   - "@ancplua/typespec-emit-duckdb"
   - "@ancplua/typespec-emit-ts-types"
-  - "@typespec/http-client-csharp"
-  - "@typespec/http-server-csharp"
+  - "@typespec/openapi3"
   - "@typespec/json-schema"
 
 options:
@@ -21,27 +19,19 @@ options:
   "@ancplua/typespec-emit-ts-types":
     emitter-output-dir: "{project-root}/generated/ts-types"
 
-  "@typespec/http-client-csharp":
-    emitter-output-dir: "{project-root}/generated/csharp-client"
-    package-name: "ANcpLua.OtelConventions.Api.Client"
-    generate-protocol-methods: true
-    generate-convenience-methods: true
-    disable-xml-docs: false
-    new-project: false
+  "@typespec/openapi3":
+    emitter-output-dir: "{project-root}/generated/openapi"
+    output-file: "qyl.openapi.json"
+    file-type: json
+    openapi-versions:
+      - "3.2.0"
+    omit-unreachable-types: true
+    operation-id-strategy: parent-container
 
   "@typespec/json-schema":
     emitter-output-dir: "{project-root}/generated/json-schema"
     file-type: json
-    bundleId: ancplua-otelconventions-api
-
-  "@typespec/http-server-csharp":
-    emitter-output-dir: "{project-root}/generated/csharp-server"
-    output-type: all
-    emit-mocks: none
-    skip-format: false
-    use-swaggerui: false
-    overwrite: true
-    collection-type: array
+    bundleId: qyl-api-schema
 
 linter:
   extends:

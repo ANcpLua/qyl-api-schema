@@ -8,9 +8,9 @@ import "@typespec/openapi";
 import "../common/types.tsp";
 
 using TypeSpec.OpenAPI;
-using ANcpLua.OtelConventions.Common;
+using Qyl.Api.Contracts.Common;
 
-namespace ANcpLua.OtelConventions.Domains.Ops.Deployment;
+namespace Qyl.Api.Contracts.Domains.Ops.Deployment;
 
 // =============================================================================
 // Deployment Attributes
@@ -19,19 +19,19 @@ namespace ANcpLua.OtelConventions.Domains.Ops.Deployment;
 @doc("Deployment resource attributes")
 model DeploymentAttributes {
   @doc("Deployment environment name")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Deployment.EnvironmentName)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Deployment.EnvironmentName)
   environmentName?: string;
 
   @doc("Deployment ID")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Deployment.Id)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Deployment.Id)
   id?: string;
 
   @doc("Deployment name")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Deployment.Name)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Deployment.Name)
   name?: string;
 
   @doc("Deployment status")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Deployment.Status)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Deployment.Status)
   status?: DeploymentStatus;
 }
 
@@ -116,17 +116,17 @@ model DeploymentEntity {
   @doc("Deployment ID")
   @key
   @visibility(Lifecycle.Read)
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Deployment.Id)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Deployment.Id)
   deploymentId: string;
 
   @doc("Service name")
   @visibility(Lifecycle.Read, Lifecycle.Create)
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Service.Name)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Service.Name)
   serviceName: string;
 
   @doc("Service version")
   @visibility(Lifecycle.Read, Lifecycle.Create)
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Service.Version)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Service.Version)
   serviceVersion: SemVer;
 
   @doc("Environment")
@@ -208,15 +208,15 @@ model DeploymentEvent {
   eventName: DeploymentEventName;
 
   @doc("Deployment ID")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Deployment.Id)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Deployment.Id)
   deploymentId: string;
 
   @doc("Service name")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Service.Name)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Service.Name)
   serviceName: string;
 
   @doc("Environment")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Deployment.EnvironmentName)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Deployment.EnvironmentName)
   environment: DeploymentEnvironment;
 
   @doc("Status")
@@ -260,15 +260,15 @@ model DeploymentDurationMetric {
   unit: "s";
 
   @doc("Environment")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Deployment.EnvironmentName)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Deployment.EnvironmentName)
   environment: DeploymentEnvironment;
 
   @doc("Service name")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Service.Name)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Service.Name)
   serviceName: string;
 
   @doc("Status")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Deployment.Status)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Deployment.Status)
   status: DeploymentStatus;
 }
 
@@ -281,15 +281,15 @@ model DeploymentCountMetric {
   unit: "{deployment}";
 
   @doc("Environment")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Deployment.EnvironmentName)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Deployment.EnvironmentName)
   environment: DeploymentEnvironment;
 
   @doc("Service name")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Service.Name)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Service.Name)
   serviceName: string;
 
   @doc("Status")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Deployment.Status)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Deployment.Status)
   status: DeploymentStatus;
 }
 
@@ -306,11 +306,11 @@ model DoraDeploymentFrequencyMetric {
   unit: "{deployment}/d";
 
   @doc("Environment")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Deployment.EnvironmentName)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Deployment.EnvironmentName)
   environment: DeploymentEnvironment;
 
   @doc("Service name")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Service.Name)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Service.Name)
   serviceName?: string;
 }
 
@@ -323,11 +323,11 @@ model DoraLeadTimeMetric {
   unit: "h";
 
   @doc("Environment")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Deployment.EnvironmentName)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Deployment.EnvironmentName)
   environment: DeploymentEnvironment;
 
   @doc("Service name")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Service.Name)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Service.Name)
   serviceName?: string;
 }
 
@@ -340,11 +340,11 @@ model DoraChangeFailureRateMetric {
   unit: "1";
 
   @doc("Environment")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Deployment.EnvironmentName)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Deployment.EnvironmentName)
   environment: DeploymentEnvironment;
 
   @doc("Service name")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Service.Name)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Service.Name)
   serviceName?: string;
 }
 
@@ -357,10 +357,10 @@ model DoraMttrMetric {
   unit: "h";
 
   @doc("Environment")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Deployment.EnvironmentName)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Deployment.EnvironmentName)
   environment: DeploymentEnvironment;
 
   @doc("Service name")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Service.Name)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Service.Name)
   serviceName?: string;
 }

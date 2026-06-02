@@ -2,7 +2,7 @@ import "../dist/index.js";
 
 using TypeSpec.Reflection;
 
-namespace ANcpLua.OtelConventions.Semconv {
+namespace Qyl.Api.Schema.Semconv {
   /**
    * Options for `@ancpluaAttr`. All optional; the rule set only fires on what's present.
    */

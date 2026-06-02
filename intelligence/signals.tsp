@@ -9,7 +9,7 @@ import "@typespec/openapi";
 
 using TypeSpec.OpenAPI;
 
-namespace ANcpLua.OtelConventions.Intelligence;
+namespace Qyl.Api.Contracts.Intelligence;
 
 @doc("Comparison operator for signal evaluation")
 enum SignalOperator {

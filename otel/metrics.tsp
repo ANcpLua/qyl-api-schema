@@ -10,11 +10,11 @@ import "./enums.tsp";
 import "./resource.tsp";
 
 using TypeSpec.Http;
-using ANcpLua.OtelConventions.Common;
-using ANcpLua.OtelConventions.OTel.Enums;
-using ANcpLua.OtelConventions.OTel.Resource;
+using Qyl.Api.Contracts.Common;
+using Qyl.Api.Contracts.OTel.Enums;
+using Qyl.Api.Contracts.OTel.Resource;
 
-namespace ANcpLua.OtelConventions.OTel.Metrics;
+namespace Qyl.Api.Contracts.OTel.Metrics;
 
 // =============================================================================
 // Metric Model
@@ -39,7 +39,7 @@ model Metric {
   metadata?: Attribute[];
 
   @doc("Resource describing the entity that produced this metric")
-  resource: ANcpLua.OtelConventions.OTel.Resource.Resource;
+  resource: Qyl.Api.Contracts.OTel.Resource.Resource;
 
   @doc("Instrumentation scope")
   @encodedName("application/json", "instrumentation_scope")

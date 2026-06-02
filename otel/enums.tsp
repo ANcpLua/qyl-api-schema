@@ -4,7 +4,7 @@
 // All OTel standard enumerations following Semantic Conventions v1.40.
 // =============================================================================
 
-namespace ANcpLua.OtelConventions.OTel.Enums;
+namespace Qyl.Api.Contracts.OTel.Enums;
 
 // =============================================================================
 // Span Enumerations

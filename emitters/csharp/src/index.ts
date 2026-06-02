@@ -1,7 +1,7 @@
 import { setTypeSpecNamespace } from "@typespec/compiler";
 import { $csharpEnum, $csharpNamespace, $csharpRecord } from "./decorators.js";
 
-setTypeSpecNamespace("ANcpLua.OtelConventions.Emit.CSharp", $csharpNamespace, $csharpRecord, $csharpEnum);
+setTypeSpecNamespace("Qyl.Api.Schema.Emit.CSharp", $csharpNamespace, $csharpRecord, $csharpEnum);
 
 export { $lib } from "./lib.js";
 export { $csharpEnum, $csharpNamespace, $csharpRecord } from "./decorators.js";

@@ -15,7 +15,7 @@ using static Nuke.Common.Tools.Git.GitTasks;
 using static Nuke.Common.Tools.Npm.NpmTasks;
 
 /// <summary>
-/// Build entry point for <c>@o-ancpplua/otel-conventions-api</c>.
+/// Build entry point for <c>@o-ancpplua/qyl-api-schema</c>.
 ///
 /// Implements <see cref="IDomainConventionsApi"/> by wiring each declarative target
 /// to the existing npm scripts in <c>package.json</c> plus the lockstep / determinism
@@ -408,10 +408,10 @@ sealed class Build : NukeBuild, IDomainConventionsApi
     // PackContractsNuget / PublishContractsNuget: the C# contracts NuGet,
     // mirroring the npm Pack/PublishApiPackage targets. The packaging/ project
     // compiles generated/contracts (gitignored @ancplua/typespec-emit-csharp
-    // output) into ANcpLua.OtelConventions.Api, versioned from package.json so
+    // output) into Qyl.Api.Contracts, versioned from package.json so
     // the npm and NuGet artifacts stay in lockstep.
     // ---------------------------------------------------------------------
-    AbsolutePath PackagingProject => RootDirectory / "packaging" / "ANcpLua.OtelConventions.Api.csproj";
+    AbsolutePath PackagingProject => RootDirectory / "packaging" / "Qyl.Api.Contracts.csproj";
     AbsolutePath NugetOutputDir => ArtifactsDir / "nuget";
 
     AbsolutePath ContractsEmitDir => ((IDomainConventionsApi)this).DomainSpecRoot / "generated" / "contracts";
@@ -451,7 +451,7 @@ sealed class Build : NukeBuild, IDomainConventionsApi
         .Executes(() => ContractsEmitDir.CreateOrCleanDirectory());
 
     Target PackContractsNuget => _ => _
-        .Description("Pack the freshly-emitted C# contracts (generated/contracts) into the ANcpLua.OtelConventions.Api NuGet (versioned from package.json).")
+        .Description("Pack the freshly-emitted C# contracts (generated/contracts) into the Qyl.Api.Contracts NuGet (versioned from package.json).")
         .DependsOn(CleanContractsEmit, ((IDomainConventionsApi)this).EmitCSharp)
         .Executes(() =>
         {
@@ -469,7 +469,7 @@ sealed class Build : NukeBuild, IDomainConventionsApi
         });
 
     Target PublishContractsNuget => _ => _
-        .Description("Push the ANcpLua.OtelConventions.Api.<version>.nupkg from this pack to the O-ANcppLua GitHub Packages NuGet feed (uses GITHUB_TOKEN).")
+        .Description("Push the Qyl.Api.Contracts.<version>.nupkg from this pack to the O-ANcppLua GitHub Packages NuGet feed (uses GITHUB_TOKEN).")
         .DependsOn(PackContractsNuget)
         .Executes(() =>
         {
@@ -477,7 +477,7 @@ sealed class Build : NukeBuild, IDomainConventionsApi
                 ?? throw new InvalidOperationException("PublishContractsNuget: GITHUB_TOKEN is required.");
             // Push the exact package produced by this run, not a glob — a wildcard would also
             // upload any stale *.nupkg left in NugetOutputDir on a non-fresh workspace.
-            var package = NugetOutputDir / $"ANcpLua.OtelConventions.Api.{NugetPackageVersion()}.nupkg";
+            var package = NugetOutputDir / $"Qyl.Api.Contracts.{NugetPackageVersion()}.nupkg";
             if (!package.FileExists())
                 throw new InvalidOperationException($"PublishContractsNuget: expected package '{package}' not found — did PackContractsNuget run?");
             DotNetNuGetPush(s => s

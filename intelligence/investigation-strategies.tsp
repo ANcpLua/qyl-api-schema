@@ -10,7 +10,7 @@ import "@typespec/openapi";
 
 using TypeSpec.OpenAPI;
 
-namespace ANcpLua.OtelConventions.Intelligence;
+namespace Qyl.Api.Contracts.Intelligence;
 
 @doc("Single step in an investigation strategy")
 model InvestigationStep {

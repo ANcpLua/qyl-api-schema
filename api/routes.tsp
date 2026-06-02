@@ -1,5 +1,5 @@
 // =============================================================================
-// ANcpLua v2.0 - API Routes
+// qyl API routes
 // =============================================================================
 // RESTful API routes with proper pagination, streaming, and error handling.
 // =============================================================================
@@ -8,7 +8,6 @@ import "@typespec/http";
 import "@typespec/rest";
 import "@typespec/openapi";
 import "@typespec/versioning";
-import "@azure-tools/typespec-client-generator-core";
 
 import "../common/types.tsp";
 import "../common/errors.tsp";
@@ -35,27 +34,26 @@ import "../models/search.tsp";
 using TypeSpec.Http;
 using TypeSpec.OpenAPI;
 using TypeSpec.Versioning;
-using Azure.ClientGenerator.Core;
 
-using ANcpLua.OtelConventions.Common;
-using ANcpLua.OtelConventions.Common.Errors;
-using ANcpLua.OtelConventions.Common.Pagination;
-using ANcpLua.OtelConventions.OTel.Traces;
-using ANcpLua.OtelConventions.OTel.Logs;
-using ANcpLua.OtelConventions.OTel.Enums;
-using ANcpLua.OtelConventions.OTel.Profiles;
-using ANcpLua.OtelConventions.Storage;
-using ANcpLua.OtelConventions.Domains.Observe.Session;
-using ANcpLua.OtelConventions.Domains.Observe.Log;
-using ANcpLua.OtelConventions.Domains.Observe.Error;
-using ANcpLua.OtelConventions.Domains.Ops.Deployment;
-using ANcpLua.OtelConventions.Domains.Identity;
-using ANcpLua.OtelConventions.Domains.Workspace;
-using ANcpLua.OtelConventions.Domains.Configurator;
-using ANcpLua.OtelConventions.Domains.Issues;
-using ANcpLua.OtelConventions.Domains.Alerting;
-using ANcpLua.OtelConventions.Domains.Workflow;
-using ANcpLua.OtelConventions.Domains.Search;
+using Qyl.Api.Contracts.Common;
+using Qyl.Api.Contracts.Common.Errors;
+using Qyl.Api.Contracts.Common.Pagination;
+using Qyl.Api.Contracts.OTel.Traces;
+using Qyl.Api.Contracts.OTel.Logs;
+using Qyl.Api.Contracts.OTel.Enums;
+using Qyl.Api.Contracts.OTel.Profiles;
+using Qyl.Api.Contracts.Storage;
+using Qyl.Api.Contracts.Domains.Observe.Session;
+using Qyl.Api.Contracts.Domains.Observe.Log;
+using Qyl.Api.Contracts.Domains.Observe.Error;
+using Qyl.Api.Contracts.Domains.Ops.Deployment;
+using Qyl.Api.Contracts.Domains.Identity;
+using Qyl.Api.Contracts.Domains.Workspace;
+using Qyl.Api.Contracts.Domains.Configurator;
+using Qyl.Api.Contracts.Domains.Issues;
+using Qyl.Api.Contracts.Domains.Alerting;
+using Qyl.Api.Contracts.Domains.Workflow;
+using Qyl.Api.Contracts.Domains.Search;
 
 // =============================================================================
 // API Versioning
@@ -63,11 +61,11 @@ using ANcpLua.OtelConventions.Domains.Search;
 
 @versioned(ApiVersions)
 @service(#{
-  title: "ANcpLua Observability API",
+  title: "qyl Observability API",
 })
-@server("https://api.ancplua.dev", "ANcpLua Production API")
-@server("https://api.staging.ancplua.dev", "ANcpLua Staging API")
-namespace ANcpLua.OtelConventions.Api;
+@server("https://api.qyl.dev", "qyl production API")
+@server("https://api.staging.qyl.dev", "qyl staging API")
+namespace Qyl.Api.Contracts;
 
 enum ApiVersions {
   @doc("Initial API version")
@@ -224,7 +222,7 @@ interface LogsApi {
     @query @doc("Service name filter") serviceName?: string,
     @query @doc("Start time") startTime?: utcDateTime,
     @query @doc("End time") endTime?: utcDateTime,
-  ): ANcpLua.OtelConventions.OTel.Logs.LogStats | InternalServerError;
+  ): Qyl.Api.Contracts.OTel.Logs.LogStats | InternalServerError;
 }
 
 @doc("Log aggregation request")
@@ -328,10 +326,10 @@ model MetricQueryRequest {
   endTime: utcDateTime;
 
   @doc("Step interval")
-  step?: ANcpLua.OtelConventions.Common.Pagination.TimeBucket;
+  step?: Qyl.Api.Contracts.Common.Pagination.TimeBucket;
 
   @doc("Aggregation function")
-  aggregation?: ANcpLua.OtelConventions.OTel.Metrics.AggregationFunction;
+  aggregation?: Qyl.Api.Contracts.OTel.Metrics.AggregationFunction;
 
   @doc("Group by labels")
   @encodedName("application/json", "group_by")
@@ -473,7 +471,6 @@ interface ErrorsApi {
   @doc("Update error status")
   @patch
   @route("/{errorId}")
-  @convenientAPI(false, "csharp")
   update(
     @path errorId: string,
     @body update: MergePatchUpdate<ErrorEntity>,
@@ -526,7 +523,6 @@ interface DeploymentsApi {
   @doc("Update deployment status")
   @patch
   @route("/{deploymentId}")
-  @convenientAPI(false, "csharp")
   update(
     @path deploymentId: string,
     @body update: MergePatchUpdate<DeploymentEntity>,
@@ -909,7 +905,6 @@ interface IssuesApi {
   @doc("Update issue status")
   @patch
   @route("/{issueId}")
-  @convenientAPI(false, "csharp")
   update(
     @path issueId: string,
     @body update: MergePatchUpdate<ErrorIssueEntity>,

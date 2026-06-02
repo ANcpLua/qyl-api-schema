@@ -1,5 +1,5 @@
 // =============================================================================
-// ANcpLua v2.0 - Streaming API Routes
+// qyl streaming API routes
 // =============================================================================
 // Server-Sent Events (SSE) streaming endpoints for real-time telemetry.
 // =============================================================================
@@ -8,7 +8,6 @@ import "@typespec/http";
 import "@typespec/sse";
 import "@typespec/events";
 import "@typespec/versioning";
-import "@azure-tools/typespec-client-generator-core";
 
 import "../common/types.tsp";
 import "../common/pagination.tsp";
@@ -21,17 +20,15 @@ using TypeSpec.Http;
 using TypeSpec.SSE;
 using TypeSpec.Events;
 using TypeSpec.Versioning;
-using Azure.ClientGenerator.Core;
 
-using ANcpLua.OtelConventions.Common;
-using ANcpLua.OtelConventions.OTel.Traces;
-using ANcpLua.OtelConventions.OTel.Logs;
-using ANcpLua.OtelConventions.OTel.Metrics;
-using ANcpLua.OtelConventions.OTel.Enums;
-using ANcpLua.OtelConventions.Domains.Ops.Deployment;
+using Qyl.Api.Contracts.Common;
+using Qyl.Api.Contracts.OTel.Traces;
+using Qyl.Api.Contracts.OTel.Logs;
+using Qyl.Api.Contracts.OTel.Metrics;
+using Qyl.Api.Contracts.OTel.Enums;
+using Qyl.Api.Contracts.Domains.Ops.Deployment;
 
-@clientName("TelemetryStreaming")
-namespace ANcpLua.OtelConventions.Api.Streaming;
+namespace Qyl.Api.Contracts.Streaming;
 
 // =============================================================================
 // Stream Event Types
@@ -217,7 +214,6 @@ enum StreamEventType {
 
 @route("/api/v1/stream")
 @tag("Streaming")
-@clientName("TelemetryStreamOperations")
 interface StreamingApi {
   @doc("Stream all telemetry events (SSE)")
   @get

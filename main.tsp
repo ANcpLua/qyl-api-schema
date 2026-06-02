@@ -1,5 +1,5 @@
 // =============================================================================
-// ANcpLua.OtelConventions.Api - Main TypeSpec Entry Point
+// Qyl.Api.Contracts - Main TypeSpec Entry Point
 // =============================================================================
 // Extracted from qyl PR #255. OpenTelemetry semantic-convention key constants
 // are generated from the upstream semantic-conventions model pinned at v1.41.0.
@@ -69,7 +69,7 @@ import "./otel/storage.tsp";
 // Domain Models
 // =============================================================================
 // Extracted models (stats, entities, aggregations). OTel semconv attribute
-// keys come from ANcpLua.OtelConventions.OTel.Keys.<Domain>.<Name> (generated/otel-keys.gen.tsp);
+// keys come from ANcpLua.OpenTelemetry.SemanticConventions.Keys.<Domain>.<Name> (generated/otel-keys.gen.tsp);
 // hand-typed dotted strings inside @encodedName(...) are not allowed for
 // upstream-OTel attribute names.
 // =============================================================================

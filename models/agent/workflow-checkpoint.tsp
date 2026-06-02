@@ -9,9 +9,9 @@ import "@typespec/openapi";
 import "../../common/types.tsp";
 
 using TypeSpec.OpenAPI;
-using ANcpLua.OtelConventions.Common;
+using Qyl.Api.Contracts.Common;
 
-namespace ANcpLua.OtelConventions.Domains.Agent.Checkpoint;
+namespace Qyl.Api.Contracts.Domains.Agent.Checkpoint;
 
 // =============================================================================
 // Workflow Checkpoint Entity - Storage Model

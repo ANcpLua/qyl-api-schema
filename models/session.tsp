@@ -8,9 +8,9 @@ import "@typespec/openapi";
 import "../common/types.tsp";
 
 using TypeSpec.OpenAPI;
-using ANcpLua.OtelConventions.Common;
+using Qyl.Api.Contracts.Common;
 
-namespace ANcpLua.OtelConventions.Domains.Observe.Session;
+namespace Qyl.Api.Contracts.Domains.Observe.Session;
 
 // =============================================================================
 // Session Attributes
@@ -19,11 +19,11 @@ namespace ANcpLua.OtelConventions.Domains.Observe.Session;
 @doc("Session span/event attributes")
 model SessionAttributes {
   @doc("Session ID")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Session.Id)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Session.Id)
   id: SessionId;
 
   @doc("Previous session ID (for session continuity)")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Session.PreviousId)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Session.PreviousId)
   previousId?: SessionId;
 }
 
@@ -38,7 +38,7 @@ model SessionEvent {
   eventName: SessionEventName;
 
   @doc("Session ID")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Session.Id)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Session.Id)
   sessionId: SessionId;
 
   @doc("Event timestamp")
@@ -68,11 +68,11 @@ enum SessionEventName {
 model SessionEntity {
   @doc("Session ID")
   @key
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.Session.Id)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Session.Id)
   sessionId: SessionId;
 
   @doc("User ID (if authenticated)")
-  @encodedName("application/json", ANcpLua.OtelConventions.OTel.Keys.User.Id)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.User.Id)
   userId?: UserId;
 
   @doc("Session start time")

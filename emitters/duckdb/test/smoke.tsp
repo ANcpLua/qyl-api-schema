@@ -1,6 +1,6 @@
 import "@ancplua/typespec-emit-duckdb";
 
-using ANcpLua.OtelConventions.Emit.DuckDb;
+using Qyl.Api.Schema.Emit.DuckDb;
 
 @duckdbTable("spans")
 model SpanRow {

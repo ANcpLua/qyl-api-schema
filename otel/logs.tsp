@@ -12,11 +12,11 @@ import "./resource.tsp";
 
 using TypeSpec.Http;
 using TypeSpec.OpenAPI;
-using ANcpLua.OtelConventions.Common;
-using ANcpLua.OtelConventions.OTel.Enums;
-using ANcpLua.OtelConventions.OTel.Resource;
+using Qyl.Api.Contracts.Common;
+using Qyl.Api.Contracts.OTel.Enums;
+using Qyl.Api.Contracts.OTel.Resource;
 
-namespace ANcpLua.OtelConventions.OTel.Logs;
+namespace Qyl.Api.Contracts.OTel.Logs;
 
 // =============================================================================
 // Log Record Model
@@ -62,7 +62,7 @@ model LogRecord {
   spanId?: SpanId;
 
   @doc("Resource describing the entity that produced this log")
-  resource: ANcpLua.OtelConventions.OTel.Resource.Resource;
+  resource: Qyl.Api.Contracts.OTel.Resource.Resource;
 
   @doc("Instrumentation scope")
   @encodedName("application/json", "instrumentation_scope")

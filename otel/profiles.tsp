@@ -14,11 +14,11 @@ import "./resource.tsp";
 
 using TypeSpec.Http;
 using TypeSpec.OpenAPI;
-using ANcpLua.OtelConventions.Common;
-using ANcpLua.OtelConventions.OTel.Enums;
-using ANcpLua.OtelConventions.OTel.Resource;
+using Qyl.Api.Contracts.Common;
+using Qyl.Api.Contracts.OTel.Enums;
+using Qyl.Api.Contracts.OTel.Resource;
 
-namespace ANcpLua.OtelConventions.OTel.Profiles;
+namespace Qyl.Api.Contracts.OTel.Profiles;
 
 // =============================================================================
 // Profile Model
@@ -69,7 +69,7 @@ model Profile {
   droppedAttributesCount?: Count;
 
   @doc("Resource describing the entity that produced this profile")
-  resource: ANcpLua.OtelConventions.OTel.Resource.Resource;
+  resource: Qyl.Api.Contracts.OTel.Resource.Resource;
 
   @doc("Instrumentation scope")
   @encodedName("application/json", "instrumentation_scope")

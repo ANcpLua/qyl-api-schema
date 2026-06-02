@@ -1,6 +1,6 @@
 {
   "name": "@o-ancpplua/otel-conventions-api",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "TypeSpec library projecting OpenTelemetry semantic conventions into a reusable API surface. Distributed under the ANcpLua namespace via GitHub Packages; not an official OpenTelemetry artifact.",
   "license": "Apache-2.0",
   "repository": {

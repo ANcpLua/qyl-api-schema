@@ -27,6 +27,17 @@ The split keeps the upstream contribution clean — `typespec-otel-semconv` coul
 
 Direction is one-way: this repo never regenerates from YAML. Only the generator touches Weaver and the upstream model.
 
+## Package identities
+
+This repo publishes two lockstep artifacts from the same `package.json` version:
+
+| Ecosystem | Package | Registry | Consumer |
+| --- | --- | --- | --- |
+| TypeSpec/npm | `@o-ancpplua/otel-conventions-api` | GitHub Packages npm (`https://npm.pkg.github.com`) | TypeSpec projects importing the qyl API surface |
+| .NET/NuGet | `ANcpLua.OtelConventions.Api` | GitHub Packages NuGet (`https://nuget.pkg.github.com/O-ANcppLua/index.json`) | qyl C# projects consuming emitted contract POCOs |
+
+qyl references the NuGet package. The npm package is still the source contract package; the NuGet package is emitted from it during pack/publish.
+
 ## Install
 
 Add `.npmrc` to your project root pointing the `@o-ancpplua` scope at GitHub Packages:

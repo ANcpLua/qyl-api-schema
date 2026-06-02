@@ -14,7 +14,7 @@
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
 
     <PackageId>ANcpLua.OtelConventions.Api</PackageId>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Authors>ancplua</Authors>
     <Description>Generated C# contract types (requests, responses, enums) for the ANcpLua OpenTelemetry conventions API surface, emitted from the @o-ancpplua/otel-conventions-api TypeSpec contract.</Description>
     <PackageTags>opentelemetry;semantic-conventions;contracts;typespec</PackageTags>

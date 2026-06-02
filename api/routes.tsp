@@ -87,6 +87,99 @@ enum HealthStatus {
   unhealthy: "unhealthy",
 }
 
+@doc("Minimal error response used by OTLP ingestion endpoints before RFC 7807 problem details are available on those transport-compatible routes.")
+model ErrorResponse {
+  @doc("Stable error summary.")
+  error: string;
+
+  @doc("Optional human-readable details.")
+  message?: string;
+}
+
+@doc("Result of clearing telemetry data from the local collector store.")
+model ClearTelemetryResponse {
+  @doc("Deleted span row count.")
+  spansDeleted: int32;
+
+  @doc("Deleted log row count.")
+  logsDeleted: int32;
+
+  @doc("Deleted profile row count.")
+  profilesDeleted: int32;
+
+  @doc("Deleted session row count.")
+  sessionsDeleted: int32;
+
+  @doc("Deleted console row count.")
+  consoleCleared: int32;
+
+  @doc("Cleared signal type.")
+  type: string;
+}
+
+@doc("Collector metadata response.")
+model MetaResponse {
+  @doc("Collector informational version.")
+  version: string;
+
+  @doc("Runtime identifier.")
+  runtime: string;
+
+  @doc("Build metadata.")
+  build: MetaBuild;
+
+  @doc("Enabled collector capabilities.")
+  capabilities: MetaCapabilities;
+
+  @doc("Runtime status.")
+  status: MetaStatus;
+
+  @doc("Local endpoint links.")
+  links: MetaLinks;
+
+  @doc("Local listener ports.")
+  ports: MetaPorts;
+}
+
+@doc("Collector build metadata.")
+model MetaBuild {
+  commit?: string;
+  informationalVersion?: string;
+  dashboardBuildId?: string;
+  dashboardEntryAsset?: string;
+  dashboardBuiltAtUtc?: string;
+}
+
+@doc("Collector capability flags.")
+model MetaCapabilities {
+  tracing: boolean;
+  grpc: boolean;
+  genAi: boolean;
+  profiles: boolean;
+  copilot: boolean;
+  embeddedDashboard: boolean;
+}
+
+@doc("Collector runtime status.")
+model MetaStatus {
+  grpcEnabled: boolean;
+  authMode: string;
+}
+
+@doc("Collector local links.")
+model MetaLinks {
+  dashboard?: string;
+  otlpHttp?: string;
+  otlpGrpc?: string;
+}
+
+@doc("Collector local ports.")
+model MetaPorts {
+  http: int32;
+  grpc: int32;
+  otlpHttp: int32;
+}
+
 // =============================================================================
 // Traces API
 // =============================================================================

@@ -111,16 +111,20 @@ function renderModel(program: Program, model: Model, emittedName: string): strin
 }
 
 function renderEnum(_program: Program, enm: Enum): string {
-  // Always emit as real C# enum. Static-const-string classes can't be used as property types
-  // (CS0722), and modern System.Text.Json handles string↔enum with JsonStringEnumConverter.
-  // Numeric member values are preserved; string member values are discarded — JSON emits the
-  // C# member name via JsonStringEnumConverter. If string-value preservation is needed in a
-  // specific case, @csharpEnum can still tune behavior, but the default is real enum.
-  const members = [...enm.members.values()].map((m) => {
+  const enumMembers = [...enm.members.values()];
+  const usesStringValues = enumMembers.some((m) => typeof m.value !== "number");
+  const converter = usesStringValues
+    ? `[JsonConverter(typeof(JsonStringEnumConverter<${enm.name}>))]\n`
+    : "";
+  const members = enumMembers.map((m) => {
+    const wireValue = typeof m.value === "string" ? m.value : m.name;
+    const nameAttribute = usesStringValues
+      ? `    [JsonStringEnumMemberName("${escapeCsharpString(wireValue)}")]\n`
+      : "";
     const valueSuffix = typeof m.value === "number" ? ` = ${m.value}` : "";
-    return `    ${pascal(m.name)}${valueSuffix}`;
+    return `${nameAttribute}    ${pascal(m.name)}${valueSuffix}`;
   }).join(",\n");
-  return `public enum ${enm.name}\n{\n${members}\n}\n`;
+  return `${converter}public enum ${enm.name}\n{\n${members}\n}\n`;
 }
 
 function pascal(s: string): string {

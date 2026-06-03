@@ -87,15 +87,6 @@ enum HealthStatus {
   unhealthy: "unhealthy",
 }
 
-@doc("Minimal error response used by OTLP ingestion endpoints before RFC 7807 problem details are available on those transport-compatible routes.")
-model ErrorResponse {
-  @doc("Stable error summary.")
-  error: string;
-
-  @doc("Optional human-readable details.")
-  message?: string;
-}
-
 @doc("Result of clearing telemetry data from the local collector store.")
 model ClearTelemetryResponse {
   @doc("Deleted span row count.")

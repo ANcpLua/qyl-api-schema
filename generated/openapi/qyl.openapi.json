@@ -5495,16 +5495,6 @@
         "description": "List sessions",
         "parameters": [
           {
-            "name": "userId",
-            "in": "query",
-            "required": false,
-            "description": "User ID filter",
-            "schema": {
-              "$ref": "#/components/schemas/Common.UserId"
-            },
-            "explode": false
-          },
-          {
             "name": "isActive",
             "in": "query",
             "required": false,
@@ -10725,77 +10715,6 @@
         },
         "description": "Session client information"
       },
-      "Domains.Observe.Session.SessionCountryStats": {
-        "type": "object",
-        "required": [
-          "country_code",
-          "country_name",
-          "count",
-          "percentage"
-        ],
-        "properties": {
-          "country_code": {
-            "type": "string",
-            "description": "Country code"
-          },
-          "country_name": {
-            "type": "string",
-            "description": "Country name"
-          },
-          "count": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.Count"
-              }
-            ],
-            "description": "Session count"
-          },
-          "percentage": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.Percentage"
-              }
-            ],
-            "description": "Percentage of total"
-          }
-        },
-        "description": "Session stats by country"
-      },
-      "Domains.Observe.Session.SessionDeviceStats": {
-        "type": "object",
-        "required": [
-          "device_type",
-          "count",
-          "percentage"
-        ],
-        "properties": {
-          "device_type": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Domains.Observe.Session.DeviceType"
-              }
-            ],
-            "description": "Device type"
-          },
-          "count": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.Count"
-              }
-            ],
-            "description": "Session count"
-          },
-          "percentage": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.Percentage"
-              }
-            ],
-            "description": "Percentage of total"
-          }
-        },
-        "description": "Session stats by device type"
-      },
       "Domains.Observe.Session.SessionEntity": {
         "type": "object",
         "required": [
@@ -11003,7 +10922,6 @@
         "required": [
           "active_sessions",
           "total_sessions",
-          "unique_users",
           "avg_duration_ms",
           "sessions_with_errors",
           "sessions_with_genai",
@@ -11025,14 +10943,6 @@
               }
             ],
             "description": "Total sessions in time range"
-          },
-          "unique_users": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.Count"
-              }
-            ],
-            "description": "Unique users in time range"
           },
           "avg_duration_ms": {
             "type": "number",
@@ -11062,20 +10972,6 @@
               }
             ],
             "description": "Bounce rate (single-page sessions)"
-          },
-          "by_device_type": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Domains.Observe.Session.SessionDeviceStats"
-            },
-            "description": "Sessions by device type"
-          },
-          "by_country": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Domains.Observe.Session.SessionCountryStats"
-            },
-            "description": "Sessions by country"
           }
         },
         "description": "Aggregated session statistics"

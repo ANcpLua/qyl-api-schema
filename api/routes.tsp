@@ -495,7 +495,6 @@ interface SessionsApi {
   @doc("List sessions")
   @get
   list(
-    @query @doc("User ID filter") userId?: UserId,
     @query @doc("Is active filter") isActive?: boolean,
     @query @doc("Start time") startTime?: utcDateTime,
     @query @doc("End time") endTime?: utcDateTime,

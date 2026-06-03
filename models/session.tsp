@@ -256,10 +256,6 @@ model SessionStats {
   @encodedName("application/json", "total_sessions")
   totalSessions: Count;
 
-  @doc("Unique users in time range")
-  @encodedName("application/json", "unique_users")
-  uniqueUsers: Count;
-
   @doc("Average session duration in milliseconds")
   @encodedName("application/json", "avg_duration_ms")
   avgDurationMs: float64;
@@ -275,42 +271,4 @@ model SessionStats {
   @doc("Bounce rate (single-page sessions)")
   @encodedName("application/json", "bounce_rate")
   bounceRate: Ratio;
-
-  @doc("Sessions by device type")
-  @encodedName("application/json", "by_device_type")
-  byDeviceType?: SessionDeviceStats[];
-
-  @doc("Sessions by country")
-  @encodedName("application/json", "by_country")
-  byCountry?: SessionCountryStats[];
-}
-
-@doc("Session stats by device type")
-model SessionDeviceStats {
-  @doc("Device type")
-  @encodedName("application/json", "device_type")
-  deviceType: DeviceType;
-
-  @doc("Session count")
-  count: Count;
-
-  @doc("Percentage of total")
-  percentage: Percentage;
-}
-
-@doc("Session stats by country")
-model SessionCountryStats {
-  @doc("Country code")
-  @encodedName("application/json", "country_code")
-  countryCode: string;
-
-  @doc("Country name")
-  @encodedName("application/json", "country_name")
-  countryName: string;
-
-  @doc("Session count")
-  count: Count;
-
-  @doc("Percentage of total")
-  percentage: Percentage;
 }

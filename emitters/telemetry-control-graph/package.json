@@ -1,7 +1,7 @@
 {
-  "name": "@ancplua/typespec-emit-csharp",
+  "name": "@qyl/telemetry-control-graph",
   "version": "0.1.0",
-  "description": "ANcpLua TypeSpec emitter for C# records/enums with @csharpNamespace routing",
+  "description": "Focused TypeSpec emitter for qyl Telemetry Control Graph contracts, verifier slices, JSON Schema, YAML review artifacts, and conformance plans.",
   "type": "module",
   "main": "dist/index.js",
   "tspMain": "lib/main.tsp",
@@ -14,14 +14,19 @@
   "scripts": {
     "build": "tsc -p .",
     "prepare": "tsc -p .",
-    "test": "echo \"(smoke tested via  compile)\""
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "peerDependencies": {
-    "@typespec/compiler": "^1.13.0-dev"
+    "@typespec/compiler": "^1.13.0"
+  },
+  "dependencies": {
+    "yaml": "2.8.2"
   },
   "devDependencies": {
     "@types/node": "25.9.1",
     "@typespec/compiler": "1.13.0",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "vitest": "4.1.7"
   }
 }

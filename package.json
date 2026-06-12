@@ -50,7 +50,7 @@
     "registry": "https://npm.pkg.github.com"
   },
   "scripts": {
-    "build:emitters": "tsc -p emitters/csharp && tsc -p emitters/ts-types && tsc -p emitters/otelconventions-lint",
+    "build:emitters": "tsc -p emitters/telemetry-control-graph && tsc -p emitters/csharp && tsc -p emitters/ts-types && tsc -p emitters/otelconventions-lint",
     "compile": "npm run build:emitters && tsp compile main.tsp",
     "watch": "tsp compile main.tsp --watch",
     "format": "tsp format **/*.tsp",
@@ -58,7 +58,7 @@
     "lint:public": "tsp compile index.tsp --no-emit --warn-as-error"
   },
   "peerDependencies": {
-    "@typespec/compiler": "^1.11.0 || >=1.12.0-dev.0"
+    "@typespec/compiler": "^1.13.0 || >=1.13.0-dev.0"
   },
   "devDependencies": {
     "@ancplua/typespec-emit-csharp": "file:./emitters/csharp",
@@ -66,21 +66,22 @@
     "@ancplua/typespec-otel-semconv": "1.41.0-2",
     "@ancplua/typespec-otelconventions-lint": "file:./emitters/otelconventions-lint",
     "@types/node": "25.9.1",
-    "@typespec/compiler": "1.12.0",
-    "@typespec/events": "0.82.0",
-    "@typespec/http": "1.12.0",
-    "@typespec/json-schema": "1.12.0",
-    "@typespec/openapi": "1.12.0",
-    "@typespec/openapi3": "1.12.0",
-    "@typespec/rest": "0.82.0",
-    "@typespec/sse": "0.82.0",
-    "@typespec/streams": "0.82.0",
-    "@typespec/versioning": "0.82.0",
+    "@typespec/compiler": "1.13.0",
+    "@typespec/events": "0.83.0",
+    "@typespec/http": "1.13.0",
+    "@typespec/json-schema": "1.13.0",
+    "@typespec/openapi": "1.13.0",
+    "@typespec/openapi3": "1.13.0",
+    "@typespec/rest": "0.83.0",
+    "@typespec/sse": "0.83.0",
+    "@typespec/streams": "0.83.0",
+    "@typespec/versioning": "0.83.0",
     "typescript": "6.0.3",
-    "vitest": "4.1.7"
+    "vitest": "4.1.7",
+    "@qyl/telemetry-control-graph": "file:./emitters/telemetry-control-graph"
   },
   "dependencies": {
-    "@azure-tools/typespec-azure-core": "^0.68.0-dev.5",
-    "@typespec/xml": "^0.82.0-dev.2"
+    "@azure-tools/typespec-azure-core": "^0.69.0",
+    "@typespec/xml": "^0.83.0"
   }
 }

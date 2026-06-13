@@ -1,5 +1,5 @@
 // =============================================================================
-// @o-ancpplua/qyl-api-schema — published entry point
+// @ancplua/qyl-api-schema — published entry point
 // =============================================================================
 // Consumer-facing barrel. Mirrors main.tsp minus local emit routing.
 // The local emitters depend on `file:` packages

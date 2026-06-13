@@ -16,9 +16,9 @@
     <PackageId>Qyl.Api.Contracts</PackageId>
     <Version>0.2.0</Version>
     <Authors>ancplua</Authors>
-    <Description>Generated C# request, response, enum, and model contract types for the qyl observability API, emitted from @o-ancpplua/qyl-api-schema.</Description>
+    <Description>Generated C# request, response, enum, and model contract types for the qyl observability API, emitted from @ancplua/qyl-api-schema.</Description>
     <PackageTags>qyl;observability;contracts;typespec</PackageTags>
-    <RepositoryUrl>https://github.com/O-ANcppLua/qyl-api-schema</RepositoryUrl>
+    <RepositoryUrl>https://github.com/ANcpLua/qyl-api-schema</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <IsPackable>true</IsPackable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

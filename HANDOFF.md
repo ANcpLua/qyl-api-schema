@@ -124,7 +124,7 @@ noted as a secondary follow-up, and the real architecture is different:
 
 - **Auflage 1 — one contract, one verifier, NO parallel world.** The generated verifier
   expectations MUST emit the *existing* conformance-plan wire format that
-  `qyl/internal/qyl.conformance` (repo `O-ANcppLua/qyl@9084b786`) already verifies and pins in
+  `qyl/internal/qyl.conformance` (repo `ANcpLua/qyl@9084b786`) already verifies and pins in
   tests. Exact shape: `{schema_version, graph_schema_version, services:[{service_name, profile_id,
   expected_signals:[{kind: span|metric|log, name, required_attributes, recommended_attributes,
   opt_in_attributes}]}]}`. Severity law: `declared_missing`/`undeclared_emitted` = error,

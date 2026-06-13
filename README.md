@@ -1,4 +1,4 @@
-# `@o-ancpplua/qyl-api-schema`
+# `@ancplua/qyl-api-schema`
 
 `qyl-api-schema` is the TypeSpec source of truth for qyl's public observability API.
 
@@ -17,7 +17,7 @@ open-telemetry/semantic-conventions @ v1.41.0
         |
         | TypeSpec import / lockstep key projection
         v
-@o-ancpplua/qyl-api-schema
+@ancplua/qyl-api-schema
         |
         | TypeSpec emit
         v
@@ -36,7 +36,7 @@ models, routes, and response contracts under `Qyl.Api.Contracts.*`.
 
 | Ecosystem | Package | Purpose |
 | --- | --- | --- |
-| TypeSpec/npm | `@o-ancpplua/qyl-api-schema` | Source schema for qyl API consumers and generators |
+| TypeSpec/npm | `@ancplua/qyl-api-schema` | Source schema for qyl API consumers and generators |
 | NuGet | `Qyl.Api.Contracts` | BCL-only generated C# DTOs for qyl services and consumers |
 
 Client packages are intentionally not committed here. Generate clients from the OpenAPI document

@@ -15,7 +15,7 @@ using static Nuke.Common.Tools.Git.GitTasks;
 using static Nuke.Common.Tools.Npm.NpmTasks;
 
 /// <summary>
-/// Build entry point for <c>@o-ancpplua/qyl-api-schema</c>.
+/// Build entry point for <c>@ancplua/qyl-api-schema</c>.
 ///
 /// Implements <see cref="IDomainConventionsApi"/> by wiring each declarative target
 /// to the existing npm scripts in <c>package.json</c> plus the lockstep / determinism
@@ -464,7 +464,7 @@ sealed class Build : NukeBuild, IDomainConventionsApi
         });
 
     Target PublishContractsNuget => _ => _
-        .Description("Push the Qyl.Api.Contracts.<version>.nupkg from this pack to the O-ANcppLua GitHub Packages NuGet feed (uses GITHUB_TOKEN).")
+        .Description("Push the Qyl.Api.Contracts.<version>.nupkg from this pack to the ANcpLua GitHub Packages NuGet feed (uses GITHUB_TOKEN).")
         .DependsOn(PackContractsNuget)
         .Executes(() =>
         {
@@ -477,7 +477,7 @@ sealed class Build : NukeBuild, IDomainConventionsApi
                 throw new InvalidOperationException($"PublishContractsNuget: expected package '{package}' not found — did PackContractsNuget run?");
             DotNetNuGetPush(s => s
                 .SetTargetPath(package)
-                .SetSource("https://nuget.pkg.github.com/O-ANcppLua/index.json")
+                .SetSource("https://nuget.pkg.github.com/ANcpLua/index.json")
                 .SetApiKey(token)
                 .EnableSkipDuplicate());
         });

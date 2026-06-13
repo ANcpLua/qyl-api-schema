@@ -1,7 +1,7 @@
 // =============================================================================
 // otel/otel-conventions.tsp — OTel core barrel
 // =============================================================================
-// Exposed via the public subpath `@o-ancpplua/qyl-api-schema/otel` for
+// Exposed via the public subpath `@ancplua/qyl-api-schema/otel` for
 // consumers that want only the OpenTelemetry-shaped signal models without the
 // rest of the qyl API surface.
 // =============================================================================

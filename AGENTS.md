@@ -1,6 +1,6 @@
 # qyl-api-schema — Agent Notes
 
-This repo is qyl's API schema source of truth. It publishes `@o-ancpplua/qyl-api-schema`
+This repo is qyl's API schema source of truth. It publishes `@ancplua/qyl-api-schema`
 and emits the `Qyl.Api.Contracts` NuGet package.
 
 ## Architecture
@@ -34,7 +34,7 @@ projection. This repo is qyl-specific. Keep those identities separate.
 
 ## Naming
 
-- npm package: `@o-ancpplua/qyl-api-schema`
+- npm package: `@ancplua/qyl-api-schema`
 - NuGet package: `Qyl.Api.Contracts`
 - qyl API namespaces: `Qyl.Api.Contracts.*`
 - generic semconv key namespace: `ANcpLua.OpenTelemetry.SemanticConventions.Keys.*`

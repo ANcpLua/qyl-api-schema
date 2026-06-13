@@ -153,6 +153,59 @@ already exist) ✓; `endpoint_env_var` IS the indirect collector ref ✓; hand-b
 (stricter `additionalProperties:false`, drift caught by the wire-roundtrip test; model-derivation
 is the right *later* step) ✓.
 
+## 🔥 0.4.0 spec reality-check (verified 2026-06-13 — READ BEFORE executing the night spec)
+
+The binding 0.4.0 spec is **staler than it reads**. Verified against the actual repo:
+
+1. **The named SSOT file does NOT exist.** Spec says SSOT = `docs/otel-dotnet-auto-60-contract-items.yaml`
+   → `find` returns nothing. The REAL SSOT is a **two-file split** that `tools/generate-contract-artifacts.py`
+   actually reads (lines 18–20):
+   - `docs/contracts/otel-dotnet-auto-60.upstream.yaml` (upstream contract, **114 `id:` entries**)
+   - `docs/contracts/qyl-aot-ownership.yaml` (ownership overlay)
+   - → resolved into `docs/generated/qyl-aot-contract.resolved.yaml` (+ `qyl-aot-contract.schema.json`)
+   **Anyone (Codex!) following the spec literally hunts a phantom file.** Use the two real paths.
+2. **Auflage 2 + 3 are ALREADY IMPLEMENTED.** `call_site_visibility` AND `payload_access` already
+   appear in `generate-contract-artifacts.py`, `qyl-aot-ownership.yaml`, `qyl-aot-contract.resolved.yaml`,
+   and `qyl-aot-contract.schema.json`. The "two new matrix fields" the night-DoD lists as TODO exist.
+   Re-verify before redoing — most of that classification work looks done.
+3. **There IS already a generated schema** (`docs/generated/qyl-aot-contract.schema.json`). The
+   "hand-built schema to delete" framing may be partly obsolete — check current state, don't assume.
+
+→ **Action for the executor:** diff the spec against `git log` + the actual `docs/contracts/` and
+`docs/generated/` trees FIRST. Treat the spec as intent, the repo as truth.
+
+## Verified cross-repo contract chain (the structural answer to "what is subset/redundant")
+
+```
+docs/contracts/otel-dotnet-auto-60.upstream.yaml  +  qyl-aot-ownership.yaml      [SSOT, autoinstr repo]
+        │  generate-contract-artifacts.py
+        ▼
+docs/generated/qyl-aot-contract.resolved.yaml + .schema.json
+docs/qyl-aot-autoinstrumentation.conformance-plan.json   ── subject: 13 instrumentation DEMO services
+
+qyl-api-schema  models/control-graph.tsp
+        │  @qyl/telemetry-control-graph (TypeSpec emitter)
+        ▼
+generated/control-graph/conformance-plan.json            ── subject: qyl PRODUCT services (collector, dashboard)
+        │  (same wire family, schema_version "1")
+        ▼
+qyl/internal/qyl.conformance/  ConformancePlan.cs  ──────  C# wire model, doc-comment: "as emitted by
+        │  ConformanceVerifier.Verify(plan, observed)        @qyl/telemetry-control-graph" — schema-agnostic diff engine
+        ▼
+ConformanceReport (declared vs observed)
+
+Qyl.OpenTelemetry.SemanticConventions (+ .Incubating)  ── consumed by autoinstr src as the typed
+        │  attribute-key vocabulary (GenAiAttributes, …)      attribute vocab (verified .csproj refs)
+        ▼
+autoinstrumentation interceptors emit those keys
+```
+
+**Ownership (verified, no duplication):** TypeSpec emitter = ONE place that owns the control-graph
+→ conformance-plan shape. The two conformance-plan.json files = same wire family, **disjoint subjects**
+(product vs instrumentation-demo). semconv repo = attribute-key vocabulary (pulled, never redefined).
+qyl.conformance = the single diff engine, typed against the TypeSpec wire. The only hand-repeated thing
+is the plan *shape* across emitter/Python/C# — and the binding fix is YAML-SSOT-generate (above), not merge.
+
 ## Boundary (confirmed correct by the prior agent, restated)
 
 The TypeSpec emitter lives **only** here in `qyl-api-schema`. Do **not** rebuild a second

@@ -7,10 +7,7 @@
        EmitCSharp / PackContractsNuget Nuke targets) before packing. -->
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- TargetFramework / LangVersion / Nullable / ImplicitUsings inherited from ../Directory.Build.props -->
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
 
     <PackageId>Qyl.Api.Contracts</PackageId>

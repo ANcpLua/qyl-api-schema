@@ -1,12 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <!-- TargetFramework / LangVersion / Nullable / ImplicitUsings inherited from ../Directory.Build.props -->
     <OutputType>Exe</OutputType>
     <RootNamespace></RootNamespace>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <LangVersion>latest</LangVersion>
 
     <!--
       CS0649: Field is never assigned (Nuke parameter fields are injected by reflection).

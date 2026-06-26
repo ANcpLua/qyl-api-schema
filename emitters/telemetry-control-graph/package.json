@@ -12,9 +12,7 @@
     }
   },
   "scripts": {
-    "build": "tsc -p .",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "build": "tsc -p ."
   },
   "peerDependencies": {
     "@typespec/compiler": "^1.13.0"
@@ -25,7 +23,6 @@
   "devDependencies": {
     "@types/node": "25.9.1",
     "@typespec/compiler": "1.13.0",
-    "typescript": "6.0.3",
-    "vitest": "4.1.7"
+    "typescript": "6.0.3"
   }
 }

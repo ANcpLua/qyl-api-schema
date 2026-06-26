@@ -13,7 +13,6 @@
   },
   "scripts": {
     "build": "tsc -p .",
-    "prepare": "tsc -p .",
     "test": "echo \"(smoke tested via  compile)\""
   },
   "peerDependencies": {

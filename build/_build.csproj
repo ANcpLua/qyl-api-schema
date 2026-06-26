@@ -21,7 +21,7 @@
 
   <ItemGroup>
     <PackageReference Include="Nuke.Common" Version="10.1.0" />
-    <PackageReference Include="Qyl.OpenTelemetry.SemanticConventions.Nuke" Version="3.0.1" />
+    <PackageReference Include="Qyl.OpenTelemetry.SemanticConventions.Nuke" Version="3.0.2" />
   </ItemGroup>
 
   <!--

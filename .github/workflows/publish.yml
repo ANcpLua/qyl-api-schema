@@ -1,4 +1,21 @@
-name: Publish to GitHub Packages
+name: Publish (npmjs.org + nuget.org)
+
+# Synced public-registry release via OIDC trusted publishing — NO stored secrets.
+#   npm   @ancplua/qyl-api-schema -> registry.npmjs.org  (npm trusted publishing + provenance)
+#   nuget Qyl.Api.Contracts       -> nuget.org           (NuGet/login OIDC -> 1-hour key)
+#
+# All-or-nothing: the NuGet is packed + validated BEFORE either immutable publish, so a pack
+# failure aborts with nothing pushed. Then npm (immutable) -> nuget (immutable, --skip-duplicate
+# so a re-run after a partial failure is an idempotent no-op).
+#
+# Internal @ancplua/* build deps (e.g. @ancplua/typespec-otel-semconv) still resolve from GitHub
+# Packages at install (setup-node + the committed .npmrc scope map). Only THIS package publishes
+# to npmjs — routed by package.json `publishConfig.registry`, not the install scope map.
+#
+# One-time human setup before this can succeed (see .claude/TASK.md):
+#   - bootstrap-publish @ancplua/qyl-api-schema to npmjs once (it is 404 there today), then
+#   - create the npmjs + nuget.org trusted-publisher policies (Workflow File: publish.yml,
+#     Environment: release).
 
 on:
   release:
@@ -12,8 +29,8 @@ on:
 
 permissions:
   contents: read
-  packages: write     # required to publish to GitHub Packages
-  id-token: write     # required for npm provenance attestations
+  packages: read      # read internal @ancplua/* deps from GitHub Packages at install
+  id-token: write     # OIDC for BOTH npm trusted publishing/provenance AND NuGet/login
 
 concurrency:
   group: publish-${{ github.ref }}
@@ -22,19 +39,21 @@ concurrency:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    environment: github-packages
+    environment: release   # must match the npmjs trusted-publisher AND the nuget.org policy Environment
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
+      # Install side: internal @ancplua/* deps resolve from GitHub Packages (.npmrc scope map).
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '24'
-          # GitHub Packages npm registry — scope @ancplua matches this repo's
-          # GitHub org (ANcpLua, lowercased). Auth uses GITHUB_TOKEN below;
-          # no NPM secret needs to live in repo settings.
           registry-url: 'https://npm.pkg.github.com'
           scope: '@ancplua'
           always-auth: true
+
+      # Trusted publishing to npmjs needs npm >= 11.5.1; Node 24 bundles an older npm.
+      - name: Upgrade npm for trusted publishing
+        run: npm install -g npm@latest
 
       - uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5
         with:
@@ -50,6 +69,8 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build local emitters
         run: npm run build:emitters
@@ -82,22 +103,37 @@ jobs:
           echo "NPM_DIST_TAG=$dist_tag" >> "$GITHUB_ENV"
           echo "Resolved dist-tag: $dist_tag"
 
-      # Pack + validate the C# contracts NuGet BEFORE the npm publish: npm versions are
-      # immutable, so a pack/restore failure after npm publish would leave a release with only
-      # one of the two lockstepped artifacts. Packing first lets the whole release fail cleanly.
-      - name: Pack C# contracts NuGet (validate before npm publish)
+      # Pack + validate the NuGet BEFORE any publish: both registries are immutable, so a pack
+      # failure must abort the whole release with nothing pushed. Output:
+      # Artifacts/nuget/Qyl.Api.Contracts.<version>.nupkg
+      - name: Pack C# contracts NuGet (validate before any publish)
         run: ./build.sh PackContractsNuget
 
-      - name: Publish to GitHub Packages with provenance
+      # --- Publish (both immutable; packs already validated) ---
+      # npm -> npmjs.org via OIDC trusted publishing. No NODE_AUTH_TOKEN: npm mints a short-lived
+      # credential from the OIDC token. publishConfig.registry routes THIS package to npmjs.
+      - name: Publish npm to npmjs.org (OIDC + provenance)
         run: npm publish --access public --provenance --tag "$NPM_DIST_TAG"
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_CONFIG_PROVENANCE: 'true'
 
-      # Push the NuGet packed above (--skip avoids re-running the pack chain). NuGet has no
-      # dist-tags: prereleases are encoded in the version and consumers opt in explicitly, so
-      # there is no latest/next channel to gate here.
-      - name: Push C# contracts NuGet
-        run: ./build.sh PublishContractsNuget --skip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # nuget -> nuget.org via OIDC. Request the login immediately before the push (key lives 1 hour).
+      - name: Authenticate to NuGet (OIDC)
+        id: nuget-login
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1
+        with:
+          user: ANcpLua
+
+      - name: Push C# contracts NuGet to nuget.org
+        run: |
+          shopt -s nullglob
+          pushed=0
+          for pkg in Artifacts/nuget/*.nupkg; do
+            dotnet nuget push "$pkg" \
+              --source https://api.nuget.org/v3/index.json \
+              --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}" \
+              --skip-duplicate
+            pushed=1
+          done
+          if [ "$pushed" = "0" ]; then
+            echo "::error::No .nupkg in Artifacts/nuget — PackContractsNuget produced nothing to push."
+            exit 1
+          fi

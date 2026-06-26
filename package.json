@@ -47,7 +47,7 @@
   "publishConfig": {
     "access": "public",
     "provenance": true,
-    "registry": "https://npm.pkg.github.com"
+    "registry": "https://registry.npmjs.org"
   },
   "scripts": {
     "build:emitters": "tsc -p emitters/telemetry-control-graph && tsc -p emitters/csharp && tsc -p emitters/ts-types && tsc -p emitters/otelconventions-lint",

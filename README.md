@@ -84,6 +84,10 @@ npm run compile
 
 ## Publishing
 
-During normal operation, GitHub Releases publish npm and NuGet artifacts in lockstep. When GitHub
-Actions is unavailable, publish manually from locally verified artifacts using package tokens passed
-through environment variables. Never print tokens and never commit credentials.
+Publishing is fully automated via GitHub Actions OIDC **trusted publishing** — no stored secrets, no
+API keys. Publish a GitHub Release whose tag is `vMAJOR.MINOR.PATCH[-prerelease]`; `publish.yml` then,
+all-or-nothing, packs and validates the artifacts, stamps that single tag-derived version onto both,
+pushes `Qyl.Api.Contracts` to nuget.org (NuGet/login OIDC) and publishes `@ancplua/qyl-api-schema` to
+npmjs.org (npm trusted publishing + provenance). NuGet pushes first (idempotent) and npm last
+(immutable), so a partial failure re-runs cleanly. See [VERSIONING.md](VERSIONING.md) for how the
+version is derived from the tag. There are no long-lived publish tokens to manage or rotate.

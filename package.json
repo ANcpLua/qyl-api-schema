@@ -51,6 +51,7 @@
   },
   "scripts": {
     "build:emitters": "tsc -p emitters/telemetry-control-graph && tsc -p emitters/csharp && tsc -p emitters/ts-types && tsc -p emitters/otelconventions-lint",
+    "prepare": "npm run build:emitters",
     "compile": "npm run build:emitters && tsp compile main.tsp",
     "watch": "tsp compile main.tsp --watch",
     "format": "tsp format **/*.tsp",

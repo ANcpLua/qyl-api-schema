@@ -2,6 +2,16 @@
 
 This repository uses `@typespec/versioning` to record when schema elements were added or removed across qyl API versions and OpenTelemetry compatibility-model pins. The annotations live in TypeSpec so schema evolution is reviewable at the contract source.
 
+## Release versioning (the package version)
+
+Separate from the `@typespec/versioning` schema annotations below: the published **package** version
+(npm `@ancplua/qyl-api-schema` and NuGet `Qyl.Api.Contracts`) is **CI-owned and tag-derived** — no
+hand-bumped version lives in any committed file. To cut a release, publish a GitHub Release whose tag
+is `vMAJOR.MINOR.PATCH[-prerelease]`; `publish.yml` strips the leading `v` and stamps that single
+version onto both npm and NuGet (no build metadata — npm rejects it and NuGet strips it), so the two
+registries are lockstep by construction. The committed `package.json` version is the non-authoritative
+placeholder `0.0.0-development`, and `packaging/Qyl.Api.Contracts.csproj` carries no `<Version>`.
+
 ## Where it is used
 
 - `models/genai.tsp` for GenAI semantic-convention shaped models

@@ -11,7 +11,9 @@
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
 
     <PackageId>Qyl.Api.Contracts</PackageId>
-    <Version>0.2.1</Version>
+    <!-- No <Version> here: the release version is the git tag, injected at pack time via
+         `dotnet pack -p:Version=...` (Build.cs NugetPackageVersion reads the CI-stamped package.json).
+         A raw `dotnet pack` outside the release workflow defaults to 1.0.0 (local-only, never published). -->
     <Authors>ancplua</Authors>
     <Description>Generated C# request, response, enum, and model contract types for the qyl observability API, emitted from @ancplua/qyl-api-schema.</Description>
     <PackageTags>qyl;observability;contracts;typespec</PackageTags>

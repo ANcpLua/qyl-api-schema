@@ -1,27 +1,31 @@
 name: Publish (npmjs.org + nuget.org)
 
-# Synced public-registry release via OIDC trusted publishing — NO stored secrets.
+# Synced public-registry release via OIDC trusted publishing — NO stored secrets, NO hand-bumped
+# versions. The git tag is the single source of version truth: "Resolve release version" stamps both
+# npm and NuGet from it, so committed files carry no authoritative version.
 #   npm   @ancplua/qyl-api-schema -> registry.npmjs.org  (npm trusted publishing + provenance)
 #   nuget Qyl.Api.Contracts       -> nuget.org           (NuGet/login OIDC -> 1-hour key)
 #
-# All-or-nothing: the NuGet is packed + validated BEFORE either immutable publish, so a pack
-# failure aborts with nothing pushed. Then npm (immutable) -> nuget (immutable, --skip-duplicate
-# so a re-run after a partial failure is an idempotent no-op).
+# All-or-nothing: the NuGet is packed + validated BEFORE either publish; then nuget pushes first
+# (idempotent via --skip-duplicate) and npm publishes last (immutable, non-idempotent), so a partial
+# failure re-runs cleanly without stranding either registry.
 #
-# Internal @ancplua/* build deps (e.g. @ancplua/typespec-otel-semconv) still resolve from GitHub
-# Packages at install (setup-node + the committed .npmrc scope map). Only THIS package publishes
-# to npmjs — routed by package.json `publishConfig.registry`, not the install scope map.
+# Routing: the committed .npmrc maps @ancplua -> GitHub Packages for INSTALL of internal build deps;
+# that scope map wins over publishConfig.registry for scoped publishes, so THIS package is forced to
+# npmjs by the explicit --@ancplua:registry flag on the npm publish step (NOT publishConfig.registry).
 #
-# One-time human setup before this can succeed (see .claude/TASK.md):
-#   - bootstrap-publish @ancplua/qyl-api-schema to npmjs once (it is 404 there today), then
-#   - create the npmjs + nuget.org trusted-publisher policies (Workflow File: publish.yml,
-#     Environment: release).
+# Setup is complete: @ancplua/qyl-api-schema is bootstrapped on npmjs and trusted-publisher policies
+# exist on both registries (Workflow File: publish.yml, Environment: release). Runs unattended on a
+# published GitHub Release whose tag is vMAJOR.MINOR.PATCH[-prerelease].
 
 on:
   release:
     types: [published]
   workflow_dispatch:
     inputs:
+      version:
+        description: 'Release version to publish, e.g. 0.3.0 or v0.3.0 (required for manual runs; release events derive it from the tag).'
+        required: true
       tag:
         description: 'npm dist-tag (alphanumerics, dot, underscore, hyphen). Leave blank to auto-pick (latest for stable releases, next for prereleases).'
         required: false
@@ -102,6 +106,36 @@ jobs:
           fi
           echo "NPM_DIST_TAG=$dist_tag" >> "$GITHUB_ENV"
           echo "Resolved dist-tag: $dist_tag"
+
+      # The git tag is the single source of version truth: stamp package.json so npm publishes that
+      # version AND Build.cs (which reads package.json at pack time) stamps the same version onto the
+      # NuGet — lockstep by construction. Validate to NuGet- AND npm-compatible SemVer (no build
+      # metadata, which npm rejects and NuGet strips).
+      - name: Resolve release version (from tag)
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          DISPATCH_VERSION: ${{ inputs.version }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "release" ]; then
+            ver="${RELEASE_TAG#v}"
+          else
+            ver="${DISPATCH_VERSION#v}"
+          fi
+          if [ -z "$ver" ]; then
+            echo "::error::No version to publish — a release needs a tag, a manual run needs the 'version' input."
+            exit 1
+          fi
+          # Strict SemVer (semver.org), minus build metadata (npm rejects it, NuGet strips it):
+          # no leading zeros in core/numeric ids, no empty or trailing prerelease identifiers.
+          if ! [[ "$ver" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-(0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(\.(0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*)?$ ]]; then
+            echo "::error::Version '$ver' is not strict MAJOR.MINOR.PATCH[-prerelease] with no build metadata (npm + NuGet must both accept it)."
+            exit 1
+          fi
+          npm version "$ver" --no-git-tag-version --allow-same-version
+          echo "Release version: $ver (npm + NuGet stamped from the git tag)"
 
       # Pack + validate the NuGet BEFORE any publish: both registries are immutable, so a pack
       # failure must abort the whole release with nothing pushed. Output:

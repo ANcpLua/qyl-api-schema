@@ -66,12 +66,13 @@ Repository `qyl-api-schema` · Workflow File `publish.yml` (filename only) · En
       win over the `.npmrc` @ancplua scope map (it routed to npm.pkg.github.com). `publish.yml` now passes
       `--@ancplua:registry=https://registry.npmjs.org` on the publish step.
 - [x] Confirmed npm user `ancplua` exists (0 pkgs, 0 orgs) → publishes under personal user scope, no org needed.
-- [ ] **(You)** authenticate to npmjs (user `ancplua`) — CLI `npm login` and/or browser sign-in for the policy page.
-- [ ] **(You)** authenticate to nuget.org (Sign in with Microsoft) for the policy page.
-- [ ] bootstrap-publish `@ancplua/qyl-api-schema` to npmjs once (command above; needs your auth/OTP).
-- [ ] create the npmjs + nuget.org trusted-publisher policies above.
-- [ ] Test-publish (bump 0.2.0 → 0.2.1 lockstep, cut release) to validate the OIDC path end-to-end.
-- [ ] On green: PR review→merge.
+- [x] Authenticated to npmjs (user `ancplua`, WebAuthn) and nuget.org (Sign in with Microsoft).
+- [x] **Bootstrap-published** `@ancplua/qyl-api-schema@0.2.0` to npmjs.org (web-2FA via PTY; registry 200, `+ @ancplua/qyl-api-schema@0.2.0`).
+- [x] **Created npmjs trusted-publisher**: `ANcpLua/qyl-api-schema` · `publish.yml` · env `release` · allow `npm publish`.
+- [x] **Created nuget.org trusted-publisher**: `Qyl.Api.Contracts` · owner `ANcpLua` · `ANcpLua/qyl-api-schema` · `publish.yml` · env `release` (Active, IDs pinned).
+- [x] Bumped 0.2.0 → 0.2.1 lockstep (package.json + package-lock + packaging/Qyl.Api.Contracts.csproj) — fresh version for the first OIDC release (npm 0.2.0 already taken by bootstrap; npm has no --skip-duplicate).
+- [ ] Cut release `v0.2.1` → validate the OIDC path end-to-end (npmjs + nuget.org, all-or-nothing).
+- [ ] On green: confirm both registries at 0.2.1; PR review→merge of the bump.
 
 ## Verification risks to watch on the first real publish
 

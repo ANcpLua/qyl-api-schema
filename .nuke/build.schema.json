@@ -30,13 +30,11 @@
         "CompileDomainSpec",
         "EmitAll",
         "EmitCSharp",
-        "EmitDuckDb",
         "EmitTsTypes",
         "LintConventions",
         "PackApiPackage",
         "PackContractsNuget",
         "PublishApiPackage",
-        "PublishContractsNuget",
         "RestoreTypeSpecDeps",
         "VerifyEmitDeterministic",
         "VerifyKeysLockstep",
@@ -114,6 +112,10 @@
   "allOf": [
     {
       "properties": {
+        "ApiPackageRegistry": {
+          "type": "string",
+          "description": "npm registry for PublishApiPackage (default: https://registry.npmjs.org)"
+        },
         "DomainSpecRoot": {
           "type": "string",
           "description": "Root directory of the downstream TypeSpec domain spec (default: RootDirectory)"

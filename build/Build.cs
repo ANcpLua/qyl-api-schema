@@ -365,43 +365,8 @@ sealed class Build : NukeBuild, IDomainConventionsApi
         });
 
     // ---------------------------------------------------------------------
-    // PublishApiPackage: npm publish with provenance, mirroring publish.yml dist-tag rules.
-    // ---------------------------------------------------------------------
-    Target IDomainConventionsApi.PublishApiPackage => _ => _
-        .Description("Run `npm publish --access public --provenance --tag <resolved>` using NPM_DIST_TAG (validated against ^[A-Za-z0-9._-]+$).")
-        .DependsOn(((IDomainConventionsApi)this).PackApiPackage)
-        .Executes(() =>
-        {
-            var spec = ((IDomainConventionsApi)this).DomainSpecRoot;
-            var distTag = ResolveNpmDistTag();
-            Log.Information("PublishApiPackage: resolved dist-tag '{Tag}'.", distTag);
-            NpmTasks.Npm(
-                $"publish --access public --provenance --tag {distTag}",
-                workingDirectory: spec);
-        });
-
-    static readonly Regex DistTagPattern = new(@"^[A-Za-z0-9._-]+$", RegexOptions.Compiled);
-
-    static string ResolveNpmDistTag()
-    {
-        // Same resolution rules as .github/workflows/publish.yml:
-        //   1. If NPM_DIST_TAG is set explicitly, validate and use it.
-        //   2. Otherwise default to "latest" (publish.yml's stable-release default).
-        //      Workflow-side prerelease branching lives in the YAML; in local/Nuke usage
-        //      callers can pass NPM_DIST_TAG=next themselves.
-        var explicitTag = Environment.GetEnvironmentVariable("NPM_DIST_TAG");
-        var tag = string.IsNullOrWhiteSpace(explicitTag) ? "latest" : explicitTag.Trim();
-        if (!DistTagPattern.IsMatch(tag))
-        {
-            throw new InvalidOperationException(
-                $"PublishApiPackage: invalid npm dist-tag '{tag}' (must match ^[A-Za-z0-9._-]+$).");
-        }
-        return tag;
-    }
-
-    // ---------------------------------------------------------------------
-    // PackContractsNuget / PublishContractsNuget: the C# contracts NuGet,
-    // mirroring the npm Pack/PublishApiPackage targets. The packaging/ project
+    // PackContractsNuget: the C# contracts NuGet,
+    // mirroring the npm Pack target. The packaging/ project
     // compiles generated/contracts (gitignored @ancplua/typespec-emit-csharp
     // output) into Qyl.Api.Contracts, versioned from package.json so
     // the npm and NuGet artifacts stay in lockstep.
@@ -461,25 +426,6 @@ sealed class Build : NukeBuild, IDomainConventionsApi
                 .SetConfiguration("Release")
                 .SetOutputDirectory(NugetOutputDir)
                 .SetVersion(NugetPackageVersion()));
-        });
-
-    Target PublishContractsNuget => _ => _
-        .Description("Push the Qyl.Api.Contracts.<version>.nupkg from this pack to the ANcpLua GitHub Packages NuGet feed (uses GITHUB_TOKEN).")
-        .DependsOn(PackContractsNuget)
-        .Executes(() =>
-        {
-            var token = Environment.GetEnvironmentVariable("GITHUB_TOKEN")
-                ?? throw new InvalidOperationException("PublishContractsNuget: GITHUB_TOKEN is required.");
-            // Push the exact package produced by this run, not a glob — a wildcard would also
-            // upload any stale *.nupkg left in NugetOutputDir on a non-fresh workspace.
-            var package = NugetOutputDir / $"Qyl.Api.Contracts.{NugetPackageVersion()}.nupkg";
-            if (!package.FileExists())
-                throw new InvalidOperationException($"PublishContractsNuget: expected package '{package}' not found — did PackContractsNuget run?");
-            DotNetNuGetPush(s => s
-                .SetTargetPath(package)
-                .SetSource("https://nuget.pkg.github.com/ANcpLua/index.json")
-                .SetApiKey(token)
-                .EnableSkipDuplicate());
         });
 
     // ---------------------------------------------------------------------

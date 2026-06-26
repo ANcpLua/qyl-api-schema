@@ -1,7 +1,8 @@
 # TASK — synced npmjs.org + nuget.org trusted publishing (all-or-nothing)
 
-Status: **workflow written; blocked on one-time human setup** · Branch `feat/synced-trusted-publishing` · PR #64
-Resume anchor (per the global operating contract). Read this first on resume.
+Status: **COMPLETE & VERIFIED** — first synced OIDC release `v0.2.1` published to npmjs.org + nuget.org (2026-06-26).
+npm `@ancplua/qyl-api-schema@0.2.1` (latest, provenance) and nuget `Qyl.Api.Contracts 0.2.1` both live; trusted-publisher
+policies on both registries. Original work: PR #64 (merged). Fixes: PR #66 (merged). Release bump: PR #70 (merged).
 
 ## Goal
 
@@ -71,8 +72,9 @@ Repository `qyl-api-schema` · Workflow File `publish.yml` (filename only) · En
 - [x] **Created npmjs trusted-publisher**: `ANcpLua/qyl-api-schema` · `publish.yml` · env `release` · allow `npm publish`.
 - [x] **Created nuget.org trusted-publisher**: `Qyl.Api.Contracts` · owner `ANcpLua` · `ANcpLua/qyl-api-schema` · `publish.yml` · env `release` (Active, IDs pinned).
 - [x] Bumped 0.2.0 → 0.2.1 lockstep (package.json + package-lock + packaging/Qyl.Api.Contracts.csproj) — fresh version for the first OIDC release (npm 0.2.0 already taken by bootstrap; npm has no --skip-duplicate).
-- [ ] Cut release `v0.2.1` → validate the OIDC path end-to-end (npmjs + nuget.org, all-or-nothing).
-- [ ] On green: confirm both registries at 0.2.1; PR review→merge of the bump.
+- [x] Cut release `v0.2.1` → publish workflow run 28229011375 succeeded (all steps green, OIDC, no secrets).
+- [x] Confirmed live: npm `@ancplua/qyl-api-schema@0.2.1` (latest + provenance attestations) on npmjs.org;
+      nuget `Qyl.Api.Contracts 0.2.1` on nuget.org (flat-container). Both via OIDC trusted publishing.
 
 ## Verification risks to watch on the first real publish
 

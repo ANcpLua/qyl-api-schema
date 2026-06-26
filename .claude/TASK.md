@@ -30,10 +30,14 @@ trusted publisher to a package that **already exists** on npmjs. So a one-time b
 **before** the OIDC workflow can ever succeed:
 
 ```bash
-# locally, once, signed in to an npmjs.org account that owns/will own @ancplua:
+# locally, once, signed in to the npmjs.org user `ancplua` (the @ancplua scope = that user's
+# personal scope; the user exists with 0 orgs, so NO npm org is needed):
 npm login
 npm ci && npm run compile          # generate generated/ so the package is complete
-npm publish --access public        # publishConfig.registry now = npmjs, so this goes to npmjs.org
+# IMPORTANT: publishConfig.registry does NOT win over the committed .npmrc @ancplua scope map
+# (verified via `npm publish --dry-run` -> it routed to npm.pkg.github.com). Force npmjs explicitly:
+npm publish --access public --provenance=false --@ancplua:registry=https://registry.npmjs.org
+# (--provenance=false because provenance can only be generated in CI; a local publish errors otherwise.)
 ```
 (nuget.org has **no** such requirement — its policy can predate the package; the first OIDC push creates it.)
 
@@ -53,16 +57,30 @@ Repository `qyl-api-schema` · Workflow File `publish.yml` (filename only) · En
 - [x] Nuke `PackContractsNuget` output path → `Artifacts/nuget/*.nupkg`.
 - [x] npm OIDC requirements verified (npm ≥ 11.5.1 / Node ≥ 22.14; provenance auto; no token; publishConfig.registry).
 - [x] Rewrite `publish.yml` + flip `publishConfig.registry`.
-- [ ] **(You)** bootstrap-publish `@ancplua/qyl-api-schema` to npmjs once.
-- [ ] **(You)** create the npmjs + nuget.org trusted-publisher policies above.
-- [ ] Test-publish (cut a release) to validate the OIDC path end-to-end — the only true validation; cannot be proven locally.
+- [x] **Fixed `npm ci` build race** — the four emitter `prepare: tsc -p .` scripts ran concurrently
+      (npm builds file: deps in parallel, ignoring inter-dep order), so `otelconventions-lint` compiled
+      against `@qyl/telemetry-control-graph` before its `dist/` existed → TS2307 (+ 3 cascade errors).
+      Removed the per-emitter `prepare`; added a single ordered root `prepare: npm run build:emitters`.
+      Verified: clean `npm ci` + `npm run lint` + `npm run lint:public` + `./build.sh Check` all green.
+- [x] **Fixed npm publish routing** — `npm publish --dry-run` proved `publishConfig.registry` does NOT
+      win over the `.npmrc` @ancplua scope map (it routed to npm.pkg.github.com). `publish.yml` now passes
+      `--@ancplua:registry=https://registry.npmjs.org` on the publish step.
+- [x] Confirmed npm user `ancplua` exists (0 pkgs, 0 orgs) → publishes under personal user scope, no org needed.
+- [ ] **(You)** authenticate to npmjs (user `ancplua`) — CLI `npm login` and/or browser sign-in for the policy page.
+- [ ] **(You)** authenticate to nuget.org (Sign in with Microsoft) for the policy page.
+- [ ] bootstrap-publish `@ancplua/qyl-api-schema` to npmjs once (command above; needs your auth/OTP).
+- [ ] create the npmjs + nuget.org trusted-publisher policies above.
+- [ ] Test-publish (bump 0.2.0 → 0.2.1 lockstep, cut release) to validate the OIDC path end-to-end.
 - [ ] On green: PR review→merge.
 
 ## Verification risks to watch on the first real publish
 
-- npm routing: `publishConfig.registry=npmjs` should override the `@ancplua` scope map for publish. If the
-  first publish lands on GitHub Packages instead, force it with `npm publish --@ancplua:registry=https://registry.npmjs.org`.
+- npm routing: CONFIRMED `publishConfig.registry` is overridden by the `@ancplua` scope map. Both the
+  bootstrap and `publish.yml` now force `--@ancplua:registry=https://registry.npmjs.org`. Do not remove it.
 - npm version: if "trusted publisher not found / 404", confirm `npm -v` ≥ 11.5.1 ran (the `npm install -g npm@latest` step).
+- npm version collision: bootstrap publishes 0.2.0; the OIDC validation release MUST use a fresh version
+  (bump package.json + packaging/Qyl.Api.Contracts.csproj to 0.2.1 in lockstep) or `npm publish` hard-fails
+  on the duplicate (npm is immutable; nuget push has --skip-duplicate but npm has no equivalent).
 
 ## Out of scope (noted)
 

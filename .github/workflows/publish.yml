@@ -113,7 +113,10 @@ jobs:
       # npm -> npmjs.org via OIDC trusted publishing. No NODE_AUTH_TOKEN: npm mints a short-lived
       # credential from the OIDC token. publishConfig.registry routes THIS package to npmjs.
       - name: Publish npm to npmjs.org (OIDC + provenance)
-        run: npm publish --access public --provenance --tag "$NPM_DIST_TAG"
+        # The committed .npmrc maps @ancplua -> GitHub Packages for INSTALL; that scope map
+        # wins over publishConfig.registry for scoped publishes too, so force THIS publish to
+        # npmjs explicitly or it silently lands on GitHub Packages (and OIDC never applies).
+        run: npm publish --access public --provenance --tag "$NPM_DIST_TAG" --@ancplua:registry=https://registry.npmjs.org
 
       # nuget -> nuget.org via OIDC. Request the login immediately before the push (key lives 1 hour).
       - name: Authenticate to NuGet (OIDC)

@@ -16,6 +16,7 @@ on:
 
 permissions:
   contents: read
+  packages: read      # npm ci (RestoreTypeSpecDeps) reads internal @ancplua/* deps from GitHub Packages
 
 concurrency:
   group: nuke-${{ github.ref }}
@@ -27,9 +28,15 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
 
+      # Authenticate npm to GitHub Packages so the Nuke RestoreTypeSpecDeps (npm ci) can download
+      # internal @ancplua/* build deps (e.g. @ancplua/typespec-otel-semconv) — without this the run
+      # fails with npm E401 (this is why the workflow had been red and was disabled).
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '24'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@ancplua'
+          always-auth: true
 
       - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
         with:
@@ -43,3 +50,5 @@ jobs:
 
       - name: Run Nuke Check
         run: ./build.sh Check
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}   # npm ci auth for GitHub Packages

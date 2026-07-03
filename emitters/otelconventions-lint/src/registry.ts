@@ -25,8 +25,8 @@ export interface OtelAttr {
  * these prefixes (followed by a `.`) is owned by upstream and may not be
  * redeclared under `@ancpluaAttr`.
  *
- * Source: https://opentelemetry.io/docs/specs/semconv/ (registry 1.40).
- * Extend when Weaver advances past 1.40; do not let the list drift silently.
+ * Source: https://opentelemetry.io/docs/specs/semconv/ — extend when Weaver
+ * advances; do not let the list drift silently.
  */
 export const RESERVED_PREFIXES: readonly string[] = [
     "gen_ai.",

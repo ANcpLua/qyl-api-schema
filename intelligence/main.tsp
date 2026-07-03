@@ -4,8 +4,6 @@
 // Canonical reasoning model over telemetry data. Schema-driven, generated,
 // deterministic. Defines diagnostic patterns, causal rules, and investigation
 // strategies as typed data consumed by Loom, MCP, and dashboard.
-//
-// Source of truth: specs/telemetry-intelligence.md
 // =============================================================================
 
 import "@typespec/openapi";

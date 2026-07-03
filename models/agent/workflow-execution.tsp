@@ -1,5 +1,5 @@
 // =============================================================================
-// ANcpLua v2.0 - Workflow Execution Contract Model (OTel v1.40)
+// ANcpLua v2.0 - Workflow Execution Contract Model
 // =============================================================================
 // Workflow execution tracking for multi-step AI agent workflows.
 // Defines the public qyl workflow execution contract.

@@ -1,7 +1,7 @@
 // =============================================================================
 // ANcpLua v2.0 - OpenTelemetry Core Enumerations
 // =============================================================================
-// All OTel standard enumerations following Semantic Conventions v1.40.
+// All OTel standard enumerations following OTel Semantic Conventions.
 // =============================================================================
 
 namespace Qyl.Api.Contracts.OTel.Enums;

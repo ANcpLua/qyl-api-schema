@@ -1,5 +1,5 @@
 // =============================================================================
-// ANcpLua v2.0 - User/Client/Service Semantic Conventions (OTel v1.40)
+// ANcpLua v2.0 - User/Client/Service Semantic Conventions
 // =============================================================================
 // User, client, service, and app identity attributes.
 // =============================================================================

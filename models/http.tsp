@@ -1,5 +1,5 @@
 // =============================================================================
-// ANcpLua v2.0 - HTTP Semantic Conventions (OTel v1.40)
+// ANcpLua v2.0 - HTTP Semantic Conventions
 // =============================================================================
 // HTTP client and server telemetry attributes following OTel specifications.
 // =============================================================================
@@ -33,10 +33,10 @@ enum HttpVersions {
 }
 
 // =============================================================================
-// HTTP Span Attributes (Complete OTel v1.40)
+// HTTP Span Attributes
 // =============================================================================
 
-@doc("HTTP span attributes following OTel Semantic Conventions v1.40")
+@doc("HTTP span attributes following OTel Semantic Conventions")
 model HttpAttributes {
   // ---------------------------------------------------------------------------
   // Common Attributes (Client & Server)

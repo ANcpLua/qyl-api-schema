@@ -1,5 +1,5 @@
 // =============================================================================
-// ANcpLua v2.0 - Tool Call Contract Model (OTel v1.40)
+// ANcpLua v2.0 - Tool Call Contract Model
 // =============================================================================
 // Tool call records extracted from OTLP spans.
 // Maps OTel GenAI tool semantic convention attributes to qyl API contract fields.

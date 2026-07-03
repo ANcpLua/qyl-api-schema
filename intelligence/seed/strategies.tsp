@@ -1,8 +1,7 @@
 // =============================================================================
 // ANcpLua v2.0 - Seed Investigation Strategies (v1)
 // =============================================================================
-// 4 initial investigation strategies. Source: specs/telemetry-intelligence.md §5.3
-// These compile to static registries in InvestigationStrategies.g.cs.
+// 4 initial investigation strategies.
 //
 // Trigger patterns use category:X syntax for category-wide triggers.
 // Query templates are abstract qyl investigation hints; the runtime decides how to execute them.

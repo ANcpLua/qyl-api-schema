@@ -1,5 +1,5 @@
 // =============================================================================
-// ANcpLua v2.0 - Database Semantic Conventions (OTel v1.40)
+// ANcpLua v2.0 - Database Semantic Conventions
 // =============================================================================
 // Database telemetry attributes with 45+ DBMS types.
 // =============================================================================
@@ -33,10 +33,10 @@ enum DbVersions {
 }
 
 // =============================================================================
-// Database Span Attributes (Complete OTel v1.40)
+// Database Span Attributes
 // =============================================================================
 
-@doc("Database span attributes following OTel Semantic Conventions v1.40")
+@doc("Database span attributes following OTel Semantic Conventions")
 model DbAttributes {
   // ---------------------------------------------------------------------------
   // System & Connection

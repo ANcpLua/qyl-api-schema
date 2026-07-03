@@ -1,14 +1,14 @@
 // =============================================================================
 // Qyl.Api.Contracts - Main TypeSpec Entry Point
 // =============================================================================
-// Extracted from qyl PR #255. OpenTelemetry semantic-convention key constants
+// OpenTelemetry semantic-convention key constants
 // are generated from the upstream semantic-conventions model pinned at v1.41.0.
 //
 // Structure:
 //   - Common: types, errors, pagination
 //   - OTel Core: enums, span, logs, metrics, profiles, resource
 //   - Generated: otel-keys.gen.tsp (OTel v1.41.0 semantic-convention keys)
-//   - Domains: extracted models (stats, entities, etc.)
+//   - Domains: domain models (stats, entities, etc.)
 //   - API: REST routes, SSE streaming
 //
 // =============================================================================
@@ -39,7 +39,7 @@ import "./common/errors.tsp";
 import "./common/pagination.tsp";
 
 // =============================================================================
-// Extracted emit routing.
+// Local emit routing.
 // =============================================================================
 
 import "./emit-config.tsp";
@@ -58,7 +58,7 @@ import "./otel/profiles.tsp";
 // =============================================================================
 // Domain Models
 // =============================================================================
-// Extracted models (stats, entities, aggregations). OTel semconv attribute
+// Domain models (stats, entities, aggregations). OTel semconv attribute
 // keys come from ANcpLua.OpenTelemetry.SemanticConventions.Keys.<Domain>.<Name> (generated/otel-keys.gen.tsp);
 // hand-typed dotted strings inside @encodedName(...) are not allowed for
 // upstream-OTel attribute names.

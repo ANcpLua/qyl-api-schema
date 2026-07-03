@@ -1,5 +1,5 @@
 // =============================================================================
-// ANcpLua v2.0 - Agent Run Contract Model (OTel v1.40)
+// ANcpLua v2.0 - Agent Run Contract Model
 // =============================================================================
 // Agent run records extracted from OTLP spans.
 // Maps OTel GenAI semantic convention attributes to qyl API contract fields.

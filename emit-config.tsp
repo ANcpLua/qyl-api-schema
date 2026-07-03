@@ -2,10 +2,8 @@
 // ANcpLua Emit Config — central augment-decorator file for the qyl API contract
 // TypeSpec emitters (@ancplua/typespec-emit-csharp, emit-ts-types).
 //
-// This file decorates the existing hand-authored TypeSpec models so the new
-// emitters know:
-//   - which C# namespace each model maps to (matches NamespaceRoutingTable.cs
-//     exactly, mirroring the current contract-drift outputs)
+// This file decorates the hand-authored TypeSpec models so the emitters know:
+//   - which C# namespace each model maps to
 //   - which scalars are opaque branded string IDs on the TypeScript side
 //
 // Decoration-only: physical storage schema lives in qyl runtime mapping specs,
@@ -35,7 +33,7 @@ using Qyl.Api.Schema.Emit.TsTypes;
 
 // -----------------------------------------------------------------------------
 // C# namespace routing — one @@csharpNamespace per namespace declared in any
-// hand-authored .tsp file. Values mirror NamespaceRoutingTable.cs exactly.
+// hand-authored .tsp file.
 // -----------------------------------------------------------------------------
 
 @@csharpNamespace(Qyl.Api.Contracts, "Qyl.Api.Contracts");
@@ -83,8 +81,8 @@ using Qyl.Api.Schema.Emit.TsTypes;
 @@csharpNamespace(Qyl.Api.Contracts.OTel.Traces, "Qyl.Api.Contracts.OTel.Traces");
 
 // -----------------------------------------------------------------------------
-// TypeScript brands for opaque string IDs. Mandate §Commit-4 exact list plus
-// any scalar in common/types.tsp with x-csharp-struct extension.
+// TypeScript brands for opaque string IDs: the scalars in common/types.tsp
+// carrying the x-csharp-struct extension.
 // -----------------------------------------------------------------------------
 
 @@tsBrand(Qyl.Api.Contracts.Common.TraceId);

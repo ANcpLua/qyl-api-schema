@@ -1,5 +1,5 @@
 // =============================================================================
-// ANcpLua v2.0 - Workflow Checkpoint Contract Model (OTel v1.40)
+// ANcpLua v2.0 - Workflow Checkpoint Contract Model
 // =============================================================================
 // Checkpoint state persistence for workflow execution recovery.
 // Enables resume-from-checkpoint after failures or cancellations.

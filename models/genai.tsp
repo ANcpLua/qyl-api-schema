@@ -1,5 +1,5 @@
 // =============================================================================
-// ANcpLua v2.0 - GenAI Semantic Conventions (OTel v1.40)
+// ANcpLua v2.0 - GenAI Semantic Conventions
 // =============================================================================
 // Comprehensive AI/LLM telemetry following OpenTelemetry GenAI specifications.
 // https://opentelemetry.io/docs/specs/semconv/gen-ai/
@@ -47,10 +47,10 @@ enum GenAiVersions {
 }
 
 // =============================================================================
-// GenAI Span Attributes (Complete OTel v1.40)
+// GenAI Span Attributes
 // =============================================================================
 
-@doc("GenAI span attributes following OTel Semantic Conventions v1.40")
+@doc("GenAI span attributes following OTel Semantic Conventions")
 model GenAiSpanAttributes {
   // ---------------------------------------------------------------------------
   // Provider & System (REQUIRED)
@@ -507,7 +507,7 @@ model GenAiCostEstimate {
 }
 
 // =============================================================================
-// GenAI Enumerations (18+ enums as promised)
+// GenAI Enumerations
 // =============================================================================
 
 // =============================================================================

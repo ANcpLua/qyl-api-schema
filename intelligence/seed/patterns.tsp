@@ -2,8 +2,7 @@
 // ANcpLua v2.0 - Seed Diagnostic Patterns (v1)
 // =============================================================================
 // 19 initial diagnostic patterns (10 infra + 9 agent behavioral)
-// Source: specs/telemetry-intelligence.md §5.1 + Microsoft Research AgentRx (March 2026)
-// These compile to static registries in DiagnosticPatterns.g.cs.
+// Source: Microsoft Research AgentRx (March 2026)
 //
 // Signal attributes reference:
 //   - OTel semantic attributes (status_code, duration_ns, etc.)

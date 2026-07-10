@@ -1,6 +1,6 @@
 {
   "$schema": "https://nuke.build/schema",
-  "OtelKeysPackage": "@ancplua/typespec-otel-semconv",
+  "OtelKeysVersion": "1.43.0",
   "Emitters": ["csharp", "ts-types", "lint"],
   "EmitFailOnDrift": true
 }

@@ -73,8 +73,8 @@
   "devDependencies": {
     "@ancplua/typespec-emit-csharp": "file:./emitters/csharp",
     "@ancplua/typespec-emit-ts-types": "file:./emitters/ts-types",
-    "@ancplua/typespec-otel-semconv": "1.41.0-2",
     "@ancplua/typespec-otelconventions-lint": "file:./emitters/otelconventions-lint",
+    "@qyl/telemetry-control-graph": "file:./emitters/telemetry-control-graph",
     "@types/node": "25.9.4",
     "@typespec/compiler": "1.13.0",
     "@typespec/events": "0.83.0",
@@ -87,7 +87,6 @@
     "@typespec/streams": "0.83.0",
     "@typespec/versioning": "0.83.0",
     "typescript": "6.0.3",
-    "vitest": "4.1.9",
-    "@qyl/telemetry-control-graph": "file:./emitters/telemetry-control-graph"
+    "vitest": "4.1.9"
   }
 }

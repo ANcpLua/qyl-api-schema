@@ -1,11 +1,4 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>ANcpLua/github-settings-automation"],
-  "packageRules": [
-    {
-      "description": "Lockstep anchor for the upstream Weaver-generated OTel keys. generated/otel-keys.gen.tsp is verified byte-for-byte against this package by the Nuke VerifyKeysLockstep target in CI, where the Actions GITHUB_TOKEN can read GitHub Packages. Renovate's app token cannot (npm.pkg.github.com only accepts classic PATs), and upstream releases are human-driven and one-way, so Renovate must not manage or look up this dep.",
-      "matchPackageNames": ["@ancplua/typespec-otel-semconv"],
-      "enabled": false
-    }
-  ]
+  "extends": ["github>ANcpLua/github-settings-automation"]
 }

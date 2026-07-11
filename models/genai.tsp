@@ -22,25 +22,13 @@ namespace Qyl.Api.Contracts.Domains.AI.GenAi;
 // Version History
 // =============================================================================
 
-@doc("GenAI semantic convention versions")
+@doc("GenAI semantic convention versions (only versions referenced by @added/@removed annotations are kept)")
 enum GenAiVersions {
   @doc("Initial GenAI semconv (OTel 1.27)")
   v1_27: "1.27.0",
 
-  @doc("Added agent support (OTel 1.28)")
-  v1_28: "1.28.0",
-
-  @doc("Token type refinements (OTel 1.29)")
-  v1_29: "1.29.0",
-
-  @doc("Deprecated gen_ai.system (OTel 1.37)")
-  v1_37: "1.37.0",
-
   @doc("GenAI.Agent support (OTel 1.38)")
   v1_38: "1.38.0",
-
-  @doc("RPC metadata consolidation (OTel 1.39)")
-  v1_39: "1.39.0",
 
   @doc("Current version (OTel 1.40)")
   v1_40: "1.40.0",
@@ -153,11 +141,6 @@ model GenAiSpanAttributes {
   @doc("Number of output/completion tokens generated")
   @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.GenAi.UsageOutputTokens)
   usageOutputTokens?: TokenCount;
-
-  @doc("Total tokens (deprecated - use input + output)")
-  @encodedName("application/json", "gen_ai.usage.total_tokens")
-  @removed(GenAiVersions.v1_38)
-  usageTotalTokens?: TokenCount;
 
   @doc("Number of cached input tokens (prompt caching)")
   @encodedName("application/json", "gen_ai.usage.input_tokens.cached")

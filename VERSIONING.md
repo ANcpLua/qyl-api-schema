@@ -30,14 +30,18 @@ namespace Qyl.Api.Contracts.Domains.AI.GenAi;
 
 enum GenAiVersions {
   v1_27: "1.27.0",
-  v1_28: "1.28.0",
-  v1_29: "1.29.0",
-  v1_37: "1.37.0",
   v1_38: "1.38.0",
-  v1_39: "1.39.0",
   v1_40: "1.40.0",
-  v1_41: "1.41.0",
 }
+```
+
+Keep version enums **minimal**: only the baseline plus versions actually
+referenced by an `@added`/`@removed` annotation. Unreferenced members are
+dead timeline points that rot (an axis with no annotations at all should
+lose `@versioned` entirely — that happened to `HttpVersions`/`DbVersions`
+in 0.4.0).
+
+```tsp
 
 model GenAiSpanAttributes {
   @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.GenAi.UsageInputTokens)

@@ -10,27 +10,7 @@ import "../common/types.tsp";
 using TypeSpec.Versioning;
 using Qyl.Api.Contracts.Common;
 
-@versioned(HttpVersions)
 namespace Qyl.Api.Contracts.Domains.Transport.Http;
-
-// =============================================================================
-// Version History
-// =============================================================================
-
-@doc("HTTP semantic convention versions")
-enum HttpVersions {
-  @doc("Legacy HTTP semconv")
-  v1_20: "1.20.0",
-
-  @doc("Stable HTTP semconv")
-  v1_23: "1.23.0",
-
-  @doc("HTTP semconv v1.38")
-  v1_38: "1.38.0",
-
-  @doc("Current HTTP semconv")
-  v1_39: "1.39.0",
-}
 
 // =============================================================================
 // HTTP Span Attributes
@@ -184,39 +164,6 @@ model HttpAttributes {
   @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Http.RequestResendCount)
   requestResendCount?: int32;
 
-  // ---------------------------------------------------------------------------
-  // Deprecated Attributes (for migration)
-  // ---------------------------------------------------------------------------
-
-  @doc("Request target (deprecated - use url.path + url.query)")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Http.Target)
-  @removed(HttpVersions.v1_23)
-  target?: string;
-
-  @doc("Request URL (deprecated - use url.full)")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Http.Url)
-  @removed(HttpVersions.v1_23)
-  url?: UrlString;
-
-  @doc("HTTP method (deprecated - use http.request.method)")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Http.Method)
-  @removed(HttpVersions.v1_23)
-  method?: string;
-
-  @doc("Status code (deprecated - use http.response.status_code)")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Http.StatusCode)
-  @removed(HttpVersions.v1_23)
-  statusCode?: int32;
-
-  @doc("Request content length (deprecated)")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Http.RequestContentLength)
-  @removed(HttpVersions.v1_23)
-  requestContentLengthLegacy?: ByteSize;
-
-  @doc("Response content length (deprecated)")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Http.ResponseContentLength)
-  @removed(HttpVersions.v1_23)
-  responseContentLengthLegacy?: ByteSize;
 }
 
 // =============================================================================

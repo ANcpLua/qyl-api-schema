@@ -10,27 +10,7 @@ import "../common/types.tsp";
 using TypeSpec.Versioning;
 using Qyl.Api.Contracts.Common;
 
-@versioned(DbVersions)
 namespace Qyl.Api.Contracts.Domains.Data.Db;
-
-// =============================================================================
-// Version History
-// =============================================================================
-
-@doc("Database semantic convention versions")
-enum DbVersions {
-  @doc("Legacy DB semconv")
-  v1_20: "1.20.0",
-
-  @doc("Stable DB semconv with namespace")
-  v1_24: "1.24.0",
-
-  @doc("DB semconv v1.38")
-  v1_38: "1.38.0",
-
-  @doc("Current DB semconv")
-  v1_39: "1.39.0",
-}
 
 // =============================================================================
 // Database Span Attributes
@@ -118,29 +98,6 @@ model DbAttributes {
   @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Db.ClientConnectionState)
   connectionState?: DbConnectionState;
 
-  // ---------------------------------------------------------------------------
-  // Deprecated Attributes (for migration)
-  // ---------------------------------------------------------------------------
-
-  @doc("Database name (deprecated - use db.namespace)")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Db.Name)
-  @removed(DbVersions.v1_24)
-  dbName?: string;
-
-  @doc("Database statement (deprecated - use db.query.text)")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Db.Statement)
-  @removed(DbVersions.v1_24)
-  statement?: string;
-
-  @doc("Database operation (deprecated - use db.operation.name)")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Db.Operation)
-  @removed(DbVersions.v1_24)
-  operation?: string;
-
-  @doc("Database user (deprecated)")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Db.User)
-  @removed(DbVersions.v1_24)
-  user?: string;
 }
 
 // =============================================================================

@@ -17,45 +17,12 @@ using TypeSpec.OpenAPI;
 namespace Qyl.Api.Contracts.Common;
 
 // =============================================================================
-// Version Enum - OTel Semantic Convention Versions
-// =============================================================================
-
-@doc("OpenTelemetry semantic-convention versions supported by qyl compatibility models")
-enum OTelVersion {
-  @doc("OTel Semconv v1.27 - Base version")
-  v1_27: "1.27.0",
-
-  @doc("OTel Semconv v1.28 - GenAI additions")
-  v1_28: "1.28.0",
-
-  @doc("OTel Semconv v1.29 - HTTP improvements")
-  v1_29: "1.29.0",
-
-  @doc("OTel Semconv v1.30 - Database updates")
-  v1_30: "1.30.0",
-
-  @doc("OTel Semconv v1.38 - GenAI.Agent support")
-  v1_38: "1.38.0",
-
-  @doc("OTel Semconv v1.39 - RPC metadata consolidation")
-  v1_39: "1.39.0",
-
-  @doc("OTel Semconv v1.40 - Oracle DB split, RPC cleanup, GenAI cache tokens")
-  v1_40: "1.40.0",
-
-  @doc("OTel Semconv v1.41 - GraphQL doc opt-in, RPC server client.* removal")
-  v1_41: "1.41.0",
-
-  @doc("OTel Semconv v1.42 - GenAI conventions moved to the dedicated GenAI registry; k8s/container registry attrs stable")
-  v1_42: "1.42.0",
-
-  @doc("OTel Semconv v1.43 - Current compatibility pin (core; GenAI keys from the GenAI dev registry)")
-  v1_43: "1.43.0",
-}
-
-// =============================================================================
 // Identifier Scalars - Strongly Typed IDs
 // =============================================================================
+// (The former OTelVersion enum — a hand-bumped list of semconv releases with
+// zero consumers — was deleted in 0.4.0. The semconv pin lives in the
+// otel-keys.gen.tsp header and .nuke/parameters.json OtelKeysVersion, both
+// machine-checked; a prose enum of upstream releases only rots.)
 
 @jsonSchema
 @doc("Unique trace identifier (32 lowercase hex characters)")

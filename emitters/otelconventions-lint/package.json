@@ -20,7 +20,7 @@
     "@typespec/compiler": "^1.13.0-dev"
   },
   "devDependencies": {
-    "@types/node": "25.9.4",
+    "@types/node": "25.9.5",
     "@typespec/compiler": "1.13.0",
     "typescript": "6.0.3",
     "vitest": "4.1.10"

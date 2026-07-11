@@ -19,7 +19,6 @@ import "@typespec/sse";
 import "@typespec/events";
 
 import "./generated/otel-keys.gen.tsp";
-import "./generated/otel-keys-legacy.tsp";
 
 import "./common/types.tsp";
 import "./common/errors.tsp";

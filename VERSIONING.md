@@ -40,14 +40,6 @@ enum GenAiVersions {
 }
 
 model GenAiSpanAttributes {
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.GenAi.System)
-  @removed(GenAiVersions.v1_37)
-  system?: string;
-
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.GenAi.UsagePromptTokens)
-  @removed(GenAiVersions.v1_28)
-  usagePromptTokens?: TokenCount;
-
   @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.GenAi.UsageInputTokens)
   usageInputTokens?: TokenCount;
 
@@ -56,6 +48,14 @@ model GenAiSpanAttributes {
   usageInputTokensCached?: TokenCount;
 }
 ```
+
+Note (v0.3.0): the pre-migration `gen_ai.*` fields that carried upstream-deleted
+wire keys (`gen_ai.system`, `gen_ai.prompt`, `gen_ai.completion`,
+`gen_ai.usage.prompt_tokens` / `.completion_tokens`, and the
+`gen_ai.openai.*` vendor keys) were **removed from the contract surface**
+when the OTel 1.42 GenAI-registry split was adopted. Old-key telemetry is a
+collector *ingestion normalization* concern (mapping below), not a contract
+field.
 
 ## Ingestion mapping (deprecated -> current)
 

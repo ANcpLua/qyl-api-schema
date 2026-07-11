@@ -2,7 +2,8 @@
 // qyl common types and scalars
 // =============================================================================
 // Foundational types used across qyl API contracts and OTel-compatible models.
-// OpenTelemetry semantic-convention references are pinned to v1.41.0.
+// OpenTelemetry semantic-convention references are pinned to core v1.43.0
+// (GenAI keys come from the dedicated GenAI registry since the 1.42 split).
 // =============================================================================
 
 import "@typespec/versioning";
@@ -42,8 +43,14 @@ enum OTelVersion {
   @doc("OTel Semconv v1.40 - Oracle DB split, RPC cleanup, GenAI cache tokens")
   v1_40: "1.40.0",
 
-  @doc("OTel Semconv v1.41 - Current compatibility pin")
+  @doc("OTel Semconv v1.41 - GraphQL doc opt-in, RPC server client.* removal")
   v1_41: "1.41.0",
+
+  @doc("OTel Semconv v1.42 - GenAI conventions moved to the dedicated GenAI registry; k8s/container registry attrs stable")
+  v1_42: "1.42.0",
+
+  @doc("OTel Semconv v1.43 - Current compatibility pin (core; GenAI keys from the GenAI dev registry)")
+  v1_43: "1.43.0",
 }
 
 // =============================================================================

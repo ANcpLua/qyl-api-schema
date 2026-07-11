@@ -60,11 +60,6 @@ model GenAiSpanAttributes {
   @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.GenAi.ProviderName)
   providerName: GenAiProvider;
 
-  @doc("The name of the GenAI system/product (e.g., 'ChatGPT', 'Claude', 'Gemini')")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.GenAi.System)
-  @removed(GenAiVersions.v1_37)
-  system?: string;
-
   // ---------------------------------------------------------------------------
   // Operation Details
   // ---------------------------------------------------------------------------
@@ -185,20 +180,6 @@ model GenAiSpanAttributes {
   usageCacheCreationInputTokens?: TokenCount;
 
   // ---------------------------------------------------------------------------
-  // Deprecated Attributes (for migration)
-  // ---------------------------------------------------------------------------
-
-  @doc("Prompt tokens (deprecated - use gen_ai.usage.input_tokens)")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.GenAi.UsagePromptTokens)
-  @removed(GenAiVersions.v1_28)
-  usagePromptTokens?: TokenCount;
-
-  @doc("Completion tokens (deprecated - use gen_ai.usage.output_tokens)")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.GenAi.UsageCompletionTokens)
-  @removed(GenAiVersions.v1_28)
-  usageCompletionTokens?: TokenCount;
-
-  // ---------------------------------------------------------------------------
   // Agent Attributes (v1.38+)
   // ---------------------------------------------------------------------------
 
@@ -294,10 +275,6 @@ model GenAiSpanAttributes {
   @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.GenAi.OutputType)
   outputType?: GenAiOutputType;
 
-  @doc("Prompt content (may be redacted)")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.GenAi.Prompt)
-  prompt?: string;
-
   @doc("Name of the prompt template being used")
   @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.GenAi.PromptName)
   promptName?: string;
@@ -305,10 +282,6 @@ model GenAiSpanAttributes {
   @doc("System instructions provided to the model")
   @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.GenAi.SystemInstructions)
   systemInstructions?: string;
-
-  @doc("Completion content (may be redacted)")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.GenAi.Completion)
-  completion?: string;
 
   // ---------------------------------------------------------------------------
   // Extended Request Attributes
@@ -1329,40 +1302,21 @@ model LatencyPercentiles {
 // Vendor-Specific Extensions (OTel 1.40)
 // =============================================================================
 
-@doc("OpenAI-specific request attributes")
+@doc("OpenAI-specific request attributes (OTel 1.42 moved these to the openai.* namespace; response_format and seed graduated to the generic gen_ai.output.type / gen_ai.request.seed)")
 model OpenAiRequestAttributes {
-  @doc("Response format requested (text, json_object, json_schema)")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.GenAi.OpenaiRequestResponseFormat)
-  responseFormat?: OpenAiResponseFormat;
-
-  @doc("Random seed for deterministic generation")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.GenAi.OpenaiRequestSeed)
-  seed?: int64;
-
   @doc("Service tier for the request (auto, default, etc.)")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.GenAi.OpenaiRequestServiceTier)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Openai.RequestServiceTier)
   serviceTier?: string;
 }
 
 @doc("OpenAI-specific response attributes")
 model OpenAiResponseAttributes {
   @doc("Service tier used for the response")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.GenAi.OpenaiResponseServiceTier)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Openai.ResponseServiceTier)
   serviceTier?: string;
 
   @doc("System fingerprint for reproducibility")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.GenAi.OpenaiResponseSystemFingerprint)
+  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Openai.ResponseSystemFingerprint)
   systemFingerprint?: string;
 }
 
-@doc("OpenAI response format types")
-enum OpenAiResponseFormat {
-  @doc("Plain text response")
-  text: "text",
-
-  @doc("JSON object response")
-  jsonObject: "json_object",
-
-  @doc("JSON schema-constrained response")
-  jsonSchema: "json_schema",
-}

@@ -77,7 +77,12 @@ public static readonly FrozenDictionary<string, string> DeprecatedMappings =
     }.ToFrozenDictionary(StringComparer.Ordinal);
 ```
 
-Downstream consumers should cover these mappings in ingestion tests.
+Implemented: qyl's collector applies exactly this mapping at OTLP ingest
+(`services/qyl.collector/Ingestion/DeprecatedAttributeNormalizer.cs`) — the
+rename runs before the capture allow-list (which is generated from the current
+registry and would otherwise silently drop old keys), and a value already
+present under the canonical key always wins over a normalized deprecated one.
+Keep that file and this table in sync.
 
 ## Workflow for schema evolution
 

@@ -1465,6 +1465,14 @@
             "$ref": "#/components/parameters/ProjectScopeHeader"
           },
           {
+            "name": "Last-Event-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "serviceName",
             "in": "query",
             "required": false,
@@ -1692,6 +1700,15 @@
               "minimum": 1,
               "maximum": 1000,
               "default": 100
+            },
+            "explode": false
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
             },
             "explode": false
           }
@@ -3182,6 +3199,14 @@
             "name": "resource",
             "in": "path",
             "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Last-Event-ID",
+            "in": "header",
+            "required": false,
             "schema": {
               "type": "string"
             }

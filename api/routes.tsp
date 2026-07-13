@@ -46,6 +46,7 @@ interface TracesApi {
   list(
     ...ProjectScopeHeader,
     @query @minValue(1) @maxValue(1000) limit?: int32 = 100,
+    @query cursor?: string,
   ): CursorPage<Trace> | ValidationError | UnauthorizedError | InternalServerError;
 
   @get

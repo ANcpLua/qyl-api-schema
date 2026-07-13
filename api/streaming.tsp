@@ -42,6 +42,7 @@ interface StreamingApi {
   @useAuth(Qyl.Api.Contracts.QylApiKeyHeaderAuth)
   streamLogs(
     ...Qyl.Api.Contracts.ProjectScopeHeader,
+    @header("Last-Event-ID") lastEventId?: string,
     @query serviceName?: string,
     @query @minValue(1) @maxValue(24) minSeverity?: int32,
     @query query?: string,

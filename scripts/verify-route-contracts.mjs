@@ -61,7 +61,7 @@ for (const operationId of capacityLimitedOperations) {
 }
 
 const validationQueries = new Map([
-  ["GET /api/v1/traces", ["limit"]],
+  ["GET /api/v1/traces", ["limit", "cursor"]],
   ["GET /api/v1/logs", ["severityMin", "startTime", "endTime", "limit"]],
   ["GET /api/v1/profiles", ["limit"]],
   ["GET /api/v1/profiles/by-trace/{traceId}", ["limit"]],
@@ -84,8 +84,25 @@ for (const [operationId, runtimeValidatedQueries] of validationQueries) {
   verifyExactResponse(operationId, "400", "ValidationError");
 }
 
+const resumableSseOperations = new Set([
+  "GET /api/v1/stream/logs",
+  "GET /runner/resources/{resource}/logs/stream",
+]);
+for (const operationId of resumableSseOperations) {
+  const operation = operations.get(operationId);
+  if (!operation) throw new Error(`${operationId} is missing from ${openapiPath}.`);
+
+  const lastEventId = (operation.parameters ?? []).find((parameter) =>
+    parameter.in === "header" && parameter.name.toLowerCase() === "last-event-id"
+  );
+  if (!lastEventId || lastEventId.required === true || lastEventId.schema?.type !== "string") {
+    throw new Error(`${operationId} must declare optional string header Last-Event-ID.`);
+  }
+}
+
 console.log(
   `Verified ${expectedRunnerOperations.size} runner security responses, ` +
   `${capacityLimitedOperations.size} capacity responses, and ` +
-  `${validationQueries.size} typed-query validation responses.`,
+  `${validationQueries.size} typed-query validation responses, and ` +
+  `${resumableSseOperations.size} resumable SSE headers.`,
 );

@@ -44,6 +44,7 @@ namespace Qyl.Api.Contracts.Runner {
     @route("/{resource}/logs/stream")
     streamLogs(
       @path resource: string,
+      @header("Last-Event-ID") lastEventId?: string,
     ): SSEStream<RunnerLogEvents> | ForbiddenError | NotFoundError | ServiceUnavailableError | InternalServerError;
 
     @post

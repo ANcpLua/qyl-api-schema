@@ -23,6 +23,9 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- Emitted partial XML-doc coverage; the source is generated, not hand-maintained. -->
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <!-- The emitter must stay trim/AOT-clean (GetTypeInfo-based converter overloads, no
+         reflection-annotated serializer calls); these analyzers make a regression fail this pack. -->
+    <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
 
   <ItemGroup>

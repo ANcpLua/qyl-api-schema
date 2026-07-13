@@ -206,11 +206,14 @@ function renderPolymorphicUnion(program: Program, union: Union): string {
     `        var has${model.name} = root.TryGetProperty("${escapeCsharpString(wireName)}", out _);`,
   ).join("\n");
   const count = selectors.map(({ model }) => `(has${model.name} ? 1 : 0)`).join(" + ");
+  // GetTypeInfo-based overloads keep the converter trim/AOT-warning-free (IL2026/IL3050): the
+  // reflection-annotated Serialize<T>/Deserialize<T>(options) overloads warn statically even when
+  // the options carry a source-gen resolver at runtime.
   const reads = selectors.map(({ model }) =>
-    `        if (has${model.name}) return root.Deserialize<${model.name}>(options);`,
+    `        if (has${model.name}) return (${model.name}?)root.Deserialize(options.GetTypeInfo(typeof(${model.name})));`,
   ).join("\n");
   const writes = selectors.map(({ model }) =>
-    `            case ${model.name} typed:\n                JsonSerializer.Serialize(writer, typed, options);\n                return;`,
+    `            case ${model.name} typed:\n                JsonSerializer.Serialize(writer, typed, options.GetTypeInfo(typeof(${model.name})));\n                return;`,
   ).join("\n");
   return `[JsonConverter(typeof(${converter}))]\npublic interface ${union.name}\n{\n}\n\npublic sealed class ${converter} : JsonConverter<${union.name}>\n{\n    public override ${union.name}? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)\n    {\n        if (reader.TokenType == JsonTokenType.Null) return null;\n        using var document = JsonDocument.ParseValue(ref reader);\n        var root = document.RootElement;\n        if (root.ValueKind != JsonValueKind.Object) throw new JsonException("${union.name} must be a JSON object.");\n${presence}\n        if (${count} != 1) throw new JsonException("${union.name} must contain exactly one variant field.");\n${reads}\n        throw new JsonException("${union.name} did not match a known variant.");\n    }\n\n    public override void Write(Utf8JsonWriter writer, ${union.name} value, JsonSerializerOptions options)\n    {\n        switch (value)\n        {\n${writes}\n            default:\n                throw new JsonException($"Unknown ${union.name} implementation '{value.GetType().FullName}'.");\n        }\n    }\n}\n`;
 }

@@ -37,7 +37,7 @@
         "VerifyEmitDeterministic",
         "VerifyGeneratedArtifactsCurrent",
         "VerifyKeysLockstep",
-        "VerifyRunnerSecurityContract"
+        "VerifyRouteContracts"
       ]
     },
     "Verbosity": {

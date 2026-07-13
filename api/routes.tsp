@@ -166,7 +166,7 @@ interface SessionsApi {
     ...ProjectScopeHeader,
     @query startTime?: utcDateTime,
     @query endTime?: utcDateTime,
-  ): SessionStats | UnauthorizedError | InternalServerError;
+  ): SessionStats | ValidationError | UnauthorizedError | InternalServerError;
 }
 
 // -----------------------------------------------------------------------------

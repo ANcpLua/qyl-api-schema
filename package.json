@@ -89,7 +89,7 @@
     "format": "tsp format **/*.tsp",
     "lint": "npm run build:emitters && tsp compile main.tsp --no-emit --warn-as-error",
     "lint:public": "tsp compile index.tsp --no-emit --warn-as-error",
-    "verify:runner-security": "node scripts/verify-runner-security.mjs"
+    "verify:routes": "node scripts/verify-route-contracts.mjs"
   },
   "peerDependencies": {
     "@typespec/compiler": "^1.13.0 || >=1.13.0-dev.0",

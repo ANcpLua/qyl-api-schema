@@ -1089,6 +1089,32 @@
               }
             }
           },
+          "400": {
+            "description": "Bad request - validation failed (400)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ValidationError"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Unauthorized - authentication required (401)",
             "headers": {
@@ -1515,6 +1541,32 @@
                       }
                     }
                   ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - validation failed (400)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ValidationError"
                 }
               }
             }

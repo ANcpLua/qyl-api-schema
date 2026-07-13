@@ -45,5 +45,5 @@ interface StreamingApi {
     @query serviceName?: string,
     @query @minValue(1) @maxValue(24) minSeverity?: int32,
     @query query?: string,
-  ): SSEStream<LogEvents> | UnauthorizedError | InternalServerError;
+  ): SSEStream<LogEvents> | ValidationError | UnauthorizedError | InternalServerError;
 }

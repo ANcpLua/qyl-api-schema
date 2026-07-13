@@ -193,6 +193,25 @@ jobs:
       - name: Pack C# contracts NuGet (validate before any publish)
         run: ./build.sh PackContractsNuget
 
+      # Exercise the exact packed artifacts from isolated consumers before either
+      # immutable registry accepts them. The post-publish gate repeats the same
+      # imports/restores from the public registries after registration completes.
+      - name: Pack npm and smoke clean consumers before immutable publish
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p Artifacts/npm
+          npm pack --pack-destination Artifacts/npm
+
+          npm_tarballs=(Artifacts/npm/*.tgz)
+          nuget_packages=(Artifacts/nuget/*.nupkg)
+          if [ "${#npm_tarballs[@]}" -ne 1 ] || [ "${#nuget_packages[@]}" -ne 1 ]; then
+            echo "::error::Expected one npm tarball and one NuGet package; found ${#npm_tarballs[@]} and ${#nuget_packages[@]}."
+            exit 1
+          fi
+
+          node scripts/verify-packed.mjs "$RELEASE_VERSION" "${npm_tarballs[0]}" "${nuget_packages[0]}"
+
       # --- Publish (both immutable; packs already validated) ---
       # Order matters: NuGet first (its push is idempotent via --skip-duplicate), npm last. A retry
       # accepts an existing version only when registry provenance points at this exact checkout, then

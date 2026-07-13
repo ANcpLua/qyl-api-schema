@@ -35,8 +35,8 @@
         "PackContractsNuget",
         "RestoreTypeSpecDeps",
         "VerifyEmitDeterministic",
-        "VerifyKeysLockstep",
-        "VerifyNoManualEditsToGenerated"
+        "VerifyGeneratedArtifactsCurrent",
+        "VerifyKeysLockstep"
       ]
     },
     "Verbosity": {

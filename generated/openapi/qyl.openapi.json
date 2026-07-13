@@ -6556,9 +6556,34 @@
             "format": "int64",
             "minimum": 0
           },
+          "icons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpIcon"
+            }
+          },
           "resource": {
+            "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpResourceContent"
+          },
+          "id": {
+            "type": "string"
+          },
+          "input": {},
+          "toolUseId": {
+            "type": "string"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpContent"
+            }
+          },
+          "structuredContent": {
             "type": "object",
             "unevaluatedProperties": {}
+          },
+          "isError": {
+            "type": "boolean"
           },
           "annotations": {
             "type": "object",
@@ -6569,7 +6594,31 @@
             "unevaluatedProperties": {}
           }
         },
-        "description": "One MCP content item projected onto a stable qyl JSON shape."
+        "description": "One MCP content item projected onto a stable qyl JSON shape. Variant-specific required fields follow its type discriminator."
+      },
+      "Runner.Mcp.RunnerMcpIcon": {
+        "type": "object",
+        "required": [
+          "src"
+        ],
+        "properties": {
+          "src": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "sizes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "theme": {
+            "type": "string"
+          }
+        },
+        "description": "Icon metadata carried by MCP tools and resource links."
       },
       "Runner.Mcp.RunnerMcpResourceContent": {
         "type": "object",
@@ -6606,6 +6655,10 @@
           "uri": {
             "type": "string",
             "format": "uri"
+          },
+          "_meta": {
+            "type": "object",
+            "unevaluatedProperties": {}
           }
         },
         "description": "Resource URI accepted by the runner's MCP projection."
@@ -6628,6 +6681,64 @@
           }
         },
         "description": "Stable qyl projection of an MCP resources/read result."
+      },
+      "Runner.Mcp.RunnerMcpTask": {
+        "type": "object",
+        "required": [
+          "taskId",
+          "status",
+          "createdAt",
+          "lastUpdatedAt"
+        ],
+        "properties": {
+          "taskId": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpTaskStatus"
+          },
+          "statusMessage": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastUpdatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ttl": {
+            "type": "number",
+            "format": "double"
+          },
+          "pollInterval": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "description": "Task returned by an MCP task-augmented tool call. ttl and pollInterval are encoded as milliseconds."
+      },
+      "Runner.Mcp.RunnerMcpTaskMetadata": {
+        "type": "object",
+        "properties": {
+          "ttl": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "description": "Task-augmentation metadata accepted on an MCP tool call. ttl is encoded as milliseconds."
+      },
+      "Runner.Mcp.RunnerMcpTaskStatus": {
+        "type": "string",
+        "enum": [
+          "working",
+          "input_required",
+          "completed",
+          "failed",
+          "cancelled"
+        ],
+        "description": "Lifecycle state of an MCP task returned by a task-augmented tool call."
       },
       "Runner.Mcp.RunnerMcpTool": {
         "type": "object",
@@ -6657,6 +6768,15 @@
             "type": "object",
             "unevaluatedProperties": {}
           },
+          "execution": {
+            "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpToolExecution"
+          },
+          "icons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpIcon"
+            }
+          },
           "_meta": {
             "type": "object",
             "unevaluatedProperties": {}
@@ -6674,6 +6794,13 @@
             "type": "string"
           },
           "arguments": {
+            "type": "object",
+            "unevaluatedProperties": {}
+          },
+          "task": {
+            "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpTaskMetadata"
+          },
+          "_meta": {
             "type": "object",
             "unevaluatedProperties": {}
           }
@@ -6700,12 +6827,33 @@
           "isError": {
             "type": "boolean"
           },
+          "task": {
+            "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpTask"
+          },
           "_meta": {
             "type": "object",
             "unevaluatedProperties": {}
           }
         },
         "description": "Stable qyl projection of an MCP tool-call result."
+      },
+      "Runner.Mcp.RunnerMcpToolExecution": {
+        "type": "object",
+        "properties": {
+          "taskSupport": {
+            "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpToolTaskSupport"
+          }
+        },
+        "description": "Execution metadata advertised for an MCP tool."
+      },
+      "Runner.Mcp.RunnerMcpToolTaskSupport": {
+        "type": "string",
+        "enum": [
+          "forbidden",
+          "optional",
+          "required"
+        ],
+        "description": "Task-augmentation support advertised for an MCP tool."
       },
       "Runner.Mcp.RunnerMcpToolsResponse": {
         "type": "object",

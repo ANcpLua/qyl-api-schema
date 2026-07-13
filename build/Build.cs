@@ -245,30 +245,48 @@ sealed class Build : NukeBuild
         });
 
     // ---------------------------------------------------------------------
-    // VerifyNoManualEditsToGenerated: tracked diff + untracked file gap closure.
+    // VerifyGeneratedArtifactsCurrent: regenerate the repository-owned tracked
+    // OpenAPI artifact into scratch and compare it byte-for-byte with the
+    // working tree. This proves provenance without requiring a clean checkout,
+    // which would reject every legitimate pre-commit schema change.
     // ---------------------------------------------------------------------
-    Target VerifyNoManualEditsToGenerated => _ => _
-        .Description("Fail if anything under generated/ is dirty (tracked diff or untracked file). Closes the Codex untracked-file gap.")
+    Target VerifyGeneratedArtifactsCurrent => _ => _
+        .Description("Regenerate tracked OpenAPI output into scratch and fail on drift or unexpected untracked generated files.")
+        .DependsOn(CompileDomainSpec)
         .Executes(() =>
         {
             var generated = DomainSpecRoot / "generated";
+            var expectedOpenApi = generated / "openapi";
+            var actualOpenApi = ArtifactsDir / "verify-generated" / "openapi";
 
-            // Tracked-diff guard: any modified tracked file under generated/.
-            Git($"diff --exit-code -- \"{generated}\"", workingDirectory: DomainSpecRoot);
+            EnsureCleanDirectory(actualOpenApi);
+            NpmTasks.Npm(
+                $"exec --no -- tsp compile main.tsp --emit \"@typespec/openapi3\" --option \"@typespec/openapi3.emitter-output-dir={actualOpenApi}\"",
+                workingDirectory: DomainSpecRoot);
 
-            // Untracked-file guard: porcelain output for generated/ must be empty.
-            var porcelain = Git($"status --porcelain -- \"{generated}\"", workingDirectory: DomainSpecRoot, logOutput: false);
-            var dirty = porcelain
+            var (ok, firstDiff) = DiffDirectoriesBytewise(expectedOpenApi, actualOpenApi);
+            if (!ok)
+            {
+                throw new InvalidOperationException(
+                    $"VerifyGeneratedArtifactsCurrent: tracked OpenAPI output is stale at '{firstDiff}'. Run `npm run compile` and commit the regenerated artifact.");
+            }
+
+            // Ignored emitter/runtime outputs are package inputs and are rebuilt by
+            // prepack. Non-ignored untracked files have no declared owner and must
+            // not silently enter generated/.
+            var untracked = Git($"ls-files --others --exclude-standard -- \"{generated}\"", workingDirectory: DomainSpecRoot, logOutput: false)
                 .Select(l => l.Text)
                 .Where(l => !string.IsNullOrWhiteSpace(l))
                 .ToArray();
-            if (dirty.Length > 0)
+            if (untracked.Length > 0)
             {
                 throw new InvalidOperationException(
-                    $"VerifyNoManualEditsToGenerated: {dirty.Length} untracked or modified file(s) under '{generated}':"
+                    $"VerifyGeneratedArtifactsCurrent: {untracked.Length} unexpected untracked file(s) under '{generated}':"
                     + Environment.NewLine
-                    + string.Join(Environment.NewLine, dirty));
+                    + string.Join(Environment.NewLine, untracked));
             }
+
+            Log.Information("VerifyGeneratedArtifactsCurrent: tracked OpenAPI output matches a fresh emit.");
         });
 
     // ---------------------------------------------------------------------
@@ -279,7 +297,7 @@ sealed class Build : NukeBuild
         .DependsOn(
             VerifyKeysLockstep,
             VerifyEmitDeterministic,
-            VerifyNoManualEditsToGenerated,
+            VerifyGeneratedArtifactsCurrent,
             CompileDomainSpec)
         .Executes(() =>
         {
@@ -355,12 +373,12 @@ sealed class Build : NukeBuild
     // Local "everything green" gate.
     // ---------------------------------------------------------------------
     Target Check => _ => _
-        .Description("Local everything-green gate: restore -> lockstep -> compile -> no-manual-edits -> emit-all -> determinism -> npm pack -> C# contracts pack.")
+        .Description("Local everything-green gate: restore -> lockstep -> compile -> generated-current -> emit-all -> determinism -> npm pack -> C# contracts pack.")
         .DependsOn(
             RestoreTypeSpecDeps,
             VerifyKeysLockstep,
             CompileDomainSpec,
-            VerifyNoManualEditsToGenerated,
+            VerifyGeneratedArtifactsCurrent,
             EmitAll,
             VerifyEmitDeterministic,
             PackApiPackage,

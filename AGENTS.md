@@ -1,64 +1,89 @@
-# qyl-api-schema — Agent Notes
+# qyl-api-schema engineering contract
 
-This repo is qyl's API schema source of truth. It publishes `@ancplua/qyl-api-schema`
-and emits the `Qyl.Api.Contracts` NuGet package.
+This is the repository's only editable agent/contributor instruction file.
+`CLAUDE.md` is a symlink to it. `README.md` is the public package front door;
+generated reports are evidence, not additional authorities. Do not add migration
+plans, progress diaries, handoff prompts, or a second rules file.
 
-## Architecture
+## Product-contract ownership
 
-```text
-@ancplua/typespec-otel-semconv
-  -> qyl-api-schema
-  -> OpenAPI / JSON Schema / Qyl.Api.Contracts / TypeScript contract types
-  -> qyl runtime and generated clients
-```
+This TypeSpec repository is the sole owner of Qyl's client-visible product contract.
+It emits the `@ancplua/qyl-api-schema` TypeSpec package, OpenAPI/JSON Schema,
+`Qyl.Api.Contracts`, and generated TypeScript contract types.
 
-`@ancplua/typespec-otel-semconv` is the generic OpenTelemetry semantic-convention key
-projection. This repo is qyl-specific. Keep those identities separate.
+There is one owner for each boundary:
 
-## Allowed outputs
+- **Qyl product API:** every client-visible request, response, stream event, and
+  error is authored in TypeSpec here and emitted through `Qyl.Api.Contracts` or a
+  generated client.
+- **OTLP ingestion:** the runtime uses official OpenTelemetry protobuf messages.
+  This repository does not redefine OTLP receiver wire contracts.
+- **Runtime internals:** collector storage rows, ingest batches, query models, and
+  internal projections remain runtime-owned and must not cross an HTTP, gRPC, MCP,
+  streaming, or generated-client boundary.
+- **Telemetry JSON projections:** models under `otel/` that are used by Qyl routes
+  are client-facing Qyl JSON projections. They are not substitutes for OTLP
+  protobuf messages.
 
-- OpenAPI JSON
-- JSON Schema
-- BCL-only C# DTO contracts in `Qyl.Api.Contracts`
-- TypeScript schema/types
+When an internal shape must become client-visible, define it here first, regenerate,
+and map to the generated contract. Do not create public DTOs in `qyl.collector`,
+Qyl.Host, dashboard code, or MCP code. Anything serialized across a client boundary
+is a contract regardless of its source-language accessibility.
 
-## Forbidden outputs
+## Allowed and forbidden outputs
 
-- ASP.NET server scaffolds
-- generated controllers
-- generated mock implementations
-- SwaggerUI starter projects
-- generated starter docs that tell maintainers to fill in mock business logic
-- DuckDB/storage-schema emitters or artifacts
-- compatibility shims, aliases, adapters, or packages for old identities
+Allowed outputs are TypeSpec, OpenAPI, JSON Schema, BCL-only C# contracts, and
+TypeScript contract types. Do not emit server scaffolds, controllers, mock business
+logic, DuckDB/storage schemas, runtime services, or compatibility packages for
+retired identities.
 
-## Naming
+The package and namespace identities are:
 
-- npm package: `@ancplua/qyl-api-schema`
-- NuGet package: `Qyl.Api.Contracts`
-- qyl API namespaces: `Qyl.Api.Contracts.*`
-- generic semconv key namespace: `ANcpLua.OpenTelemetry.SemanticConventions.Keys.*`
+- npm: `@ancplua/qyl-api-schema`
+- NuGet: `Qyl.Api.Contracts`
+- .NET namespaces: `Qyl.Api.Contracts.*`
 
-Do not reintroduce legacy qyl API package IDs or namespaces. The only qyl API
-identity in this repository is `Qyl.Api.Contracts`.
+## Generated ownership
 
-## Generated files
+- Authored TypeSpec under `api/`, `common/`, `models/`, and `otel/`
+  owns the product contract.
+- `generated/otel-keys.gen.tsp` is emitted by the sibling
+  `Qyl.OpenTelemetry.SemanticConventions` repository's `emit_typespec_keys.py` from
+  its resolved registry. It supplies names, not product models.
+- Emitters under `emitters/` own generated C# and TypeScript contracts; TypeSpec's
+  official emitters own OpenAPI and JSON Schema.
+- Never hand-edit generated output. Change TypeSpec, an emitter, or an upstream
+  generated input and regenerate deterministically.
 
-Never hand-edit generated output. Change TypeSpec sources, emitter code, or generator inputs,
-then regenerate. If generated output is stale or wrong, delete/regenerate it rather than patching
-the generated file.
+## Versioning
+
+Published npm and NuGet versions are derived from the release tag by CI; committed
+package versions are non-authoritative development placeholders. TypeSpec
+`@versioned` enums contain only the baseline and versions actually referenced by an
+`@added` or `@removed` annotation. Remove empty version axes rather than preserving
+timeline decoration.
+
+Deprecated telemetry-key normalization is an ingestion concern in Qyl runtime. The
+public contract describes current fields and does not retain old wire aliases as
+compatibility DTOs.
 
 ## Verification
 
-Use the local gate before publishing:
+Run the local repository gate:
 
 ```bash
 npm ci
-npm run lint
-npm run lint:public
-npm run compile
-./build.sh PackContractsNuget
+./build.sh Check
 ```
 
-If GitHub Actions is blocked, do not trigger CI. Use local verification and publish manually only
-with credentials supplied through environment variables.
+At minimum, contract work must pass `npm run lint`, `npm run lint:public`,
+`npm run compile`, deterministic generated-output comparison, npm packing, and
+`./build.sh PackContractsNuget`. Restore the produced `Qyl.Api.Contracts` package
+into a clean Qyl consumer for boundary changes.
+
+## Publishing
+
+Publication is GitHub Actions OIDC trusted publishing to npmjs.org and nuget.org.
+Never add long-lived registry credentials or publish locally. The workflow publishes
+in an ordered, restartable sequence; it is not atomic across registries. Release
+completion requires both indexed artifacts and clean-consumer smoke tests.

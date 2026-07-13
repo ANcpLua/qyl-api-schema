@@ -15,11 +15,13 @@
     "build": "tsc -p ."
   },
   "peerDependencies": {
-    "@typespec/compiler": "^1.13.0-dev"
+    "@typespec/compiler": "^1.13.0-dev",
+    "@typespec/http": "^1.13.0"
   },
   "devDependencies": {
     "@types/node": "25.9.5",
     "@typespec/compiler": "1.13.0",
+    "@typespec/http": "1.13.0",
     "typescript": "6.0.3"
   }
 }

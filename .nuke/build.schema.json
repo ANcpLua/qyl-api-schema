@@ -31,10 +31,8 @@
         "EmitAll",
         "EmitCSharp",
         "EmitTsTypes",
-        "LintConventions",
         "PackApiPackage",
         "PackContractsNuget",
-        "PublishApiPackage",
         "RestoreTypeSpecDeps",
         "VerifyEmitDeterministic",
         "VerifyKeysLockstep",
@@ -110,30 +108,7 @@
     }
   },
   "allOf": [
-    {
-      "properties": {
-        "ApiPackageRegistry": {
-          "type": "string",
-          "description": "npm registry for PublishApiPackage (default: https://registry.npmjs.org)"
-        },
-        "DomainSpecRoot": {
-          "type": "string",
-          "description": "Root directory of the downstream TypeSpec domain spec (default: RootDirectory)"
-        },
-        "EmitFailOnDrift": {
-          "type": "boolean",
-          "description": "Fail the build if emit-reproducibility verification detects drift"
-        },
-        "OtelKeysPackage": {
-          "type": "string",
-          "description": "npm package name of the upstream keys provider (default: '@ancplua/typespec-otel-semconv')"
-        },
-        "OtelKeysVersion": {
-          "type": "string",
-          "description": "Exact lockstep version ({semconv}-{n}) of the upstream keys package"
-        }
-      }
-    },
+    {},
     {
       "$ref": "#/definitions/NukeBuild"
     }

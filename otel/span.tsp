@@ -1,5 +1,5 @@
 // =============================================================================
-// ANcpLua v2.0 - OpenTelemetry Span Model
+// OpenTelemetry span JSON projection
 // =============================================================================
 // Distributed tracing span representation following OTel specification.
 // =============================================================================

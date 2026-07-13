@@ -1,5 +1,5 @@
 // =============================================================================
-// ANcpLua v2.0 - OpenTelemetry Profiles Model (v1development)
+// OpenTelemetry profiles JSON projection (v1development)
 // =============================================================================
 // Continuous profiling signal following OTel Profiles proto specification.
 // Proto package: opentelemetry.proto.profiles.v1development

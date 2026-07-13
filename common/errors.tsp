@@ -1,5 +1,5 @@
 // =============================================================================
-// ANcpLua v2.0 - Error Models
+// qyl product API error models
 // =============================================================================
 // Standardized error responses following RFC 7807 Problem Details.
 // =============================================================================
@@ -159,6 +159,16 @@ model InternalServerError extends ProblemDetails {
   errorCode?: string;
 }
 
+@doc("Upstream dependency failed while fulfilling the request (502)")
+@error
+model BadGatewayError extends ProblemDetails {
+  @statusCode _: 502;
+  title: "Bad Gateway";
+
+  @doc("Stable dependency category; never contains raw exception text")
+  dependency?: string;
+}
+
 @doc("Service unavailable (503)")
 @error
 model ServiceUnavailableError extends ProblemDetails {
@@ -200,6 +210,9 @@ union ApiError {
 
   @doc("Server error")
   serverError: InternalServerError,
+
+  @doc("Upstream dependency failed")
+  badGateway: BadGatewayError,
 
   @doc("Service unavailable")
   unavailable: ServiceUnavailableError,

@@ -49,11 +49,12 @@ export function mapType(program: Program, type: Type): string {
     case "EnumMember":
       return qualifyModelOrEnum(program, (type as { enum: Type }).enum);
     case "Union":
-      // TypeSpec unions don't have a clean C# equivalent. Named unions (e.g. LogBody,
-      // AttributeValue) aren't emitted as separate types; flatten to object so the property
-      // accepts any JSON-compatible value. Downstream JSON serialization preserves type info
-      // via STJ's object handling. Literal-string unions (e.g. "a" | "b") fall through to
-      // string via the String case above; only named unions hit this branch.
+      // Preserve homogeneous primitive literal unions as their wire primitive. Structural
+      // unions such as LogBody and AttributeValue still require a generated discriminated
+      // representation before they can be stronger than object.
+      if ([...type.variants.values()].every((variant) => variant.type.kind === "String")) return "string";
+      if ([...type.variants.values()].every((variant) => variant.type.kind === "Boolean")) return "bool";
+      if ([...type.variants.values()].every((variant) => variant.type.kind === "Number")) return "double";
       return "object";
     case "Boolean":
       return "bool";

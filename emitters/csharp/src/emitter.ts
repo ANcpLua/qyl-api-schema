@@ -1,5 +1,6 @@
 import type { EmitContext, Enum, Model, Program } from "@typespec/compiler";
 import { emitFile, navigateProgram, resolveEncodedName } from "@typespec/compiler";
+import { isHeader, isStatusCode } from "@typespec/http";
 import { getCsharpNamespace, hasCsharpRecord } from "./decorators.js";
 import { mapType } from "./type-map.js";
 
@@ -18,6 +19,7 @@ export async function $onEmit(context: EmitContext): Promise<void> {
     model: (m) => {
       if (isInTypeSpec(m)) return;
       if (!m.name) return;
+      if (!inheritedProperties(m).some((property) => !isHttpMetadata(program, property))) return;
       const ns = resolveNamespace(program, m);
       if (!ns) return;
       // Template instantiations share the base name (`CursorPage`); use the instantiated
@@ -96,7 +98,8 @@ function renderModel(program: Program, model: Model, emittedName: string): strin
   const asRecord = hasCsharpRecord(program, model);
   const keyword = asRecord ? "public sealed record" : "public sealed class";
   const props: string[] = [];
-  for (const [, prop] of model.properties) {
+  for (const prop of inheritedProperties(model)) {
+    if (isHttpMetadata(program, prop)) continue;
     const type = mapType(program, prop.type);
     const name = pascal(prop.name);
     const jsonName = escapeCsharpString(resolveEncodedName(program, prop, "application/json"));
@@ -108,6 +111,22 @@ function renderModel(program: Program, model: Model, emittedName: string): strin
   }
   const body = props.length ? `\n${props.join("\n")}\n` : "\n";
   return `${keyword} ${emittedName}\n{${body}}\n`;
+}
+
+function isHttpMetadata(program: Program, property: import("@typespec/compiler").ModelProperty): boolean {
+  return isHeader(program, property) || isStatusCode(program, property);
+}
+
+function inheritedProperties(model: Model): import("@typespec/compiler").ModelProperty[] {
+  const byName = new Map<string, import("@typespec/compiler").ModelProperty>();
+  const lineage: Model[] = [];
+  for (let current: Model | undefined = model; current; current = current.baseModel) {
+    lineage.unshift(current);
+  }
+  for (const current of lineage) {
+    for (const property of current.properties.values()) byName.set(property.name, property);
+  }
+  return [...byName.values()];
 }
 
 function renderEnum(_program: Program, enm: Enum): string {

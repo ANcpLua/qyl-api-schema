@@ -8,7 +8,6 @@ using Nuke.Common.IO;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.Npm;
-using Qyl.OpenTelemetry.SemanticConventions.Nuke;
 using Serilog;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Nuke.Common.Tools.Git.GitTasks;
@@ -17,37 +16,27 @@ using static Nuke.Common.Tools.Npm.NpmTasks;
 /// <summary>
 /// Build entry point for <c>@ancplua/qyl-api-schema</c>.
 ///
-/// Implements <see cref="IDomainConventionsApi"/> by wiring each declarative target
-/// to the existing npm scripts in <c>package.json</c> plus the lockstep / determinism
-/// policy that this repository owns.
+/// Owns qyl-api-schema's restore, compile, deterministic-emission, and package gates.
 /// </summary>
-sealed class Build : NukeBuild, IDomainConventionsApi
+sealed class Build : NukeBuild
 {
-    // Entry point: default target is the EmitAll aggregate from the component.
-    public static int Main() => Execute<Build>(x => ((IDomainConventionsApi)x).EmitAll);
+    public static int Main() => Execute<Build>(x => x.EmitAll);
 
-    /// <summary>
-    /// Directory containing emitter outputs (<c>Artifacts/emit/{csharp,ts-types,lint}</c>).
-    /// Overrides the <see cref="IDomainConventionsApi.EmitOutputDir"/> default of <c>./emitters</c>
-    /// to keep generated artifacts out of the source-tree <c>emitters/</c> directory
-    /// (which holds emitter source code, not outputs).
-    /// </summary>
-    AbsolutePath IDomainConventionsApi.EmitOutputDir =>
-        ((IDomainConventionsApi)this).TryGetValue(() => ((IDomainConventionsApi)this).EmitOutputDir)
-        ?? RootDirectory / "Artifacts" / "emit";
-
-    string[] IDomainConventionsApi.Emitters => ["csharp", "ts-types", "lint"];
+    const string OtelKeysVersion = "1.43.0";
+    static readonly string[] Emitters = ["csharp", "ts-types"];
+    AbsolutePath DomainSpecRoot => RootDirectory;
+    AbsolutePath EmitOutputDir => RootDirectory / "Artifacts" / "emit";
 
     AbsolutePath ArtifactsDir => RootDirectory / "Artifacts";
 
     // ---------------------------------------------------------------------
     // RestoreTypeSpecDeps: npm ci
     // ---------------------------------------------------------------------
-    Target IDomainConventionsApi.RestoreTypeSpecDeps => _ => _
+    Target RestoreTypeSpecDeps => _ => _
         .Description("Restore npm dependencies (npm ci) for the TypeSpec spec.")
         .Executes(() =>
         {
-            NpmCi(s => s.SetProcessWorkingDirectory(((IDomainConventionsApi)this).DomainSpecRoot));
+            NpmCi(s => s.SetProcessWorkingDirectory(DomainSpecRoot));
         });
 
     // ---------------------------------------------------------------------
@@ -57,14 +46,13 @@ sealed class Build : NukeBuild, IDomainConventionsApi
     // semconv + the GenAI dev registry; assert its header pins core semconv
     // v{OtelKeysVersion} so the TypeSpec and C# surfaces cannot drift apart.
     // ---------------------------------------------------------------------
-    Target IDomainConventionsApi.VerifyKeysLockstep => _ => _
+    Target VerifyKeysLockstep => _ => _
         .Description("Assert generated/otel-keys.gen.tsp is pinned at core semconv OtelKeysVersion.")
-        .DependsOn(((IDomainConventionsApi)this).RestoreTypeSpecDeps)
+        .DependsOn(RestoreTypeSpecDeps)
         .Executes(() =>
         {
-            var self = (IDomainConventionsApi)this;
-            var spec = self.DomainSpecRoot;
-            var expected = self.OtelKeysVersion;
+            var spec = DomainSpecRoot;
+            var expected = OtelKeysVersion;
 
             var committed = spec / "generated" / "otel-keys.gen.tsp";
 
@@ -93,12 +81,12 @@ sealed class Build : NukeBuild, IDomainConventionsApi
     // ---------------------------------------------------------------------
     // CompileDomainSpec: npm run lint:public (tsp compile index.tsp --no-emit --warn-as-error)
     // ---------------------------------------------------------------------
-    Target IDomainConventionsApi.CompileDomainSpec => _ => _
+    Target CompileDomainSpec => _ => _
         .Description("Compile the published TypeSpec surface (index.tsp) with --no-emit --warn-as-error via `npm run lint:public`.")
-        .DependsOn(((IDomainConventionsApi)this).VerifyKeysLockstep)
+        .DependsOn(VerifyKeysLockstep)
         .Executes(() =>
         {
-            var spec = ((IDomainConventionsApi)this).DomainSpecRoot;
+            var spec = DomainSpecRoot;
             NpmRun(s => s
                 .SetCommand("lint:public")
                 .SetProcessWorkingDirectory(spec));
@@ -107,58 +95,47 @@ sealed class Build : NukeBuild, IDomainConventionsApi
     // ---------------------------------------------------------------------
     // Per-emitter targets: npx tsp compile main.tsp --emit <emitter> --output-dir <out>
     // ---------------------------------------------------------------------
-    Target IDomainConventionsApi.EmitCSharp => _ => _
+    Target EmitCSharp => _ => _
         .Description("Run the C# TypeSpec emitter into Artifacts/emit/csharp.")
-        .DependsOn(((IDomainConventionsApi)this).CompileDomainSpec)
+        .DependsOn(CompileDomainSpec)
         .Executes(() => RunTypeSpecEmitter("@ancplua/typespec-emit-csharp", "csharp"));
 
-    Target IDomainConventionsApi.EmitTsTypes => _ => _
+    Target EmitTsTypes => _ => _
         .Description("Run the TypeScript-types TypeSpec emitter into Artifacts/emit/ts-types.")
-        .DependsOn(((IDomainConventionsApi)this).CompileDomainSpec)
+        .DependsOn(CompileDomainSpec)
         .Executes(() => RunTypeSpecEmitter("@ancplua/typespec-emit-ts-types", "ts-types"));
 
-    Target IDomainConventionsApi.LintConventions => _ => _
-        .Description("Run the ANcpLua conventions linter via `npm run lint` (full-surface compile with --warn-as-error; lint diagnostics live in the @ancplua/typespec-otelconventions-lint TypeSpec library).")
-        .DependsOn(((IDomainConventionsApi)this).CompileDomainSpec)
-        .Executes(() =>
-        {
-            var spec = ((IDomainConventionsApi)this).DomainSpecRoot;
-            NpmRun(s => s
-                .SetCommand("lint")
-                .SetProcessWorkingDirectory(spec));
-        });
-
-    Target IDomainConventionsApi.EmitAll => _ => _
-        .Description("Run all API contract emitters: C#, TypeScript types, and conventions lint.")
+    Target EmitAll => _ => _
+        .Description("Run the C# and TypeScript contract emitters.")
         .DependsOn(
-            ((IDomainConventionsApi)this).EmitCSharp,
-            ((IDomainConventionsApi)this).EmitTsTypes,
-            ((IDomainConventionsApi)this).LintConventions);
+            EmitCSharp,
+            EmitTsTypes);
 
     void RunTypeSpecEmitter(string emitterPackage, string outputSubdir)
+        => RunTypeSpecEmitter(emitterPackage, EmitOutputDir / outputSubdir);
+
+    void RunTypeSpecEmitter(string emitterPackage, AbsolutePath outDir)
     {
-        var self = (IDomainConventionsApi)this;
-        var spec = self.DomainSpecRoot;
-        var outDir = self.EmitOutputDir / outputSubdir;
+        var spec = DomainSpecRoot;
         EnsureCleanDirectory(outDir);
 
         // `npm exec --no -- tsp ...` runs the locally-installed TypeSpec compiler
         // without npm attempting to install missing binaries (`--no` is npm's
-        // short form of `--no-install`).
+        // short form of `--no-install`). The explicit emitter option is required:
+        // tspconfig.yaml's per-emitter output path otherwise wins over --output-dir.
         NpmTasks.Npm(
-            $"exec --no -- tsp compile main.tsp --emit \"{emitterPackage}\" --output-dir \"{outDir}\"",
+            $"exec --no -- tsp compile main.tsp --emit \"{emitterPackage}\" --option \"{emitterPackage}.emitter-output-dir={outDir}\"",
             workingDirectory: spec);
     }
 
     // ---------------------------------------------------------------------
     // VerifyEmitDeterministic: run EmitAll twice into separate scratch dirs and diff.
     // ---------------------------------------------------------------------
-    Target IDomainConventionsApi.VerifyEmitDeterministic => _ => _
-        .Description("Run every emitter twice into Artifacts/emit-a and Artifacts/emit-b; fail on any byte diff when EmitFailOnDrift is true.")
-        .DependsOn(((IDomainConventionsApi)this).VerifyKeysLockstep)
+    Target VerifyEmitDeterministic => _ => _
+        .Description("Run every emitter twice into Artifacts/emit-a and Artifacts/emit-b; fail on any byte difference.")
+        .DependsOn(VerifyKeysLockstep)
         .Executes(() =>
         {
-            var self = (IDomainConventionsApi)this;
             var dirA = ArtifactsDir / "emit-a";
             var dirB = ArtifactsDir / "emit-b";
 
@@ -169,34 +146,25 @@ sealed class Build : NukeBuild, IDomainConventionsApi
             if (!ok)
             {
                 var msg = $"VerifyEmitDeterministic: drift detected at '{firstDiff}' between '{dirA}' and '{dirB}'.";
-                if (self.EmitFailOnDrift)
-                {
-                    throw new InvalidOperationException(msg);
-                }
-
-                Log.Warning("{Msg} (EmitFailOnDrift=false — not failing build.)", msg);
-                return;
+                throw new InvalidOperationException(msg);
             }
 
             Log.Information("VerifyEmitDeterministic: '{A}' and '{B}' are byte-identical across {Count} emitter(s).",
-                dirA, dirB, self.Emitters.Length);
+                dirA, dirB, Emitters.Length);
         });
 
     void RunEmittersInto(AbsolutePath root)
     {
-        var self = (IDomainConventionsApi)this;
-        var spec = self.DomainSpecRoot;
+        var spec = DomainSpecRoot;
         EnsureCleanDirectory(root);
 
-        // `lint` is a TypeSpec library, not an emitter (no $onEmit); it produces no files,
-        // so it has nothing to compare bytewise — exclude it from the determinism check.
-        foreach (var emitter in self.Emitters.Where(e => !string.Equals(e, "lint", StringComparison.Ordinal)))
+        foreach (var emitter in Emitters)
         {
             var (package, subdir) = ResolveEmitter(emitter);
             var outDir = root / subdir;
             EnsureCleanDirectory(outDir);
             NpmTasks.Npm(
-                $"exec --no -- tsp compile main.tsp --emit \"{package}\" --output-dir \"{outDir}\"",
+                $"exec --no -- tsp compile main.tsp --emit \"{package}\" --option \"{package}.emitter-output-dir={outDir}\"",
                 workingDirectory: spec);
         }
     }
@@ -205,7 +173,7 @@ sealed class Build : NukeBuild, IDomainConventionsApi
     {
         "csharp" => ("@ancplua/typespec-emit-csharp", "csharp"),
         "ts-types" => ("@ancplua/typespec-emit-ts-types", "ts-types"),
-        _ => throw new ArgumentException($"Unknown emitter '{emitter}'. Expected: csharp, ts-types (lint is a TypeSpec library, not an emitter).", nameof(emitter)),
+        _ => throw new ArgumentException($"Unknown emitter '{emitter}'. Expected: csharp or ts-types.", nameof(emitter)),
     };
 
     static (bool Ok, string? FirstDiff) DiffDirectoriesBytewise(AbsolutePath a, AbsolutePath b)
@@ -249,13 +217,12 @@ sealed class Build : NukeBuild, IDomainConventionsApi
     // ---------------------------------------------------------------------
     // BuildCSharpEmit: dotnet build the emitted csproj (if any).
     // ---------------------------------------------------------------------
-    Target IDomainConventionsApi.BuildCSharpEmit => _ => _
+    Target BuildCSharpEmit => _ => _
         .Description("dotnet build the emitted C# project under Artifacts/emit/csharp (no-op when no csproj is emitted).")
-        .DependsOn(((IDomainConventionsApi)this).EmitCSharp)
+        .DependsOn(EmitCSharp)
         .Executes(() =>
         {
-            var self = (IDomainConventionsApi)this;
-            var csharpOut = self.EmitOutputDir / "csharp";
+            var csharpOut = EmitOutputDir / "csharp";
             if (!Directory.Exists(csharpOut))
             {
                 Log.Warning("BuildCSharpEmit: '{Dir}' does not exist — skipping.", csharpOut);
@@ -280,18 +247,17 @@ sealed class Build : NukeBuild, IDomainConventionsApi
     // ---------------------------------------------------------------------
     // VerifyNoManualEditsToGenerated: tracked diff + untracked file gap closure.
     // ---------------------------------------------------------------------
-    Target IDomainConventionsApi.VerifyNoManualEditsToGenerated => _ => _
+    Target VerifyNoManualEditsToGenerated => _ => _
         .Description("Fail if anything under generated/ is dirty (tracked diff or untracked file). Closes the Codex untracked-file gap.")
         .Executes(() =>
         {
-            var self = (IDomainConventionsApi)this;
-            var generated = self.DomainSpecRoot / "generated";
+            var generated = DomainSpecRoot / "generated";
 
             // Tracked-diff guard: any modified tracked file under generated/.
-            Git($"diff --exit-code -- \"{generated}\"", workingDirectory: self.DomainSpecRoot);
+            Git($"diff --exit-code -- \"{generated}\"", workingDirectory: DomainSpecRoot);
 
             // Untracked-file guard: porcelain output for generated/ must be empty.
-            var porcelain = Git($"status --porcelain -- \"{generated}\"", workingDirectory: self.DomainSpecRoot, logOutput: false);
+            var porcelain = Git($"status --porcelain -- \"{generated}\"", workingDirectory: DomainSpecRoot, logOutput: false);
             var dirty = porcelain
                 .Select(l => l.Text)
                 .Where(l => !string.IsNullOrWhiteSpace(l))
@@ -308,16 +274,16 @@ sealed class Build : NukeBuild, IDomainConventionsApi
     // ---------------------------------------------------------------------
     // PackApiPackage: npm pack
     // ---------------------------------------------------------------------
-    Target IDomainConventionsApi.PackApiPackage => _ => _
+    Target PackApiPackage => _ => _
         .Description("Run `npm pack` to validate package.json#files and produce the tarball.")
         .DependsOn(
-            ((IDomainConventionsApi)this).VerifyKeysLockstep,
-            ((IDomainConventionsApi)this).VerifyEmitDeterministic,
-            ((IDomainConventionsApi)this).VerifyNoManualEditsToGenerated,
-            ((IDomainConventionsApi)this).CompileDomainSpec)
+            VerifyKeysLockstep,
+            VerifyEmitDeterministic,
+            VerifyNoManualEditsToGenerated,
+            CompileDomainSpec)
         .Executes(() =>
         {
-            var spec = ((IDomainConventionsApi)this).DomainSpecRoot;
+            var spec = DomainSpecRoot;
             NpmTasks.Npm("pack", workingDirectory: spec);
         });
 
@@ -331,7 +297,7 @@ sealed class Build : NukeBuild, IDomainConventionsApi
     AbsolutePath PackagingProject => RootDirectory / "packaging" / "Qyl.Api.Contracts.csproj";
     AbsolutePath NugetOutputDir => ArtifactsDir / "nuget";
 
-    AbsolutePath ContractsEmitDir => ((IDomainConventionsApi)this).DomainSpecRoot / "generated" / "contracts";
+    AbsolutePath ContractsEmitDir => DomainSpecRoot / "generated" / "contracts";
 
     // NuGet-compatible SemVer (MAJOR.MINOR.PATCH[-prerelease]); no build metadata.
     static readonly Regex NugetVersionPattern =
@@ -339,7 +305,7 @@ sealed class Build : NukeBuild, IDomainConventionsApi
 
     string PackageJsonVersion()
     {
-        var pkgJson = ((IDomainConventionsApi)this).DomainSpecRoot / "package.json";
+        var pkgJson = DomainSpecRoot / "package.json";
         using var doc = JsonDocument.Parse(File.ReadAllText(pkgJson));
         return doc.RootElement.GetProperty("version").GetString()
             ?? throw new InvalidOperationException($"'{pkgJson}' has no 'version'.");
@@ -358,20 +324,20 @@ sealed class Build : NukeBuild, IDomainConventionsApi
         return version;
     }
 
-    // Clean generated/contracts BEFORE EmitCSharp emits into it: the @ancplua/typespec-emit-csharp
-    // emitter does not self-clean, so a removed/renamed model would otherwise leave a stale type in
-    // the package. Ordered .Before(EmitCSharp) and pulled in via PackContractsNuget's DependsOn, so
-    // the plan is CleanContractsEmit -> EmitCSharp -> PackContractsNuget.
+    // Clean generated/contracts before the package-specific emit. The normal EmitCSharp target
+    // writes to Artifacts/emit/csharp; the NuGet path is deliberately separate so deterministic
+    // verification and package assembly cannot accidentally inspect the same directory.
     Target CleanContractsEmit => _ => _
         .Unlisted()
-        .Before(((IDomainConventionsApi)this).EmitCSharp)
         .Executes(() => ContractsEmitDir.CreateOrCleanDirectory());
 
     Target PackContractsNuget => _ => _
         .Description("Pack the freshly-emitted C# contracts (generated/contracts) into the Qyl.Api.Contracts NuGet (versioned from package.json).")
-        .DependsOn(CleanContractsEmit, ((IDomainConventionsApi)this).EmitCSharp)
+        .DependsOn(CleanContractsEmit, CompileDomainSpec)
         .Executes(() =>
         {
+            RunTypeSpecEmitter("@ancplua/typespec-emit-csharp", ContractsEmitDir);
+
             // Fail fast rather than ship an empty assembly if the emit produced nothing.
             if (ContractsEmitDir.GlobFiles("**/*.cs").Count == 0)
                 throw new InvalidOperationException(
@@ -391,12 +357,12 @@ sealed class Build : NukeBuild, IDomainConventionsApi
     Target Check => _ => _
         .Description("Local everything-green gate: restore -> lockstep -> compile -> no-manual-edits -> emit-all -> determinism -> npm pack -> C# contracts pack.")
         .DependsOn(
-            ((IDomainConventionsApi)this).RestoreTypeSpecDeps,
-            ((IDomainConventionsApi)this).VerifyKeysLockstep,
-            ((IDomainConventionsApi)this).CompileDomainSpec,
-            ((IDomainConventionsApi)this).VerifyNoManualEditsToGenerated,
-            ((IDomainConventionsApi)this).EmitAll,
-            ((IDomainConventionsApi)this).VerifyEmitDeterministic,
-            ((IDomainConventionsApi)this).PackApiPackage,
+            RestoreTypeSpecDeps,
+            VerifyKeysLockstep,
+            CompileDomainSpec,
+            VerifyNoManualEditsToGenerated,
+            EmitAll,
+            VerifyEmitDeterministic,
+            PackApiPackage,
             PackContractsNuget);
 }

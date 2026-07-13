@@ -1,5 +1,5 @@
 // =============================================================================
-// ANcpLua v2.0 - OpenTelemetry Core Enumerations
+// OpenTelemetry JSON projection enumerations
 // =============================================================================
 // All OTel standard enumerations following OTel Semantic Conventions.
 // =============================================================================

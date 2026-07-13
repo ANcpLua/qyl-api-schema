@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": false,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "generated/ts-runtime",
+    "rootDir": "generated/ts-types",
+    "sourceMap": false,
+    "strict": true,
+    "target": "ES2022"
+  },
+  "include": [
+    "generated/ts-types/api.ts"
+  ]
+}

@@ -1,6 +1,3 @@
 {
-  "$schema": "https://nuke.build/schema",
-  "OtelKeysVersion": "1.43.0",
-  "Emitters": ["csharp", "ts-types", "lint"],
-  "EmitFailOnDrift": true
+  "$schema": "https://nuke.build/schema"
 }

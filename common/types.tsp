@@ -6,11 +6,9 @@
 // (GenAI keys come from the dedicated GenAI registry since the 1.42 split).
 // =============================================================================
 
-import "@typespec/versioning";
 import "@typespec/json-schema";
 import "@typespec/openapi";
 
-using TypeSpec.Versioning;
 using TypeSpec.JsonSchema;
 using TypeSpec.OpenAPI;
 
@@ -19,10 +17,8 @@ namespace Qyl.Api.Contracts.Common;
 // =============================================================================
 // Identifier Scalars - Strongly Typed IDs
 // =============================================================================
-// (The former OTelVersion enum — a hand-bumped list of semconv releases with
-// zero consumers — was deleted in 0.4.0. The semconv pin lives in the
-// otel-keys.gen.tsp header and .nuke/parameters.json OtelKeysVersion, both
-// machine-checked; a prose enum of upstream releases only rots.)
+// The semantic-conventions pin lives in the generated keys header and is
+// machine-checked; a hand-maintained enum of upstream releases would only drift.
 
 @jsonSchema
 @doc("Unique trace identifier (32 lowercase hex characters)")

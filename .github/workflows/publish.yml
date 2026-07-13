@@ -6,9 +6,9 @@ name: Publish (npmjs.org + nuget.org)
 #   npm   @ancplua/qyl-api-schema -> registry.npmjs.org  (npm trusted publishing + provenance)
 #   nuget Qyl.Api.Contracts       -> nuget.org           (NuGet/login OIDC -> 1-hour key)
 #
-# All-or-nothing: the NuGet is packed + validated BEFORE either publish; then nuget pushes first
-# (idempotent via --skip-duplicate) and npm publishes last (immutable, non-idempotent), so a partial
-# failure re-runs cleanly without stranding either registry.
+# Ordered and restartable: the NuGet is packed + validated before either publish, then NuGet pushes
+# first (idempotent via --skip-duplicate) and npm publishes last (immutable, non-idempotent). The
+# two registries are not an atomic transaction; ordering keeps partial-failure recovery bounded.
 #
 # Routing: the committed .npmrc maps @ancplua -> GitHub Packages for INSTALL of internal build deps;
 # that scope map wins over publishConfig.registry for scoped publishes, so THIS package is forced to
@@ -61,8 +61,7 @@ jobs:
 
       - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
         with:
-          # Pinned patch (matches build/global.json) — don't float 10.0.x while actions are SHA-pinned.
-          dotnet-version: '10.0.300'
+          global-json-file: build/global.json
 
       - name: Verify package.json is not private
         run: |
@@ -135,6 +134,7 @@ jobs:
             exit 1
           fi
           npm version "$ver" --no-git-tag-version --allow-same-version
+          echo "RELEASE_VERSION=$ver" >> "$GITHUB_ENV"
           echo "Release version: $ver (npm + NuGet stamped from the git tag)"
 
       # Pack + validate the NuGet BEFORE any publish: both registries are immutable, so a pack
@@ -179,3 +179,6 @@ jobs:
       # so without the flag this would silently land on GitHub Packages and OIDC would never apply.
       - name: Publish npm to npmjs.org (OIDC + provenance)
         run: npm publish --access public --provenance --tag "$NPM_DIST_TAG" --@ancplua:registry=https://registry.npmjs.org
+
+      - name: Wait for both indexes and smoke clean consumers
+        run: node scripts/verify-published.mjs "$RELEASE_VERSION"

@@ -19,29 +19,48 @@
     "openapi"
   ],
   "type": "module",
+  "tspMain": "index.tsp",
   "exports": {
-    ".": "./index.tsp",
-    "./otel": "./otel/otel-conventions.tsp",
-    "./models/*": "./models/*.tsp",
-    "./models/agent/*": "./models/agent/*.tsp",
-    "./common/*": "./common/*.tsp",
-    "./api/*": "./api/*.tsp",
-    "./intelligence/*": "./intelligence/*.tsp",
-    "./intelligence/seed/*": "./intelligence/seed/*.tsp",
-    "./generated/otel-keys": "./generated/otel-keys.gen.tsp"
+    ".": {
+      "typespec": "./index.tsp",
+      "default": "./index.tsp"
+    },
+    "./otel": {
+      "typespec": "./otel/otel-conventions.tsp",
+      "default": "./otel/otel-conventions.tsp"
+    },
+    "./generated/otel-keys": {
+      "typespec": "./generated/otel-keys.gen.tsp",
+      "default": "./generated/otel-keys.gen.tsp"
+    },
+    "./types": {
+      "types": "./generated/ts-runtime/api.d.ts",
+      "import": "./generated/ts-runtime/api.js",
+      "default": "./generated/ts-runtime/api.js"
+    }
   },
   "files": [
     "index.tsp",
-    "api/**/*.tsp",
-    "common/**/*.tsp",
-    "intelligence/**/*.tsp",
-    "models/**/*.tsp",
-    "otel/**/*.tsp",
-    "generated/**/*.tsp",
-    "generated/README.md",
-    "tspconfig.yaml",
+    "api/routes.tsp",
+    "api/runner.tsp",
+    "api/streaming.tsp",
+    "common/errors.tsp",
+    "common/pagination.tsp",
+    "common/types.tsp",
+    "models/health.tsp",
+    "models/runner-mcp.tsp",
+    "models/runner.tsp",
+    "models/session.tsp",
+    "otel/enums.tsp",
+    "otel/logs.tsp",
+    "otel/otel-conventions.tsp",
+    "otel/profiles.tsp",
+    "otel/resource.tsp",
+    "otel/span.tsp",
+    "generated/otel-keys.gen.tsp",
+    "generated/ts-runtime/api.d.ts",
+    "generated/ts-runtime/api.js",
     "README.md",
-    "VERSIONING.md",
     "LICENSE"
   ],
   "publishConfig": {
@@ -50,9 +69,12 @@
     "registry": "https://registry.npmjs.org"
   },
   "scripts": {
-    "build:emitters": "tsc -p emitters/telemetry-control-graph && tsc -p emitters/csharp && tsc -p emitters/ts-types && tsc -p emitters/otelconventions-lint",
+    "clean:generated": "node scripts/clean-generated.mjs",
+    "build:emitters": "tsc -p emitters/csharp && tsc -p emitters/ts-types",
+    "build:ts-runtime": "tsc -p tsconfig.contracts.json",
     "prepare": "npm run build:emitters",
-    "compile": "npm run build:emitters && tsp compile main.tsp",
+    "prepack": "npm run compile",
+    "compile": "npm run clean:generated && npm run build:emitters && tsp compile main.tsp && npm run build:ts-runtime",
     "watch": "tsp compile main.tsp --watch",
     "format": "tsp format **/*.tsp",
     "lint": "npm run build:emitters && tsp compile main.tsp --no-emit --warn-as-error",
@@ -64,17 +86,11 @@
     "@typespec/http": "^1.13.0",
     "@typespec/json-schema": "^1.13.0",
     "@typespec/openapi": "^1.13.0",
-    "@typespec/openapi3": "^1.13.0",
-    "@typespec/rest": "^0.83.0",
-    "@typespec/sse": "^0.83.0",
-    "@typespec/streams": "^0.83.0",
-    "@typespec/versioning": "^0.83.0"
+    "@typespec/sse": "^0.83.0"
   },
   "devDependencies": {
     "@ancplua/typespec-emit-csharp": "file:./emitters/csharp",
     "@ancplua/typespec-emit-ts-types": "file:./emitters/ts-types",
-    "@ancplua/typespec-otelconventions-lint": "file:./emitters/otelconventions-lint",
-    "@qyl/telemetry-control-graph": "file:./emitters/telemetry-control-graph",
     "@types/node": "25.9.5",
     "@typespec/compiler": "1.13.0",
     "@typespec/events": "0.83.0",
@@ -82,11 +98,7 @@
     "@typespec/json-schema": "1.13.0",
     "@typespec/openapi": "1.13.0",
     "@typespec/openapi3": "1.13.0",
-    "@typespec/rest": "0.83.0",
     "@typespec/sse": "0.83.0",
-    "@typespec/streams": "0.83.0",
-    "@typespec/versioning": "0.83.0",
-    "typescript": "6.0.3",
-    "vitest": "4.1.10"
+    "typescript": "6.0.3"
   }
 }

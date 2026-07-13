@@ -1,11 +1,27 @@
-import type { DecoratorContext, EmitContext, Enum, Model, Scalar, Type } from "@typespec/compiler";
+import type {
+  BooleanLiteral,
+  DecoratorContext,
+  EmitContext,
+  Enum,
+  IntrinsicType,
+  Model,
+  NumericLiteral,
+  Scalar,
+  StringLiteral,
+  Tuple,
+  Type,
+  Union,
+  UnionVariant,
+} from "@typespec/compiler";
 import {
   emitFile,
   isArrayModelType,
   isRecordModelType,
   navigateProgram,
+  resolveEncodedName,
   setTypeSpecNamespace,
 } from "@typespec/compiler";
+import { isHeader, isStatusCode } from "@typespec/http";
 import { reportDiagnostic, stateKeys, $lib } from "./lib.js";
 
 export { $lib };
@@ -34,7 +50,11 @@ export async function $onEmit(context: EmitContext): Promise<void> {
   const brandBlock: string[] = [];
   const modelBlock: string[] = [];
   const enumBlock: string[] = [];
+  const unionBlock: string[] = [];
   const emittedScalars = new Set<string>();
+  const emittedModels = new Set<string>();
+  const emittedEnums = new Set<string>();
+  const emittedUnions = new Set<string>();
 
   navigateProgram(program, {
     scalar: (s) => {
@@ -46,17 +66,29 @@ export async function $onEmit(context: EmitContext): Promise<void> {
     },
     enum: (e) => {
       if (isBuiltin(e)) return;
+      if (emittedEnums.has(e.name)) return;
+      emittedEnums.add(e.name);
       enumBlock.push(renderEnum(e));
     },
     model: (m) => {
       if (isBuiltin(m)) return;
       if (!m.name) return;
       if (isArrayModelType(m) || isRecordModelType(m)) return;
-      modelBlock.push(renderInterface(program, m));
+      if (!hasBodyProperties(program, m)) return;
+      const name = emittedModelName(m);
+      if (emittedModels.has(name)) return;
+      emittedModels.add(name);
+      modelBlock.push(renderInterface(program, m, name));
+    },
+    union: (u) => {
+      if (isBuiltin(u) || !u.name || u.name.endsWith("Auth")) return;
+      if (emittedUnions.has(u.name)) return;
+      emittedUnions.add(u.name);
+      unionBlock.push(renderUnion(program, u));
     },
   });
 
-  const out = [HEADER, ...brandBlock, ...enumBlock, ...modelBlock];
+  const out = [HEADER, ...brandBlock, ...enumBlock, ...unionBlock, ...modelBlock];
 
   const path = `${context.emitterOutputDir}/api.ts`;
   await emitFile(program, { path, content: out.join("\n") });
@@ -64,20 +96,52 @@ export async function $onEmit(context: EmitContext): Promise<void> {
 
 function renderEnum(e: Enum): string {
   const entries = [...e.members.values()]
-    .map((m) => `  ${m.name}: "${m.value ?? m.name}"`)
+    .map((m) => `  ${JSON.stringify(m.name)}: ${JSON.stringify(m.value ?? m.name)}`)
     .join(",\n");
   return `export const ${e.name}Values = {\n${entries},\n} as const;\nexport type ${e.name} = typeof ${e.name}Values[keyof typeof ${e.name}Values];\n`;
 }
 
-function renderInterface(program: import("@typespec/compiler").Program, m: Model): string {
-  const lines: string[] = [`export interface ${m.name} {`];
+function renderUnion(program: import("@typespec/compiler").Program, union: Union): string {
+  const variants = [...union.variants.values()].map((variant) => mapType(program, variant.type));
+  return `export type ${union.name} = ${[...new Set(variants)].join(" | ")};\n`;
+}
+
+function renderInterface(
+  program: import("@typespec/compiler").Program,
+  m: Model,
+  emittedName: string,
+): string {
+  const base = m.baseModel ? ` extends ${emittedModelName(m.baseModel)}` : "";
+  const lines: string[] = [`export interface ${emittedName}${base} {`];
   for (const [, prop] of m.properties) {
+    if (isHeader(program, prop) || isStatusCode(program, prop)) continue;
     const t = mapType(program, prop.type);
     const q = prop.optional ? "?" : "";
-    lines.push(`  ${prop.name}${q}: ${t};`);
+    const wireName = resolveEncodedName(program, prop, "application/json");
+    lines.push(`  ${JSON.stringify(wireName)}${q}: ${t};`);
   }
   lines.push("}\n");
   return lines.join("\n");
+}
+
+function hasBodyProperties(program: import("@typespec/compiler").Program, model: Model): boolean {
+  for (let current: Model | undefined = model; current; current = current.baseModel) {
+    for (const property of current.properties.values()) {
+      if (!isHeader(program, property) && !isStatusCode(program, property)) return true;
+    }
+  }
+  return false;
+}
+
+function emittedModelName(model: Model): string {
+  if (!model.templateMapper?.args.length) return model.name;
+  const parts = [model.name];
+  for (const arg of model.templateMapper.args) {
+    if ("kind" in arg && "name" in arg && typeof arg.name === "string") {
+      parts.push(pascal(arg.name));
+    }
+  }
+  return parts.join("");
 }
 
 function mapType(program: import("@typespec/compiler").Program, type: Type): string {
@@ -87,7 +151,7 @@ function mapType(program: import("@typespec/compiler").Program, type: Type): str
       if (program.stateMap(stateKeys.tsBrand).has(s)) return s.name;
       if (["int8","int16","int32","int64","uint8","uint16","uint32","uint64","float32","float64","decimal","decimal128"].includes(s.name)) return "number";
       if (s.name === "boolean") return "boolean";
-      if (s.name === "bytes") return "Uint8Array";
+      if (s.name === "bytes") return "string";
       if (s.name === "utcDateTime" || s.name === "offsetDateTime") return "string";
       if (s.name === "plainDate" || s.name === "plainTime") return "string";
       if (s.name === "duration") return "string";
@@ -100,7 +164,7 @@ function mapType(program: import("@typespec/compiler").Program, type: Type): str
     case "Model":
       if (isArrayModelType(type)) return `${mapType(program, type.indexer!.value)}[]`;
       if (isRecordModelType(type)) return `Record<string, ${mapType(program, type.indexer!.value)}>`;
-      return (type as { name?: string }).name ?? "unknown";
+      return emittedModelName(type);
     case "Enum":
       return (type as Enum).name;
     case "ModelProperty":
@@ -113,15 +177,32 @@ function mapType(program: import("@typespec/compiler").Program, type: Type): str
       return typeof v === "number" ? String(v) : `"${v}"`;
     }
     case "Union":
-      return (type as { name?: string }).name ?? "unknown";
+      if (type.name) return type.name;
+      return [...type.variants.values()].map((variant) => mapType(program, variant.type)).join(" | ");
+    case "UnionVariant":
+      return mapType(program, (type as UnionVariant).type);
     case "Boolean":
-      return "boolean";
+      return String((type as BooleanLiteral).value);
     case "String":
-      return "string";
+      return JSON.stringify((type as StringLiteral).value);
     case "Number":
-      return "number";
+      return (type as NumericLiteral).valueAsString;
+    case "Intrinsic": {
+      const name = (type as IntrinsicType).name;
+      if (name === "unknown" || name === "null" || name === "never" || name === "void") return name;
+      reportDiagnostic(program, { code: "unmapped-type", target: type, format: { name: `intrinsic:${name}` } });
+      return "unknown";
+    }
+    case "Tuple":
+      return `[${(type as Tuple).values.map((value) => mapType(program, value)).join(", ")}]`;
+    case "StringTemplate":
+      return "string";
     default:
       reportDiagnostic(program, { code: "unmapped-type", target: type, format: { name: type.kind } });
       return "unknown";
   }
+}
+
+function pascal(value: string): string {
+  return value.length === 0 ? value : value[0].toUpperCase() + value.slice(1);
 }

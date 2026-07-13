@@ -1,5 +1,5 @@
 // =============================================================================
-// ANcpLua v2.0 - OpenTelemetry Resource Model
+// OpenTelemetry resource JSON projection
 // =============================================================================
 // Resource attributes identifying the entity producing telemetry.
 // =============================================================================

@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { access, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -8,6 +8,23 @@ const nugetPackage = "Qyl.Api.Contracts";
 const mcpSdkPackage = "ModelContextProtocol.Core";
 const mcpSdkVersion = "1.4.1";
 const nugetOrg = "https://api.nuget.org/v3/index.json";
+const typeSpecToolchainPackages = [
+  "compiler",
+  "events",
+  "http",
+  "openapi",
+  "openapi3",
+  "sse",
+];
+
+async function exists(path) {
+  try {
+    await access(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 function run(command, args, cwd, environment = {}) {
   const result = spawnSync(command, args, {
@@ -39,6 +56,17 @@ export async function verifyConsumers({ version, npmSpec, npmInstallArgs = [], n
       npmDir,
       { NPM_CONFIG_CACHE: join(root, "npm-cache") },
     );
+    const installedToolchainPackages = [];
+    for (const packageName of typeSpecToolchainPackages) {
+      if (await exists(join(npmDir, "node_modules", "@typespec", packageName))) {
+        installedToolchainPackages.push(`@typespec/${packageName}`);
+      }
+    }
+    if (installedToolchainPackages.length > 0) {
+      throw new Error(
+        `generated-only npm consumer unexpectedly installed the TypeSpec toolchain: ${installedToolchainPackages.join(", ")}`,
+      );
+    }
     await writeFile(
       join(npmDir, "smoke.mjs"),
       `import { HealthStatusValues, ProblemDetailsMediaType, RunnerMcpTaskStatusValues, RunnerMcpToolTaskSupportValues, RunnerResourceKindValues, RunnerResourceLifecycleValues } from ${JSON.stringify(`${npmPackage}/types`)};\n` +

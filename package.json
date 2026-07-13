@@ -100,6 +100,26 @@
     "@typespec/openapi3": "^1.13.0",
     "@typespec/sse": "^0.83.0"
   },
+  "peerDependenciesMeta": {
+    "@typespec/compiler": {
+      "optional": true
+    },
+    "@typespec/events": {
+      "optional": true
+    },
+    "@typespec/http": {
+      "optional": true
+    },
+    "@typespec/openapi": {
+      "optional": true
+    },
+    "@typespec/openapi3": {
+      "optional": true
+    },
+    "@typespec/sse": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@ancplua/typespec-emit-csharp": "file:./emitters/csharp",
     "@ancplua/typespec-emit-ts-types": "file:./emitters/ts-types",

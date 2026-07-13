@@ -88,7 +88,8 @@
     "watch": "tsp compile main.tsp --watch",
     "format": "tsp format **/*.tsp",
     "lint": "npm run build:emitters && tsp compile main.tsp --no-emit --warn-as-error",
-    "lint:public": "tsp compile index.tsp --no-emit --warn-as-error"
+    "lint:public": "tsp compile index.tsp --no-emit --warn-as-error",
+    "verify:runner-security": "node scripts/verify-runner-security.mjs"
   },
   "peerDependencies": {
     "@typespec/compiler": "^1.13.0 || >=1.13.0-dev.0",

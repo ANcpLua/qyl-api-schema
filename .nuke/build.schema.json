@@ -36,7 +36,8 @@
         "RestoreTypeSpecDeps",
         "VerifyEmitDeterministic",
         "VerifyGeneratedArtifactsCurrent",
-        "VerifyKeysLockstep"
+        "VerifyKeysLockstep",
+        "VerifyRunnerSecurityContract"
       ]
     },
     "Verbosity": {

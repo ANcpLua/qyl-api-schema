@@ -2096,6 +2096,32 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden - insufficient permissions (403)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ForbiddenError"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Resource not found (404)",
             "headers": {
@@ -2236,6 +2262,32 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpToolsResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - insufficient permissions (403)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ForbiddenError"
                 }
               }
             }
@@ -2400,6 +2452,32 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden - insufficient permissions (403)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ForbiddenError"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Resource not found (404)",
             "headers": {
@@ -2538,6 +2616,32 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden - insufficient permissions (403)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ForbiddenError"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal server error (500)",
             "headers": {
@@ -2611,6 +2715,32 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden - insufficient permissions (403)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ForbiddenError"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal server error (500)",
             "headers": {
@@ -2666,6 +2796,32 @@
                   "items": {
                     "$ref": "#/components/schemas/Runner.RunnerLogLine"
                   }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - insufficient permissions (403)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ForbiddenError"
                 }
               }
             }
@@ -2778,6 +2934,32 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden - insufficient permissions (403)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ForbiddenError"
+                }
+              }
+            }
+          },
           "404": {
             "description": "Resource not found (404)",
             "headers": {
@@ -2852,6 +3034,32 @@
         "responses": {
           "202": {
             "description": "A runner lifecycle action was accepted and continues asynchronously."
+          },
+          "403": {
+            "description": "Forbidden - insufficient permissions (403)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ForbiddenError"
+                }
+              }
+            }
           },
           "404": {
             "description": "Resource not found (404)",
@@ -2953,6 +3161,32 @@
         "responses": {
           "202": {
             "description": "A runner lifecycle action was accepted and continues asynchronously."
+          },
+          "403": {
+            "description": "Forbidden - insufficient permissions (403)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ForbiddenError"
+                }
+              }
+            }
           },
           "404": {
             "description": "Resource not found (404)",

@@ -28,35 +28,35 @@ namespace Qyl.Api.Contracts.Runner {
   @tag("Runner resources")
   interface RunnerResourcesApi {
     @get
-    snapshot(): RunnerResourceState[] | InternalServerError;
+    snapshot(): RunnerResourceState[] | ForbiddenError | InternalServerError;
 
     @get
     @route("/stream")
-    stream(): SSEStream<RunnerResourceEvents> | InternalServerError;
+    stream(): SSEStream<RunnerResourceEvents> | ForbiddenError | InternalServerError;
 
     @get
     @route("/{resource}/logs")
     logs(
       @path resource: string,
-    ): RunnerLogLine[] | NotFoundError | InternalServerError;
+    ): RunnerLogLine[] | ForbiddenError | NotFoundError | InternalServerError;
 
     @get
     @route("/{resource}/logs/stream")
     streamLogs(
       @path resource: string,
-    ): SSEStream<RunnerLogEvents> | NotFoundError | InternalServerError;
+    ): SSEStream<RunnerLogEvents> | ForbiddenError | NotFoundError | InternalServerError;
 
     @post
     @route("/{resource}/restart")
     restart(
       @path resource: string,
-    ): RunnerActionAccepted | NotFoundError | ConflictError | InternalServerError;
+    ): RunnerActionAccepted | ForbiddenError | NotFoundError | ConflictError | InternalServerError;
 
     @post
     @route("/{resource}/stop")
     stop(
       @path resource: string,
-    ): RunnerActionAccepted | NotFoundError | ConflictError | InternalServerError;
+    ): RunnerActionAccepted | ForbiddenError | NotFoundError | ConflictError | InternalServerError;
   }
 
   @route("/runner/mcp/{resource}")
@@ -67,6 +67,7 @@ namespace Qyl.Api.Contracts.Runner {
     listTools(
       @path resource: string,
     ): RunnerMcpToolsResponse
+      | ForbiddenError
       | NotFoundError
       | ConflictError
       | BadGatewayError
@@ -79,6 +80,7 @@ namespace Qyl.Api.Contracts.Runner {
       @body request: RunnerMcpToolCallRequest,
     ): RunnerMcpToolCallResponse
       | ValidationError
+      | ForbiddenError
       | NotFoundError
       | ConflictError
       | BadGatewayError
@@ -91,6 +93,7 @@ namespace Qyl.Api.Contracts.Runner {
       @body request: RunnerMcpResourceReadRequest,
     ): RunnerMcpResourceReadResponse
       | ValidationError
+      | ForbiddenError
       | NotFoundError
       | ConflictError
       | BadGatewayError

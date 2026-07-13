@@ -289,6 +289,16 @@ sealed class Build : NukeBuild
             Log.Information("VerifyGeneratedArtifactsCurrent: tracked OpenAPI output matches a fresh emit.");
         });
 
+    Target VerifyRunnerSecurityContract => _ => _
+        .Description("Assert every implemented runner route declares its loopback/origin-gate ForbiddenError response.")
+        .DependsOn(VerifyGeneratedArtifactsCurrent)
+        .Executes(() =>
+        {
+            NpmRun(s => s
+                .SetCommand("verify:runner-security")
+                .SetProcessWorkingDirectory(DomainSpecRoot));
+        });
+
     // ---------------------------------------------------------------------
     // PackApiPackage: npm pack
     // ---------------------------------------------------------------------
@@ -379,6 +389,7 @@ sealed class Build : NukeBuild
             VerifyKeysLockstep,
             CompileDomainSpec,
             VerifyGeneratedArtifactsCurrent,
+            VerifyRunnerSecurityContract,
             EmitAll,
             VerifyEmitDeterministic,
             PackApiPackage,

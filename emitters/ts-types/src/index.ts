@@ -21,7 +21,7 @@ import {
   resolveEncodedName,
   setTypeSpecNamespace,
 } from "@typespec/compiler";
-import { isHeader, isStatusCode } from "@typespec/http";
+import { getHeaderFieldName, isHeader, isStatusCode } from "@typespec/http";
 import { reportDiagnostic, stateKeys, $lib } from "./lib.js";
 
 export { $lib };
@@ -48,10 +48,12 @@ export async function $onEmit(context: EmitContext): Promise<void> {
   if (program.compilerOptions.noEmit) return;
 
   const brandBlock: string[] = [];
+  const mediaTypeBlock: string[] = [];
   const modelBlock: string[] = [];
   const enumBlock: string[] = [];
   const unionBlock: string[] = [];
   const emittedScalars = new Set<string>();
+  const emittedMediaTypes = new Set<string>();
   const emittedModels = new Set<string>();
   const emittedEnums = new Set<string>();
   const emittedUnions = new Set<string>();
@@ -73,6 +75,7 @@ export async function $onEmit(context: EmitContext): Promise<void> {
     model: (m) => {
       if (isBuiltin(m)) return;
       if (!m.name) return;
+      collectMediaType(program, m, emittedMediaTypes, mediaTypeBlock);
       if (isArrayModelType(m) || isRecordModelType(m)) return;
       if (!hasBodyProperties(program, m)) return;
       const name = emittedModelName(m);
@@ -88,10 +91,29 @@ export async function $onEmit(context: EmitContext): Promise<void> {
     },
   });
 
-  const out = [HEADER, ...brandBlock, ...enumBlock, ...unionBlock, ...modelBlock];
+  const out = [HEADER, ...brandBlock, ...mediaTypeBlock, ...enumBlock, ...unionBlock, ...modelBlock];
 
   const path = `${context.emitterOutputDir}/api.ts`;
   await emitFile(program, { path, content: out.join("\n") });
+}
+
+function collectMediaType(
+  program: import("@typespec/compiler").Program,
+  model: Model,
+  emitted: Set<string>,
+  output: string[],
+): void {
+  const name = `${emittedModelName(model)}MediaType`;
+  if (emitted.has(name)) return;
+  for (const property of model.properties.values()) {
+    if (!isHeader(program, property) || getHeaderFieldName(program, property) !== "content-type") continue;
+    if (property.type.kind !== "String") continue;
+    emitted.add(name);
+    output.push(
+      `export const ${name} = ${JSON.stringify(property.type.value)} as const;\n` +
+      `export type ${name} = typeof ${name};\n`,
+    );
+  }
 }
 
 function renderEnum(e: Enum): string {

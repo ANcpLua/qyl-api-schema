@@ -41,13 +41,19 @@ export async function verifyConsumers({ version, npmSpec, npmInstallArgs = [], n
     );
     await writeFile(
       join(npmDir, "smoke.mjs"),
-      `import { HealthStatusValues, RunnerMcpTaskStatusValues, RunnerMcpToolTaskSupportValues, RunnerResourceKindValues, RunnerResourceLifecycleValues } from ${JSON.stringify(`${npmPackage}/types`)};\n` +
+      `import { HealthStatusValues, ProblemDetailsMediaType, RunnerMcpTaskStatusValues, RunnerMcpToolTaskSupportValues, RunnerResourceKindValues, RunnerResourceLifecycleValues } from ${JSON.stringify(`${npmPackage}/types`)};\n` +
+        `import openapi from ${JSON.stringify(`${npmPackage}/openapi`)} with { type: "json" };\n` +
         `import schema from ${JSON.stringify(`${npmPackage}/json-schema`)} with { type: "json" };\n` +
         `const content = schema.$defs["Runner.Mcp.RunnerMcpContent"]?.properties;\n` +
         `const tool = schema.$defs["Runner.Mcp.RunnerMcpTool"]?.properties;\n` +
         `const request = schema.$defs["Runner.Mcp.RunnerMcpToolCallRequest"]?.properties;\n` +
         `const response = schema.$defs["Runner.Mcp.RunnerMcpToolCallResponse"]?.properties;\n` +
-        `if (HealthStatusValues.healthy !== "healthy" || RunnerResourceLifecycleValues.ready !== "ready" || RunnerResourceKindValues.stdio !== "stdio" || RunnerMcpToolTaskSupportValues.required !== "required" || RunnerMcpTaskStatusValues.inputRequired !== "input_required" || !content?.toolUseId || !content?.content || !content?.icons || !tool?.execution || !tool?.icons || !request?._meta || !request?.task || !response?.task || !schema.$defs["Mcp.Tools.FetchTelemetryInput"]) process.exit(1);\n`,
+        `const operations = Object.values(openapi.paths).flatMap((path) => Object.values(path));\n` +
+        `const errorResponses = operations.flatMap((operation) => Object.values(operation.responses ?? {})).filter((response) => Object.values(response.content ?? {}).some((media) => media.schema?.$ref?.startsWith("#/components/schemas/Common.Errors.")));\n` +
+        `const errorsOwnProblemJson = errorResponses.length > 0 && errorResponses.every((response) => Object.keys(response.content ?? {}).length === 1 && response.content[ProblemDetailsMediaType]);\n` +
+        `const resourceEvent = openapi.paths["/runner/resources/stream"]?.get?.responses?.["200"]?.content?.["text/event-stream"]?.itemSchema?.oneOf?.[0]?.properties?.event?.const;\n` +
+        `const logEvent = openapi.paths["/runner/resources/{resource}/logs/stream"]?.get?.responses?.["200"]?.content?.["text/event-stream"]?.itemSchema?.oneOf?.[0]?.properties?.event?.const;\n` +
+        `if (ProblemDetailsMediaType !== "application/problem+json" || !errorsOwnProblemJson || resourceEvent !== "message" || logEvent !== "message" || HealthStatusValues.healthy !== "healthy" || RunnerResourceLifecycleValues.ready !== "ready" || RunnerResourceKindValues.stdio !== "stdio" || RunnerMcpToolTaskSupportValues.required !== "required" || RunnerMcpTaskStatusValues.inputRequired !== "input_required" || !content?.toolUseId || !content?.content || !content?.icons || !tool?.execution || !tool?.icons || !request?._meta || !request?.task || !response?.task || !schema.$defs["Mcp.Tools.FetchTelemetryInput"]) process.exit(1);\n`,
     );
     run("node", ["smoke.mjs"], npmDir);
 
@@ -87,7 +93,7 @@ export async function verifyConsumers({ version, npmSpec, npmInstallArgs = [], n
     );
     await writeFile(
       join(dotnetDir, "Program.cs"),
-      `using System.Text.Json;\nusing System.Text.Json.Nodes;\nusing ModelContextProtocol;\nusing ModelContextProtocol.Protocol;\nusing Qyl.Api.Contracts.Health;\nusing Qyl.Api.Contracts.Mcp.Tools;\nusing Qyl.Api.Contracts.Runner;\nusing Qyl.Api.Contracts.Runner.Mcp;\n#pragma warning disable MCPEXP001\n` +
+      `using System.Text.Json;\nusing System.Text.Json.Nodes;\nusing ModelContextProtocol;\nusing ModelContextProtocol.Protocol;\nusing Qyl.Api.Contracts.Common.Errors;\nusing Qyl.Api.Contracts.Health;\nusing Qyl.Api.Contracts.Mcp.Tools;\nusing Qyl.Api.Contracts.Runner;\nusing Qyl.Api.Contracts.Runner.Mcp;\n#pragma warning disable MCPEXP001\n` +
         `var health = JsonSerializer.Serialize(HealthStatus.Healthy);\n` +
         `var lifecycle = JsonSerializer.Serialize(RunnerResourceLifecycle.Ready);\n` +
         `var kind = JsonSerializer.Serialize(RunnerResourceKind.Stdio);\n` +
@@ -118,7 +124,7 @@ export async function verifyConsumers({ version, npmSpec, npmInstallArgs = [], n
         `var projectedResponse = JsonSerializer.Deserialize<RunnerMcpToolCallResponse>(JsonSerializer.Serialize(sdkResponse, McpJsonUtilities.DefaultOptions));\n` +
         `var projectedReadRequest = JsonSerializer.Deserialize<RunnerMcpResourceReadRequest>(JsonSerializer.Serialize(sdkReadRequest, McpJsonUtilities.DefaultOptions));\n` +
         `var projectedReadResponse = JsonSerializer.Deserialize<RunnerMcpResourceReadResponse>(JsonSerializer.Serialize(sdkReadResponse, McpJsonUtilities.DefaultOptions));\n` +
-        `if (typeof(FetchTelemetryInput).Namespace != "Qyl.Api.Contracts.Mcp.Tools" || health != "\\\"healthy\\\"" || lifecycle != "\\\"ready\\\"" || kind != "\\\"stdio\\\"" || request.Name != "smoke" || resource.Uri.Scheme != "ui" || state.Kind != RunnerResourceKind.Stdio || tool.Name != "inspect" || toolInput.View != FetchTelemetryView.Traces || response.Task?.PollInterval != 250 || !wire.Contains("\\\"taskSupport\\\":\\\"required\\\"") || !wire.Contains("\\\"toolUseId\\\":\\\"call-1\\\"") || !wire.Contains("\\\"progressToken\\\"") || projectedTool?.Execution?.TaskSupport != RunnerMcpToolTaskSupport.Required || projectedTool.Icons?[0].Src != sdkIcon.Source || projectedRequest?.Task?.Ttl != 1500 || !projectedRequest.Metadata!.ContainsKey("progressToken") || projectedResponse?.Content[0].Type != "tool_use" || projectedResponse.Content[1].ToolUseId != "call-1" || projectedResponse.Content[2].Icons?[0].Src != sdkIcon.Source || projectedResponse.Content[3].Resource?.Text != "<html></html>" || projectedResponse.Task?.Status != RunnerMcpTaskStatus.InputRequired || projectedResponse.Task.PollInterval != 250 || projectedReadRequest?.Metadata is null || projectedReadResponse?.Contents[0].Metadata is null) return 1;\nreturn 0;\n`,
+        `if (ProblemDetailsMediaType.Value != "application/problem+json" || typeof(FetchTelemetryInput).Namespace != "Qyl.Api.Contracts.Mcp.Tools" || health != "\\\"healthy\\\"" || lifecycle != "\\\"ready\\\"" || kind != "\\\"stdio\\\"" || request.Name != "smoke" || resource.Uri.Scheme != "ui" || state.Kind != RunnerResourceKind.Stdio || tool.Name != "inspect" || toolInput.View != FetchTelemetryView.Traces || response.Task?.PollInterval != 250 || !wire.Contains("\\\"taskSupport\\\":\\\"required\\\"") || !wire.Contains("\\\"toolUseId\\\":\\\"call-1\\\"") || !wire.Contains("\\\"progressToken\\\"") || projectedTool?.Execution?.TaskSupport != RunnerMcpToolTaskSupport.Required || projectedTool.Icons?[0].Src != sdkIcon.Source || projectedRequest?.Task?.Ttl != 1500 || !projectedRequest.Metadata!.ContainsKey("progressToken") || projectedResponse?.Content[0].Type != "tool_use" || projectedResponse.Content[1].ToolUseId != "call-1" || projectedResponse.Content[2].Icons?[0].Src != sdkIcon.Source || projectedResponse.Content[3].Resource?.Text != "<html></html>" || projectedResponse.Task?.Status != RunnerMcpTaskStatus.InputRequired || projectedResponse.Task.PollInterval != 250 || projectedReadRequest?.Metadata is null || projectedReadResponse?.Contents[0].Metadata is null) return 1;\nreturn 0;\n`,
     );
     run(
       "dotnet",

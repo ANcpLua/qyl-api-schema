@@ -17,6 +17,9 @@ namespace Qyl.Api.Contracts.Common.Errors;
 @doc("RFC 7807 Problem Details for HTTP APIs")
 @error
 model ProblemDetails {
+  @doc("RFC 7807 problem-details response media type")
+  @header contentType: "application/problem+json";
+
   @doc("A URI reference identifying the problem type")
   @encodedName("application/json", "type")
   problemType: url = "about:blank";

@@ -16,12 +16,12 @@ using Qyl.Api.Contracts.Runner.Mcp;
 namespace Qyl.Api.Contracts.Runner {
   @events
   union RunnerResourceEvents {
-    RunnerResourceState,
+    message: RunnerResourceState,
   }
 
   @events
   union RunnerLogEvents {
-    RunnerLogLine,
+    message: RunnerLogLine,
   }
 
   @route("/runner/resources")

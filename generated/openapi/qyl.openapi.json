@@ -1629,6 +1629,40 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "Service unavailable (503)",
+            "headers": {
+              "Retry-After": {
+                "required": false,
+                "description": "Expected availability time",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ServiceUnavailableError"
+                }
+              }
+            }
           }
         },
         "tags": [

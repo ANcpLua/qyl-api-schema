@@ -36,7 +36,6 @@ jobs:
           node-version: '24'
           registry-url: 'https://npm.pkg.github.com'
           scope: '@ancplua'
-          always-auth: true
 
       - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
         with:

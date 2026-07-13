@@ -53,7 +53,6 @@ jobs:
           node-version: '24'
           registry-url: 'https://npm.pkg.github.com'
           scope: '@ancplua'
-          always-auth: true
 
       # Trusted publishing to npmjs needs npm >= 11.5.1; Node 24 bundles an older npm.
       - name: Upgrade npm for trusted publishing

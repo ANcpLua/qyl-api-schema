@@ -147,15 +147,12 @@ model SpanLink {
 // Trace Model (Collection of Spans)
 // =============================================================================
 
-@doc("Complete trace containing all related spans")
-model Trace {
+@doc("Trace summary without the full span collection")
+model TraceSummary {
   @doc("Trace identifier")
   @key
   @encodedName("application/json", "trace_id")
   traceId: TraceId;
-
-  @doc("All spans in this trace")
-  spans: Span[];
 
   @doc("Root span of the trace")
   @encodedName("application/json", "root_span")
@@ -183,6 +180,12 @@ model Trace {
   @doc("Whether trace contains errors")
   @encodedName("application/json", "has_error")
   hasError: boolean;
+}
+
+@doc("Complete trace containing all related spans")
+model Trace extends TraceSummary {
+  @doc("All spans in this trace")
+  spans: Span[];
 }
 
 // =============================================================================

@@ -6,7 +6,6 @@ emit:
   - "@ancplua/typespec-emit-csharp"
   - "@ancplua/typespec-emit-ts-types"
   - "@typespec/openapi3"
-  - "@typespec/json-schema"
 
 options:
   "@ancplua/typespec-emit-csharp":
@@ -21,13 +20,8 @@ options:
     file-type: json
     openapi-versions:
       - "3.2.0"
-    omit-unreachable-types: true
+    omit-unreachable-types: false
     operation-id-strategy: parent-container
-
-  "@typespec/json-schema":
-    emitter-output-dir: "{project-root}/generated/json-schema"
-    file-type: json
-    bundleId: qyl-api-schema
 
 linter:
   extends:

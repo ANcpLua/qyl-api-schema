@@ -37,6 +37,12 @@
       "types": "./generated/ts-runtime/api.d.ts",
       "import": "./generated/ts-runtime/api.js",
       "default": "./generated/ts-runtime/api.js"
+    },
+    "./openapi": {
+      "default": "./generated/openapi/qyl.openapi.json"
+    },
+    "./json-schema": {
+      "default": "./generated/json-schema/qyl-api-schema.json"
     }
   },
   "files": [
@@ -50,6 +56,7 @@
     "models/health.tsp",
     "models/runner-mcp.tsp",
     "models/runner.tsp",
+    "models/mcp-tools.tsp",
     "models/session.tsp",
     "otel/enums.tsp",
     "otel/logs.tsp",
@@ -60,6 +67,8 @@
     "generated/otel-keys.gen.tsp",
     "generated/ts-runtime/api.d.ts",
     "generated/ts-runtime/api.js",
+    "generated/openapi/qyl.openapi.json",
+    "generated/json-schema/qyl-api-schema.json",
     "README.md",
     "LICENSE"
   ],
@@ -72,9 +81,10 @@
     "clean:generated": "node scripts/clean-generated.mjs",
     "build:emitters": "tsc -p emitters/csharp && tsc -p emitters/ts-types",
     "build:ts-runtime": "tsc -p tsconfig.contracts.json",
+    "build:json-schema": "node scripts/openapi-to-json-schema.mjs",
     "prepare": "npm run build:emitters",
     "prepack": "npm run compile",
-    "compile": "npm run clean:generated && npm run build:emitters && tsp compile main.tsp && npm run build:ts-runtime",
+    "compile": "npm run clean:generated && npm run build:emitters && tsp compile main.tsp && npm run build:json-schema && npm run build:ts-runtime",
     "watch": "tsp compile main.tsp --watch",
     "format": "tsp format **/*.tsp",
     "lint": "npm run build:emitters && tsp compile main.tsp --no-emit --warn-as-error",
@@ -84,7 +94,6 @@
     "@typespec/compiler": "^1.13.0 || >=1.13.0-dev.0",
     "@typespec/events": "^0.83.0",
     "@typespec/http": "^1.13.0",
-    "@typespec/json-schema": "^1.13.0",
     "@typespec/openapi": "^1.13.0",
     "@typespec/sse": "^0.83.0"
   },
@@ -95,7 +104,6 @@
     "@typespec/compiler": "1.13.0",
     "@typespec/events": "0.83.0",
     "@typespec/http": "1.13.0",
-    "@typespec/json-schema": "1.13.0",
     "@typespec/openapi": "1.13.0",
     "@typespec/openapi3": "1.13.0",
     "@typespec/sse": "0.83.0",

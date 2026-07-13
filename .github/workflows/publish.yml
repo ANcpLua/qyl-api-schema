@@ -6,9 +6,9 @@ name: Publish (npmjs.org + nuget.org)
 #   npm   @ancplua/qyl-api-schema -> registry.npmjs.org  (npm trusted publishing + provenance)
 #   nuget Qyl.Api.Contracts       -> nuget.org           (NuGet/login OIDC -> 1-hour key)
 #
-# Ordered and restartable: the NuGet is packed + validated before either publish, then NuGet pushes
-# first (idempotent via --skip-duplicate) and npm publishes last (immutable, non-idempotent). The
-# two registries are not an atomic transaction; ordering keeps partial-failure recovery bounded.
+# Ordered and restartable: the NuGet is packed + validated before either publish, existing immutable
+# versions must carry this checkout's commit, NuGet pushes idempotently, and npm is skipped only when
+# that exact commit is already indexed. The registries are not an atomic transaction.
 #
 # Routing: the committed .npmrc maps @ancplua -> GitHub Packages for INSTALL of internal build deps;
 # that scope map wins over publishConfig.registry for scoped publishes, so THIS package is forced to
@@ -137,6 +137,56 @@ jobs:
           echo "RELEASE_VERSION=$ver" >> "$GITHUB_ENV"
           echo "Release version: $ver (npm + NuGet stamped from the git tag)"
 
+      - name: Validate any existing immutable artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          release_commit="$(git rev-parse HEAD)"
+
+          npm_metadata="$(mktemp)"
+          npm_status="$(curl --silent --show-error --location --retry 5 --retry-all-errors \
+            --output "${npm_metadata}" --write-out '%{http_code}' \
+            "https://registry.npmjs.org/%40ancplua%2Fqyl-api-schema/${RELEASE_VERSION}")"
+          case "${npm_status}" in
+            200)
+              npm_commit="$(jq -r '.gitHead // empty' "${npm_metadata}")"
+              if [[ "${npm_commit}" != "${release_commit}" ]]; then
+                echo "::error::npm ${RELEASE_VERSION} exists from ${npm_commit:-unknown}, not ${release_commit}"
+                exit 1
+              fi
+              echo "NPM_ALREADY_PUBLISHED=true" >> "${GITHUB_ENV}"
+              ;;
+            404)
+              echo "NPM_ALREADY_PUBLISHED=false" >> "${GITHUB_ENV}"
+              ;;
+            *)
+              echo "::error::npm registry returned HTTP ${npm_status}"
+              exit 1
+              ;;
+          esac
+
+          lower_version="$(printf '%s' "${RELEASE_VERSION}" | tr '[:upper:]' '[:lower:]')"
+          nuget_archive="$(mktemp)"
+          nuget_url="https://api.nuget.org/v3-flatcontainer/qyl.api.contracts/${lower_version}/qyl.api.contracts.${lower_version}.nupkg"
+          nuget_status="$(curl --silent --show-error --location --retry 5 --retry-all-errors \
+            --output "${nuget_archive}" --write-out '%{http_code}' "${nuget_url}")"
+          case "${nuget_status}" in
+            200)
+              nuget_commit="$(unzip -p "${nuget_archive}" '*.nuspec' \
+                | sed -n 's/.*<repository[^>]*commit="\([^"]*\)".*/\1/p' \
+                | head -n 1)"
+              if [[ "${nuget_commit}" != "${release_commit}" ]]; then
+                echo "::error::NuGet ${RELEASE_VERSION} exists from ${nuget_commit:-unknown}, not ${release_commit}"
+                exit 1
+              fi
+              ;;
+            404) ;;
+            *)
+              echo "::error::nuget.org returned HTTP ${nuget_status}"
+              exit 1
+              ;;
+          esac
+
       # Pack + validate the NuGet BEFORE any publish: both registries are immutable, so a pack
       # failure must abort the whole release with nothing pushed. Output:
       # Artifacts/nuget/Qyl.Api.Contracts.<version>.nupkg
@@ -144,10 +194,9 @@ jobs:
         run: ./build.sh PackContractsNuget
 
       # --- Publish (both immutable; packs already validated) ---
-      # Order matters: NuGet first (its push is idempotent via --skip-duplicate), npm LAST (npmjs is
-      # immutable with no skip-duplicate equivalent). On a partial failure, re-running the release
-      # replays the no-op nuget push and retries only the non-idempotent npm step — so a transient
-      # nuget.org failure can never leave npm published with the NuGet permanently stranded.
+      # Order matters: NuGet first (its push is idempotent via --skip-duplicate), npm last. A retry
+      # accepts an existing version only when registry provenance points at this exact checkout, then
+      # skips the immutable npm publish and resumes at the index/consumer gate.
 
       # nuget -> nuget.org via OIDC. Request the login immediately before the push (key lives 1 hour).
       - name: Authenticate to NuGet (OIDC)
@@ -172,13 +221,18 @@ jobs:
             exit 1
           fi
 
-      # npm -> npmjs.org via OIDC trusted publishing, LAST because it is non-idempotent. No
+      # npm -> npmjs.org via OIDC trusted publishing, LAST because it is immutable. No
       # NODE_AUTH_TOKEN: npm mints a short-lived credential from the OIDC token. Routing is forced by
       # the explicit --@ancplua:registry flag below: the committed .npmrc maps @ancplua -> GitHub
       # Packages for INSTALL and that scope map wins over publishConfig.registry for scoped publishes,
       # so without the flag this would silently land on GitHub Packages and OIDC would never apply.
       - name: Publish npm to npmjs.org (OIDC + provenance)
-        run: npm publish --access public --provenance --tag "$NPM_DIST_TAG" --@ancplua:registry=https://registry.npmjs.org
+        run: |
+          if [ "$NPM_ALREADY_PUBLISHED" = "true" ]; then
+            echo "@ancplua/qyl-api-schema@$RELEASE_VERSION is already indexed from this commit; resuming after publish."
+          else
+            npm publish --access public --provenance --tag "$NPM_DIST_TAG" --@ancplua:registry=https://registry.npmjs.org
+          fi
 
       - name: Wait for both indexes and smoke clean consumers
         run: node scripts/verify-published.mjs "$RELEASE_VERSION"

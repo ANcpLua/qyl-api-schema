@@ -2046,6 +2046,176 @@
         ]
       }
     },
+    "/runner/mcp/{resource}/resources/read": {
+      "post": {
+        "operationId": "RunnerMcpApi_readResource",
+        "parameters": [
+          {
+            "name": "resource",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The request has succeeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpResourceReadResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - validation failed (400)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ValidationError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found (404)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.NotFoundError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - resource state conflict (409)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ConflictError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (500)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.InternalServerError"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream dependency failed while fulfilling the request (502)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.BadGatewayError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Runner MCP"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpResourceReadRequest"
+              }
+            }
+          }
+        }
+      }
+    },
     "/runner/mcp/{resource}/tools": {
       "get": {
         "operationId": "RunnerMcpApi_listTools",
@@ -2659,6 +2829,208 @@
           "Runner resources"
         ]
       }
+    },
+    "/runner/resources/{resource}/restart": {
+      "post": {
+        "operationId": "RunnerResourcesApi_restart",
+        "parameters": [
+          {
+            "name": "resource",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "A runner lifecycle action was accepted and continues asynchronously."
+          },
+          "404": {
+            "description": "Resource not found (404)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.NotFoundError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - resource state conflict (409)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ConflictError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (500)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.InternalServerError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Runner resources"
+        ]
+      }
+    },
+    "/runner/resources/{resource}/stop": {
+      "post": {
+        "operationId": "RunnerResourcesApi_stop",
+        "parameters": [
+          {
+            "name": "resource",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "A runner lifecycle action was accepted and continues asynchronously."
+          },
+          "404": {
+            "description": "Resource not found (404)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.NotFoundError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - resource state conflict (409)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ConflictError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (500)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.InternalServerError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Runner resources"
+        ]
+      }
     }
   },
   "components": {
@@ -2746,6 +3118,43 @@
         ],
         "description": "Primitive attribute value types supported by OpenTelemetry"
       },
+      "Common.Attributes": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Common.Attribute"
+            },
+            "description": "List of key-value attributes"
+          }
+        },
+        "description": "Collection of attributes"
+      },
+      "Common.ByteSize": {
+        "type": "integer",
+        "format": "int64",
+        "minimum": 0,
+        "description": "Size in bytes",
+        "x-csharp-type": "long"
+      },
+      "Common.ContentType": {
+        "type": "string",
+        "description": "MIME content type",
+        "examples": [
+          "application/json"
+        ]
+      },
+      "Common.CostUsd": {
+        "type": "number",
+        "format": "double",
+        "minimum": 0,
+        "description": "Cost in USD (floating point)",
+        "x-csharp-type": "double"
+      },
       "Common.Count": {
         "type": "integer",
         "format": "int64",
@@ -2766,6 +3175,44 @@
         "minimum": 0,
         "description": "Duration in nanoseconds",
         "x-csharp-type": "ulong"
+      },
+      "Common.DurationS": {
+        "type": "number",
+        "format": "double",
+        "minimum": 0,
+        "description": "Duration in seconds"
+      },
+      "Common.Errors.ApiError": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/Common.Errors.NotFoundError"
+          },
+          {
+            "$ref": "#/components/schemas/Common.Errors.ValidationError"
+          },
+          {
+            "$ref": "#/components/schemas/Common.Errors.UnauthorizedError"
+          },
+          {
+            "$ref": "#/components/schemas/Common.Errors.ForbiddenError"
+          },
+          {
+            "$ref": "#/components/schemas/Common.Errors.ConflictError"
+          },
+          {
+            "$ref": "#/components/schemas/Common.Errors.RateLimitError"
+          },
+          {
+            "$ref": "#/components/schemas/Common.Errors.InternalServerError"
+          },
+          {
+            "$ref": "#/components/schemas/Common.Errors.BadGatewayError"
+          },
+          {
+            "$ref": "#/components/schemas/Common.Errors.ServiceUnavailableError"
+          }
+        ],
+        "description": "Standard error response types"
       },
       "Common.Errors.BadGatewayError": {
         "type": "object",
@@ -3055,6 +3502,28 @@
         },
         "description": "Individual validation error detail"
       },
+      "Common.HttpMethod": {
+        "type": "string",
+        "description": "HTTP method name (uppercase)",
+        "examples": [
+          "GET"
+        ]
+      },
+      "Common.IPv4Address": {
+        "type": "string",
+        "pattern": "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
+        "description": "IPv4 address in dotted-decimal notation",
+        "examples": [
+          "192.168.1.1"
+        ]
+      },
+      "Common.IPv6Address": {
+        "type": "string",
+        "description": "IPv6 address in standard notation",
+        "examples": [
+          "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
+        ]
+      },
       "Common.InstrumentationScope": {
         "type": "object",
         "required": [
@@ -3095,6 +3564,189 @@
         "type": "string",
         "description": "IP address (IPv4 or IPv6)"
       },
+      "Common.IsoDuration": {
+        "type": "string",
+        "format": "duration",
+        "description": "ISO 8601 duration format (e.g., PT1H30M)"
+      },
+      "Common.LanguageCode": {
+        "type": "string",
+        "pattern": "^[a-z]{2,3}(-[A-Z]{2})?$",
+        "description": "Language/locale code (BCP 47)",
+        "examples": [
+          "en-US"
+        ]
+      },
+      "Common.MacAddress": {
+        "type": "string",
+        "pattern": "^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$",
+        "description": "MAC address in colon-separated hex notation",
+        "examples": [
+          "00:1A:2B:3C:4D:5E"
+        ]
+      },
+      "Common.Pagination.AggregationParams": {
+        "type": "object",
+        "properties": {
+          "bucket": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.Pagination.TimeBucket"
+              }
+            ],
+            "description": "Time bucket size",
+            "default": "auto"
+          },
+          "group_by": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Group by these dimensions"
+          },
+          "filter": {
+            "type": "string",
+            "description": "Filter expression"
+          }
+        },
+        "description": "Aggregation query parameters"
+      },
+      "Common.Pagination.CursorPaginationParams": {
+        "type": "object",
+        "properties": {
+          "cursor": {
+            "type": "string",
+            "description": "Opaque cursor for fetching the next page"
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 1000,
+            "description": "Maximum number of items to return (1-1000)",
+            "default": 100
+          },
+          "order": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.Pagination.SortOrder"
+              }
+            ],
+            "description": "Sort direction",
+            "default": "desc"
+          }
+        },
+        "description": "Cursor-based pagination parameters"
+      },
+      "Common.Pagination.OffsetPaginationParams": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "description": "Page number (1-indexed)",
+            "default": 1
+          },
+          "page_size": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 1000,
+            "description": "Items per page (1-1000)",
+            "default": 100
+          }
+        },
+        "description": "Offset-based pagination parameters"
+      },
+      "Common.Pagination.SortOrder": {
+        "type": "string",
+        "enum": [
+          "asc",
+          "desc"
+        ],
+        "description": "Sort order"
+      },
+      "Common.Pagination.StreamParams": {
+        "type": "object",
+        "properties": {
+          "since": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Include historical data from this timestamp"
+          },
+          "trace_id": {
+            "type": "string",
+            "description": "Filter by trace ID"
+          },
+          "service_name": {
+            "type": "string",
+            "description": "Filter by service name"
+          },
+          "max_events_per_second": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 1000,
+            "description": "Maximum events per second (rate limiting)",
+            "default": 100
+          }
+        },
+        "description": "Streaming parameters for SSE endpoints"
+      },
+      "Common.Pagination.TimeBucket": {
+        "type": "string",
+        "enum": [
+          "1m",
+          "5m",
+          "15m",
+          "1h",
+          "1d",
+          "1w",
+          "auto"
+        ],
+        "description": "Time bucket size for aggregations"
+      },
+      "Common.Pagination.TimeRangeParams": {
+        "type": "object",
+        "properties": {
+          "start_time": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Start of time range (inclusive)"
+          },
+          "end_time": {
+            "type": "string",
+            "format": "date-time",
+            "description": "End of time range (exclusive)"
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 10000,
+            "description": "Maximum number of items to return",
+            "default": 1000
+          }
+        },
+        "description": "Time-range based query parameters"
+      },
+      "Common.Percentage": {
+        "type": "number",
+        "format": "double",
+        "minimum": 0,
+        "maximum": 100,
+        "description": "Percentage value (0.0 to 100.0)",
+        "x-csharp-type": "double"
+      },
+      "Common.Port": {
+        "type": "integer",
+        "format": "int32",
+        "minimum": 1,
+        "maximum": 65535,
+        "description": "Network port number (1-65535)",
+        "x-csharp-type": "int"
+      },
       "Common.Ratio": {
         "type": "number",
         "format": "double",
@@ -3119,6 +3771,13 @@
         "x-csharp-type": "SessionId",
         "x-csharp-struct": true
       },
+      "Common.Sha256Hash": {
+        "type": "string",
+        "minLength": 64,
+        "maxLength": 64,
+        "pattern": "^[a-f0-9]{64}$",
+        "description": "SHA-256 hash in lowercase hex"
+      },
       "Common.SpanId": {
         "type": "string",
         "minLength": 16,
@@ -3130,6 +3789,19 @@
         ],
         "x-csharp-type": "SpanId",
         "x-csharp-struct": true
+      },
+      "Common.Temperature": {
+        "type": "number",
+        "format": "double",
+        "minimum": 0,
+        "maximum": 2,
+        "description": "Temperature setting for LLM requests (0.0-2.0)",
+        "x-csharp-type": "double"
+      },
+      "Common.Timestamp": {
+        "type": "string",
+        "format": "date-time",
+        "description": "ISO 8601 timestamp with nanosecond precision (RFC 3339)"
       },
       "Common.TokenCount": {
         "type": "integer",
@@ -3150,6 +3822,14 @@
         "x-csharp-type": "TraceId",
         "x-csharp-struct": true
       },
+      "Common.TraceParent": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{2}-[0-9a-f]{32}-[0-9a-f]{16}-[0-9a-f]{2}$",
+        "description": "W3C Trace Context traceparent header format",
+        "examples": [
+          "00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01"
+        ]
+      },
       "Common.TraceState": {
         "type": "string",
         "description": "W3C Trace Context tracestate header (vendor-specific key-value pairs)",
@@ -3163,6 +3843,25 @@
         "minimum": 0,
         "description": "Unsigned Unix timestamp in nanoseconds since epoch",
         "x-csharp-type": "ulong"
+      },
+      "Common.UrlPath": {
+        "type": "string",
+        "description": "URL path component",
+        "examples": [
+          "/api/v1/users"
+        ]
+      },
+      "Common.UrlQuery": {
+        "type": "string",
+        "description": "URL query string (without leading ?)",
+        "examples": [
+          "page=1&limit=100"
+        ]
+      },
+      "Common.UrlString": {
+        "type": "string",
+        "format": "uri",
+        "description": "URL string (absolute)"
       },
       "Common.UserAgent": {
         "type": "string",
@@ -3191,6 +3890,31 @@
           "unknown"
         ],
         "description": "Device types"
+      },
+      "Domains.Observe.Session.SessionAttributes": {
+        "type": "object",
+        "required": [
+          "session.id"
+        ],
+        "properties": {
+          "session.id": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.SessionId"
+              }
+            ],
+            "description": "Session ID"
+          },
+          "session.previous_id": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.SessionId"
+              }
+            ],
+            "description": "Previous session ID (for session continuity)"
+          }
+        },
+        "description": "Session span/event attributes"
       },
       "Domains.Observe.Session.SessionClientInfo": {
         "type": "object",
@@ -3340,6 +4064,54 @@
         },
         "description": "Complete session entity with aggregated data",
         "x-csharp-type": "SessionEntity"
+      },
+      "Domains.Observe.Session.SessionEvent": {
+        "type": "object",
+        "required": [
+          "event.name",
+          "session.id",
+          "timestamp",
+          "event.domain"
+        ],
+        "properties": {
+          "event.name": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Domains.Observe.Session.SessionEventName"
+              }
+            ],
+            "description": "Event name"
+          },
+          "session.id": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.SessionId"
+              }
+            ],
+            "description": "Session ID"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Event timestamp"
+          },
+          "event.domain": {
+            "type": "string",
+            "enum": [
+              "session"
+            ],
+            "description": "Event domain"
+          }
+        },
+        "description": "Session lifecycle event"
+      },
+      "Domains.Observe.Session.SessionEventName": {
+        "type": "string",
+        "enum": [
+          "session.start",
+          "session.end"
+        ],
+        "description": "Session event names"
       },
       "Domains.Observe.Session.SessionGenAiUsage": {
         "type": "object",
@@ -3548,6 +4320,569 @@
         ],
         "description": "Health state reported by a qyl-managed process."
       },
+      "Mcp.Tools.DisplayMcpDashboardInput": {
+        "type": "object",
+        "properties": {
+          "hours": {
+            "type": "number",
+            "format": "double",
+            "minimum": 1,
+            "maximum": 168,
+            "default": 24
+          }
+        },
+        "description": "Input for display_mcp_dashboard."
+      },
+      "Mcp.Tools.DisplayMcpDashboardOutput": {
+        "type": "object",
+        "required": [
+          "stats"
+        ],
+        "properties": {
+          "stats": {
+            "$ref": "#/components/schemas/Mcp.Tools.McpDashboardStats"
+          }
+        },
+        "description": "Structured output for display_mcp_dashboard."
+      },
+      "Mcp.Tools.DisplayTracesInput": {
+        "type": "object",
+        "properties": {
+          "trace_id": {
+            "$ref": "#/components/schemas/Common.TraceId"
+          },
+          "session_id": {
+            "$ref": "#/components/schemas/Common.SessionId"
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 20
+          }
+        },
+        "description": "Input for display_traces."
+      },
+      "Mcp.Tools.DisplayTracesOutput": {
+        "type": "object",
+        "required": [
+          "traces",
+          "mode"
+        ],
+        "properties": {
+          "traces": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OTel.Traces.Trace"
+            }
+          },
+          "selected_trace_id": {
+            "$ref": "#/components/schemas/Common.TraceId"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/Mcp.Tools.McpDataMode"
+          }
+        },
+        "description": "Structured output for display_traces."
+      },
+      "Mcp.Tools.FetchTelemetryInput": {
+        "type": "object",
+        "required": [
+          "view"
+        ],
+        "properties": {
+          "view": {
+            "$ref": "#/components/schemas/Mcp.Tools.FetchTelemetryView"
+          },
+          "trace_id": {
+            "$ref": "#/components/schemas/Common.TraceId"
+          },
+          "service_name": {
+            "type": "string"
+          },
+          "severity_min": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 24
+          },
+          "query": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 200
+          },
+          "hours": {
+            "type": "number",
+            "format": "double",
+            "minimum": 1,
+            "maximum": 168
+          }
+        },
+        "description": "Input for the app-only fetch_telemetry tool."
+      },
+      "Mcp.Tools.FetchTelemetryOutput": {
+        "type": "object",
+        "required": [
+          "mode"
+        ],
+        "properties": {
+          "traces": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OTel.Traces.Trace"
+            }
+          },
+          "trace": {
+            "$ref": "#/components/schemas/OTel.Traces.Trace"
+          },
+          "logs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OTel.Logs.LogRecord"
+            }
+          },
+          "stats": {
+            "$ref": "#/components/schemas/Mcp.Tools.McpDashboardStats"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/Mcp.Tools.McpDataMode"
+          }
+        },
+        "description": "Structured output for the app-only fetch_telemetry tool."
+      },
+      "Mcp.Tools.FetchTelemetryView": {
+        "type": "string",
+        "enum": [
+          "traces",
+          "trace",
+          "logs",
+          "mcp_stats"
+        ],
+        "description": "Data projection requested by the app-only fetch_telemetry tool."
+      },
+      "Mcp.Tools.GetTraceInput": {
+        "type": "object",
+        "required": [
+          "trace_id"
+        ],
+        "properties": {
+          "trace_id": {
+            "$ref": "#/components/schemas/Common.TraceId"
+          }
+        },
+        "description": "Input for get_trace."
+      },
+      "Mcp.Tools.GetTraceOutput": {
+        "type": "object",
+        "required": [
+          "trace",
+          "mode"
+        ],
+        "properties": {
+          "trace": {
+            "$ref": "#/components/schemas/OTel.Traces.Trace"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/Mcp.Tools.McpDataMode"
+          }
+        },
+        "description": "Structured output for get_trace."
+      },
+      "Mcp.Tools.ListSessionsInput": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 20
+          },
+          "active_only": {
+            "type": "boolean"
+          }
+        },
+        "description": "Input for list_sessions."
+      },
+      "Mcp.Tools.ListSessionsOutput": {
+        "type": "object",
+        "required": [
+          "sessions",
+          "mode"
+        ],
+        "properties": {
+          "sessions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Domains.Observe.Session.SessionEntity"
+            }
+          },
+          "mode": {
+            "$ref": "#/components/schemas/Mcp.Tools.McpDataMode"
+          }
+        },
+        "description": "Structured output for list_sessions."
+      },
+      "Mcp.Tools.ListTracesInput": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 20
+          }
+        },
+        "description": "Input for list_traces."
+      },
+      "Mcp.Tools.ListTracesOutput": {
+        "type": "object",
+        "required": [
+          "traces",
+          "mode"
+        ],
+        "properties": {
+          "traces": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OTel.Traces.TraceSummary"
+            }
+          },
+          "mode": {
+            "$ref": "#/components/schemas/Mcp.Tools.McpDataMode"
+          }
+        },
+        "description": "Structured output for list_traces."
+      },
+      "Mcp.Tools.McpDashboardBucket": {
+        "type": "object",
+        "required": [
+          "start",
+          "requests",
+          "errors"
+        ],
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "requests": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "errors": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          }
+        }
+      },
+      "Mcp.Tools.McpDashboardStats": {
+        "type": "object",
+        "required": [
+          "window",
+          "buckets",
+          "totals",
+          "by_server",
+          "by_transport",
+          "by_method",
+          "tools",
+          "span_count_analyzed",
+          "truncated",
+          "mode"
+        ],
+        "properties": {
+          "window": {
+            "$ref": "#/components/schemas/Mcp.Tools.McpDashboardWindow"
+          },
+          "buckets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Mcp.Tools.McpDashboardBucket"
+            }
+          },
+          "totals": {
+            "$ref": "#/components/schemas/Mcp.Tools.McpDashboardTotals"
+          },
+          "by_server": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Mcp.Tools.McpNameRequestCount"
+            }
+          },
+          "by_transport": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Mcp.Tools.McpNameRequestCount"
+            }
+          },
+          "by_method": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Mcp.Tools.McpNameRequestCount"
+            }
+          },
+          "tools": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Mcp.Tools.McpToolStats"
+            }
+          },
+          "span_count_analyzed": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "truncated": {
+            "type": "boolean"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/Mcp.Tools.McpDataMode"
+          }
+        },
+        "description": "Aggregate MCP traffic statistics shown by qyl.mcp."
+      },
+      "Mcp.Tools.McpDashboardTotals": {
+        "type": "object",
+        "required": [
+          "requests",
+          "errors",
+          "error_rate"
+        ],
+        "properties": {
+          "requests": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "errors": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "error_rate": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0,
+            "maximum": 1
+          }
+        }
+      },
+      "Mcp.Tools.McpDashboardWindow": {
+        "type": "object",
+        "required": [
+          "start",
+          "end",
+          "bucket_ms"
+        ],
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "bucket_ms": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0
+          }
+        }
+      },
+      "Mcp.Tools.McpDataMode": {
+        "type": "string",
+        "enum": [
+          "live",
+          "demo"
+        ],
+        "description": "Whether a qyl MCP tool read live collector data or the explicit demo dataset."
+      },
+      "Mcp.Tools.McpNameRequestCount": {
+        "type": "object",
+        "required": [
+          "name",
+          "requests"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "requests": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          }
+        }
+      },
+      "Mcp.Tools.McpToolStats": {
+        "type": "object",
+        "required": [
+          "name",
+          "requests",
+          "errors",
+          "error_rate",
+          "avg_ms",
+          "p95_ms"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "requests": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "errors": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "error_rate": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "avg_ms": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0
+          },
+          "p95_ms": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0
+          }
+        }
+      },
+      "Mcp.Tools.SearchLogsInput": {
+        "type": "object",
+        "properties": {
+          "trace_id": {
+            "$ref": "#/components/schemas/Common.TraceId"
+          },
+          "service_name": {
+            "type": "string"
+          },
+          "severity_min": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 24
+          },
+          "query": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 200,
+            "default": 50
+          }
+        },
+        "description": "Input for search_logs."
+      },
+      "Mcp.Tools.SearchLogsOutput": {
+        "type": "object",
+        "required": [
+          "logs",
+          "mode"
+        ],
+        "properties": {
+          "logs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OTel.Logs.LogRecord"
+            }
+          },
+          "mode": {
+            "$ref": "#/components/schemas/Mcp.Tools.McpDataMode"
+          }
+        },
+        "description": "Structured output for search_logs."
+      },
+      "OTel.Enums.AggregationTemporality": {
+        "type": "number",
+        "enum": [
+          0,
+          1,
+          2
+        ],
+        "description": "Aggregation temporality for metrics"
+      },
+      "OTel.Enums.DataPointFlags": {
+        "type": "number",
+        "enum": [
+          0,
+          1
+        ],
+        "description": "Data point flags"
+      },
+      "OTel.Enums.ErrorType": {
+        "type": "string",
+        "enum": [
+          "_OTHER",
+          "TIMEOUT",
+          "CONNECTION_REFUSED",
+          "DNS_ERROR",
+          "TLS_ERROR",
+          "AUTH_ERROR",
+          "PERMISSION_DENIED",
+          "NOT_FOUND",
+          "RESOURCE_EXHAUSTED",
+          "INVALID_ARGUMENT",
+          "CANCELLED"
+        ],
+        "description": "Standardized error types"
+      },
+      "OTel.Enums.EventDomain": {
+        "type": "string",
+        "enum": [
+          "browser",
+          "device",
+          "k8s",
+          "session",
+          "gen_ai",
+          "exception",
+          "log"
+        ],
+        "description": "Event domain (namespace for event types)"
+      },
+      "OTel.Enums.InstrumentKind": {
+        "type": "string",
+        "enum": [
+          "Counter",
+          "UpDownCounter",
+          "Histogram",
+          "Gauge",
+          "ObservableCounter",
+          "ObservableGauge",
+          "ObservableUpDownCounter"
+        ],
+        "description": "Metric instrument kinds per OTel specification"
+      },
+      "OTel.Enums.MetricType": {
+        "type": "string",
+        "enum": [
+          "gauge",
+          "sum",
+          "histogram",
+          "exponential_histogram",
+          "summary"
+        ],
+        "description": "Metric data type"
+      },
       "OTel.Enums.OriginalPayloadFormat": {
         "type": "string",
         "enum": [
@@ -3556,6 +4891,24 @@
           "linux_perf"
         ],
         "description": "Original payload format for profile data"
+      },
+      "OTel.Enums.ProfileFrameType": {
+        "type": "string",
+        "enum": [
+          "beam",
+          "cpython",
+          "dotnet",
+          "go",
+          "jvm",
+          "kernel",
+          "native",
+          "perl",
+          "php",
+          "ruby",
+          "rust",
+          "v8js"
+        ],
+        "description": "Profile frame type — interpreter or compiler of a single frame"
       },
       "OTel.Enums.SeverityNumber": {
         "type": "number",
@@ -3599,6 +4952,15 @@
           "FATAL"
         ],
         "description": "Log severity text (human-readable)"
+      },
+      "OTel.Enums.SpanFlags": {
+        "type": "number",
+        "enum": [
+          0,
+          1,
+          2
+        ],
+        "description": "Span flags as defined in W3C Trace Context"
       },
       "OTel.Enums.SpanKind": {
         "type": "number",
@@ -3829,6 +5191,31 @@
           }
         },
         "description": "OpenTelemetry Log Record"
+      },
+      "OTel.Logs.LogTemplate": {
+        "type": "object",
+        "required": [
+          "template",
+          "parameters"
+        ],
+        "properties": {
+          "template": {
+            "type": "string",
+            "description": "Template string with {placeholder} syntax"
+          },
+          "parameters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Common.Attribute"
+            },
+            "description": "Template parameters"
+          },
+          "rendered_message": {
+            "type": "string",
+            "description": "Rendered message"
+          }
+        },
+        "description": "Log message template with placeholders"
       },
       "OTel.Profiles.Profile": {
         "type": "object",
@@ -4110,6 +5497,74 @@
         },
         "description": "Memory mapping for a loaded binary or shared library"
       },
+      "OTel.Profiles.ProfileQueryFilters": {
+        "type": "object",
+        "properties": {
+          "trace_id": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.TraceId"
+              }
+            ],
+            "description": "Filter by trace ID"
+          },
+          "span_id": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.SpanId"
+              }
+            ],
+            "description": "Filter by span ID"
+          },
+          "session_id": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.SessionId"
+              }
+            ],
+            "description": "Filter by session ID"
+          },
+          "service_name": {
+            "type": "string",
+            "description": "Filter by service name"
+          },
+          "sample_type": {
+            "type": "string",
+            "description": "Filter by sample type (e.g., cpu, alloc_objects, wall)"
+          },
+          "profile_frame_type": {
+            "type": "string",
+            "description": "Filter by profile frame type (e.g., dotnet, jvm, cpython)"
+          },
+          "original_payload_format": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OTel.Enums.OriginalPayloadFormat"
+              }
+            ],
+            "description": "Filter by original payload format"
+          },
+          "min_duration_nano": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.DurationNs"
+              }
+            ],
+            "description": "Minimum duration in nanoseconds"
+          },
+          "time_from": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Start of time range (inclusive, ISO 8601)"
+          },
+          "time_to": {
+            "type": "string",
+            "format": "date-time",
+            "description": "End of time range (exclusive, ISO 8601)"
+          }
+        },
+        "description": "Filter parameters for querying profiles"
+      },
       "OTel.Profiles.ProfileSample": {
         "type": "object",
         "properties": {
@@ -4162,6 +5617,96 @@
           }
         },
         "description": "Ordered sequence of location indices forming a call stack"
+      },
+      "OTel.Profiles.ProfileStats": {
+        "type": "object",
+        "required": [
+          "total_count",
+          "total_sample_count",
+          "avg_duration_nano"
+        ],
+        "properties": {
+          "total_count": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.Count"
+              }
+            ],
+            "description": "Total profile count"
+          },
+          "total_sample_count": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.Count"
+              }
+            ],
+            "description": "Total sample count across all profiles"
+          },
+          "avg_duration_nano": {
+            "type": "number",
+            "format": "double",
+            "description": "Average duration in nanoseconds"
+          },
+          "by_sample_type": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OTel.Profiles.ProfileStatsByDimension"
+            },
+            "description": "Stats grouped by sample type"
+          },
+          "by_service": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OTel.Profiles.ProfileStatsByDimension"
+            },
+            "description": "Stats grouped by service"
+          },
+          "by_frame_type": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OTel.Profiles.ProfileStatsByDimension"
+            },
+            "description": "Stats grouped by frame type"
+          }
+        },
+        "description": "Aggregated profile statistics"
+      },
+      "OTel.Profiles.ProfileStatsByDimension": {
+        "type": "object",
+        "required": [
+          "dimension",
+          "count",
+          "sample_count",
+          "avg_duration_nano"
+        ],
+        "properties": {
+          "dimension": {
+            "type": "string",
+            "description": "Dimension value"
+          },
+          "count": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.Count"
+              }
+            ],
+            "description": "Profile count for this dimension"
+          },
+          "sample_count": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.Count"
+              }
+            ],
+            "description": "Total sample count for this dimension"
+          },
+          "avg_duration_nano": {
+            "type": "number",
+            "format": "double",
+            "description": "Average duration in nanoseconds"
+          }
+        },
+        "description": "Profile statistics for a specific dimension value"
       },
       "OTel.Profiles.ProfileValueType": {
         "type": "object",
@@ -4659,6 +6204,215 @@
         },
         "description": "Link to another span (e.g., batch processing)"
       },
+      "OTel.Traces.SpanQueryFilters": {
+        "type": "object",
+        "properties": {
+          "trace_id": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.TraceId"
+              }
+            ],
+            "description": "Filter by trace ID"
+          },
+          "parent_span_id": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.SpanId"
+              }
+            ],
+            "description": "Filter by parent span ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Filter by span name (supports wildcards)"
+          },
+          "kind": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OTel.Enums.SpanKind"
+              }
+            ],
+            "description": "Filter by span kind"
+          },
+          "service_name": {
+            "type": "string",
+            "description": "Filter by service name"
+          },
+          "status_code": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OTel.Enums.SpanStatusCode"
+              }
+            ],
+            "description": "Filter by status code"
+          },
+          "min_duration_ns": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.DurationNs"
+              }
+            ],
+            "description": "Minimum duration in nanoseconds"
+          },
+          "max_duration_ns": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.DurationNs"
+              }
+            ],
+            "description": "Maximum duration in nanoseconds"
+          },
+          "attribute": {
+            "type": "string",
+            "description": "Filter by attribute key-value pair"
+          }
+        },
+        "description": "Filter parameters for querying spans"
+      },
+      "OTel.Traces.SpanStats": {
+        "type": "object",
+        "required": [
+          "total_count",
+          "error_count",
+          "error_rate",
+          "avg_duration_ns",
+          "p50_duration_ns",
+          "p90_duration_ns",
+          "p99_duration_ns",
+          "min_duration_ns",
+          "max_duration_ns",
+          "throughput_per_second"
+        ],
+        "properties": {
+          "total_count": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.Count"
+              }
+            ],
+            "description": "Total span count"
+          },
+          "error_count": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.Count"
+              }
+            ],
+            "description": "Error count"
+          },
+          "error_rate": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.Ratio"
+              }
+            ],
+            "description": "Error rate (0.0 - 1.0)"
+          },
+          "avg_duration_ns": {
+            "type": "number",
+            "format": "double",
+            "description": "Average duration in nanoseconds"
+          },
+          "p50_duration_ns": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.DurationNs"
+              }
+            ],
+            "description": "P50 duration in nanoseconds"
+          },
+          "p90_duration_ns": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.DurationNs"
+              }
+            ],
+            "description": "P90 duration in nanoseconds"
+          },
+          "p99_duration_ns": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.DurationNs"
+              }
+            ],
+            "description": "P99 duration in nanoseconds"
+          },
+          "min_duration_ns": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.DurationNs"
+              }
+            ],
+            "description": "Minimum duration in nanoseconds"
+          },
+          "max_duration_ns": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.DurationNs"
+              }
+            ],
+            "description": "Maximum duration in nanoseconds"
+          },
+          "throughput_per_second": {
+            "type": "number",
+            "format": "double",
+            "description": "Throughput (spans per second)"
+          },
+          "by_service": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OTel.Traces.SpanStatsByDimension"
+            },
+            "description": "Stats grouped by service"
+          },
+          "by_operation": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OTel.Traces.SpanStatsByDimension"
+            },
+            "description": "Stats grouped by operation name"
+          }
+        },
+        "description": "Aggregated span statistics"
+      },
+      "OTel.Traces.SpanStatsByDimension": {
+        "type": "object",
+        "required": [
+          "dimension",
+          "count",
+          "avg_duration_ns",
+          "error_rate"
+        ],
+        "properties": {
+          "dimension": {
+            "type": "string",
+            "description": "Dimension value (e.g., service name)"
+          },
+          "count": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.Count"
+              }
+            ],
+            "description": "Span count for this dimension"
+          },
+          "avg_duration_ns": {
+            "type": "number",
+            "format": "double",
+            "description": "Average duration in nanoseconds"
+          },
+          "error_rate": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.Ratio"
+              }
+            ],
+            "description": "Error rate for this dimension"
+          }
+        },
+        "description": "Span statistics for a specific dimension value"
+      },
       "OTel.Traces.SpanStatus": {
         "type": "object",
         "required": [
@@ -4683,8 +6437,28 @@
       "OTel.Traces.Trace": {
         "type": "object",
         "required": [
+          "spans"
+        ],
+        "properties": {
+          "spans": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OTel.Traces.Span"
+            },
+            "description": "All spans in this trace"
+          }
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OTel.Traces.TraceSummary"
+          }
+        ],
+        "description": "Complete trace containing all related spans"
+      },
+      "OTel.Traces.TraceSummary": {
+        "type": "object",
+        "required": [
           "trace_id",
-          "spans",
           "span_count",
           "duration_ns",
           "start_time",
@@ -4700,13 +6474,6 @@
               }
             ],
             "description": "Trace identifier"
-          },
-          "spans": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/OTel.Traces.Span"
-            },
-            "description": "All spans in this trace"
           },
           "root_span": {
             "allOf": [
@@ -4751,7 +6518,7 @@
             "description": "Whether trace contains errors"
           }
         },
-        "description": "Complete trace containing all related spans"
+        "description": "Trace summary without the full span collection"
       },
       "Runner.Mcp.RunnerMcpContent": {
         "type": "object",
@@ -4804,10 +6571,69 @@
         },
         "description": "One MCP content item projected onto a stable qyl JSON shape."
       },
+      "Runner.Mcp.RunnerMcpResourceContent": {
+        "type": "object",
+        "required": [
+          "uri"
+        ],
+        "properties": {
+          "uri": {
+            "type": "string",
+            "format": "uri"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "blob": {
+            "type": "string"
+          },
+          "_meta": {
+            "type": "object",
+            "unevaluatedProperties": {}
+          }
+        },
+        "description": "Text or base64 resource content returned by an MCP server. Exactly one of text or blob is present."
+      },
+      "Runner.Mcp.RunnerMcpResourceReadRequest": {
+        "type": "object",
+        "required": [
+          "uri"
+        ],
+        "properties": {
+          "uri": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "description": "Resource URI accepted by the runner's MCP projection."
+      },
+      "Runner.Mcp.RunnerMcpResourceReadResponse": {
+        "type": "object",
+        "required": [
+          "contents"
+        ],
+        "properties": {
+          "contents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpResourceContent"
+            }
+          },
+          "_meta": {
+            "type": "object",
+            "unevaluatedProperties": {}
+          }
+        },
+        "description": "Stable qyl projection of an MCP resources/read result."
+      },
       "Runner.Mcp.RunnerMcpTool": {
         "type": "object",
         "required": [
-          "name"
+          "name",
+          "inputSchema"
         ],
         "properties": {
           "name": {
@@ -4824,6 +6650,14 @@
             "unevaluatedProperties": {}
           },
           "outputSchema": {
+            "type": "object",
+            "unevaluatedProperties": {}
+          },
+          "annotations": {
+            "type": "object",
+            "unevaluatedProperties": {}
+          },
+          "_meta": {
             "type": "object",
             "unevaluatedProperties": {}
           }
@@ -4865,6 +6699,10 @@
           },
           "isError": {
             "type": "boolean"
+          },
+          "_meta": {
+            "type": "object",
+            "unevaluatedProperties": {}
           }
         },
         "description": "Stable qyl projection of an MCP tool-call result."
@@ -4883,9 +6721,16 @@
           },
           "nextCursor": {
             "type": "string"
+          },
+          "_meta": {
+            "type": "object",
+            "unevaluatedProperties": {}
           }
         },
         "description": "MCP tools currently advertised by a runner resource."
+      },
+      "Runner.RunnerLogEvents": {
+        "$ref": "#/components/schemas/Runner.RunnerLogLine"
       },
       "Runner.RunnerLogLine": {
         "type": "object",
@@ -4914,6 +6759,37 @@
           "err"
         ],
         "description": "Origin stream for one captured child-process log line."
+      },
+      "Runner.RunnerMcpServerInfo": {
+        "type": "object",
+        "required": [
+          "name",
+          "version"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "description": "Identity reported by a connected MCP server during initialization."
+      },
+      "Runner.RunnerResourceEvents": {
+        "$ref": "#/components/schemas/Runner.RunnerResourceState"
+      },
+      "Runner.RunnerResourceKind": {
+        "type": "string",
+        "enum": [
+          "collector",
+          "project",
+          "command",
+          "stdio",
+          "http",
+          "inproc"
+        ],
+        "description": "Kind of process or connection supervised by the local qyl runner."
       },
       "Runner.RunnerResourceLifecycle": {
         "type": "string",
@@ -4946,7 +6822,7 @@
             "format": "date-time"
           },
           "kind": {
-            "type": "string"
+            "$ref": "#/components/schemas/Runner.RunnerResourceKind"
           },
           "allocatedPort": {
             "type": "integer",
@@ -4960,6 +6836,19 @@
           },
           "lastError": {
             "type": "string"
+          },
+          "serverInfo": {
+            "$ref": "#/components/schemas/Runner.RunnerMcpServerInfo"
+          },
+          "toolCount": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "restarts": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
           }
         },
         "description": "Current client-visible state of one runner resource."
@@ -4983,6 +6872,16 @@
           }
         },
         "description": "Keep-alive event emitted while no new log is available."
+      },
+      "Streaming.LogEvents": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/Streaming.LogStreamEvent"
+          },
+          {
+            "$ref": "#/components/schemas/Streaming.HeartbeatEvent"
+          }
+        ]
       },
       "Streaming.LogStreamEvent": {
         "type": "object",

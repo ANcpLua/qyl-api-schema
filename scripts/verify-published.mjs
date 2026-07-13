@@ -12,12 +12,19 @@ const npmPackage = "@ancplua/qyl-api-schema";
 const nugetPackage = "Qyl.Api.Contracts";
 
 async function waitFor(url, matches, label) {
+  let lastError = "not indexed";
   for (let attempt = 1; attempt <= 60; attempt += 1) {
-    const response = await fetch(`${url}${url.includes("?") ? "&" : "?"}attempt=${attempt}`, {
-      headers: { "cache-control": "no-cache" },
-    });
-    if (response.ok && matches(await response.text())) return;
-    if (attempt === 60) throw new Error(`${label} was not indexed after 5 minutes`);
+    try {
+      const response = await fetch(`${url}${url.includes("?") ? "&" : "?"}attempt=${attempt}`, {
+        headers: { "cache-control": "no-cache" },
+        signal: AbortSignal.timeout(10_000),
+      });
+      if (response.ok && matches(await response.text())) return;
+      lastError = `HTTP ${response.status}`;
+    } catch (error) {
+      lastError = error instanceof Error ? error.message : String(error);
+    }
+    if (attempt === 60) throw new Error(`${label} was not indexed after retries: ${lastError}`);
     await new Promise((resolve) => setTimeout(resolve, 5_000));
   }
 }
@@ -50,8 +57,9 @@ try {
   );
   await writeFile(
     join(npmDir, "smoke.mjs"),
-    `import { HealthStatusValues, RunnerResourceLifecycleValues } from ${JSON.stringify(`${npmPackage}/types`)};\n` +
-      `if (HealthStatusValues.healthy !== "healthy" || RunnerResourceLifecycleValues.ready !== "ready") process.exit(1);\n`,
+    `import { HealthStatusValues, RunnerResourceKindValues, RunnerResourceLifecycleValues } from ${JSON.stringify(`${npmPackage}/types`)};\n` +
+      `import schema from ${JSON.stringify(`${npmPackage}/json-schema`)} with { type: "json" };\n` +
+      `if (HealthStatusValues.healthy !== "healthy" || RunnerResourceLifecycleValues.ready !== "ready" || RunnerResourceKindValues.stdio !== "stdio" || !schema.$defs["Mcp.Tools.FetchTelemetryInput"]) process.exit(1);\n`,
   );
   run("node", ["smoke.mjs"], npmDir);
 
@@ -68,11 +76,16 @@ try {
   );
   await writeFile(
     join(dotnetDir, "Program.cs"),
-    `using System.Text.Json;\nusing Qyl.Api.Contracts.Health;\nusing Qyl.Api.Contracts.Runner;\nusing Qyl.Api.Contracts.Runner.Mcp;\n` +
+    `using System.Text.Json;\nusing Qyl.Api.Contracts.Health;\nusing Qyl.Api.Contracts.Mcp.Tools;\nusing Qyl.Api.Contracts.Runner;\nusing Qyl.Api.Contracts.Runner.Mcp;\n` +
       `var health = JsonSerializer.Serialize(HealthStatus.Healthy);\n` +
       `var lifecycle = JsonSerializer.Serialize(RunnerResourceLifecycle.Ready);\n` +
+      `var kind = JsonSerializer.Serialize(RunnerResourceKind.Stdio);\n` +
       `var request = new RunnerMcpToolCallRequest { Name = "smoke" };\n` +
-      `if (health != "\\\"healthy\\\"" || lifecycle != "\\\"ready\\\"" || request.Name != "smoke") return 1;\nreturn 0;\n`,
+      `var resource = new RunnerMcpResourceReadRequest { Uri = new Uri("ui://app/index.html") };\n` +
+      `var state = new RunnerResourceState { Name = "demo", Lifecycle = RunnerResourceLifecycle.Ready, Timestamp = DateTimeOffset.UnixEpoch, Kind = RunnerResourceKind.Stdio };\n` +
+      `var tool = new RunnerMcpTool { Name = "inspect", InputSchema = new Dictionary<string, object>() };\n` +
+      `var toolInput = new FetchTelemetryInput { View = FetchTelemetryView.Traces };\n` +
+      `if (health != "\\\"healthy\\\"" || lifecycle != "\\\"ready\\\"" || kind != "\\\"stdio\\\"" || request.Name != "smoke" || resource.Uri.Scheme != "ui" || state.Kind != RunnerResourceKind.Stdio || tool.Name != "inspect" || toolInput.View != FetchTelemetryView.Traces) return 1;\nreturn 0;\n`,
   );
   run("dotnet", ["run", "--configuration", "Release"], dotnetDir);
 } finally {

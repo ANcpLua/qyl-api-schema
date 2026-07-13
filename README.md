@@ -16,7 +16,7 @@ generated/otel-keys.gen.tsp
         v
 authored Qyl TypeSpec
         |
-        +----> OpenAPI and JSON Schema
+        +----> OpenAPI ----> bundled JSON Schema
         +----> Qyl.Api.Contracts
         +----> generated TypeScript contracts
 ```
@@ -67,8 +67,10 @@ Important generated outputs include:
 - `generated/contracts/**/*.cs`
 - `generated/ts-types/**`
 
-Generated files are not editing surfaces. Change TypeSpec or the owning emitter and
-regenerate.
+Generated files are not editing surfaces. OpenAPI comes from the official TypeSpec
+emitter; the bundled JSON Schema is a deterministic projection of its component
+schemas so both artifacts preserve the same wire names. Change TypeSpec or the
+owning generator and regenerate.
 
 ## Publish
 

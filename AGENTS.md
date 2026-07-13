@@ -51,7 +51,8 @@ The package and namespace identities are:
   `Qyl.OpenTelemetry.SemanticConventions` repository's `emit_typespec_keys.py` from
   its resolved registry. It supplies names, not product models.
 - Emitters under `emitters/` own generated C# and TypeScript contracts; TypeSpec's
-  official emitters own OpenAPI and JSON Schema.
+  official emitter owns OpenAPI, and `scripts/openapi-to-json-schema.mjs` owns the
+  bundled JSON Schema projection with the same wire names.
 - Never hand-edit generated output. Change TypeSpec, an emitter, or an upstream
   generated input and regenerate deterministically.
 

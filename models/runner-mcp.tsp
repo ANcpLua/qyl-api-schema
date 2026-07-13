@@ -1,3 +1,7 @@
+import "@typespec/openapi3";
+
+using TypeSpec.OpenAPI;
+
 namespace Qyl.Api.Contracts.Runner.Mcp;
 
 @doc("Icon metadata carried by MCP tools and resource links.")
@@ -56,29 +60,79 @@ model RunnerMcpTaskMetadata {
   ttl?: float64;
 }
 
-@doc("One MCP content item projected onto a stable qyl JSON shape. Variant-specific required fields follow its type discriminator.")
-model RunnerMcpContent {
-  type: string;
-  text?: string;
-  data?: string;
-  mimeType?: string;
-  uri?: url;
-  name?: string;
-  title?: string;
-  description?: string;
-  @minValue(0)
-  size?: int64;
-  icons?: RunnerMcpIcon[];
-  resource?: RunnerMcpResourceContent;
-  id?: string;
-  input?: unknown;
-  toolUseId?: string;
-  content?: RunnerMcpContent[];
-  structuredContent?: Record<unknown>;
-  isError?: boolean;
+@doc("Metadata shared by every MCP content variant.")
+model RunnerMcpContentMetadata {
   annotations?: Record<unknown>;
   @encodedName("application/json", "_meta")
   metadata?: Record<unknown>;
+}
+
+@doc("Text provided to or returned by an MCP model or tool.")
+model RunnerMcpTextContent extends RunnerMcpContentMetadata {
+  type: "text";
+  text: string;
+}
+
+@doc("Base64-encoded image content.")
+model RunnerMcpImageContent extends RunnerMcpContentMetadata {
+  type: "image";
+  data: bytes;
+  mimeType: string;
+}
+
+@doc("Base64-encoded audio content.")
+model RunnerMcpAudioContent extends RunnerMcpContentMetadata {
+  type: "audio";
+  data: bytes;
+  mimeType: string;
+}
+
+@doc("A resource embedded in MCP content.")
+model RunnerMcpEmbeddedResourceContent extends RunnerMcpContentMetadata {
+  type: "resource";
+  resource: RunnerMcpResourceContent;
+}
+
+@doc("A link to a resource that an MCP server can read.")
+model RunnerMcpResourceLinkContent extends RunnerMcpContentMetadata {
+  type: "resource_link";
+  uri: url;
+  name: string;
+  title?: string;
+  description?: string;
+  mimeType?: string;
+  @minValue(0)
+  size?: int64;
+  icons?: RunnerMcpIcon[];
+}
+
+@doc("An MCP sampling request to invoke a tool.")
+model RunnerMcpToolUseContent extends RunnerMcpContentMetadata {
+  type: "tool_use";
+  id: string;
+  name: string;
+  input: unknown;
+}
+
+@doc("The result of an MCP sampling tool invocation.")
+model RunnerMcpToolResultContent extends RunnerMcpContentMetadata {
+  type: "tool_result";
+  toolUseId: string;
+  content: RunnerMcpContent[];
+  structuredContent?: Record<unknown>;
+  isError?: boolean;
+}
+
+@doc("One MCP content item. The type literal selects the required variant fields.")
+@oneOf
+union RunnerMcpContent {
+  text: RunnerMcpTextContent,
+  image: RunnerMcpImageContent,
+  audio: RunnerMcpAudioContent,
+  embeddedResource: RunnerMcpEmbeddedResourceContent,
+  resourceLink: RunnerMcpResourceLinkContent,
+  toolUse: RunnerMcpToolUseContent,
+  toolResult: RunnerMcpToolResultContent,
 }
 
 @doc("Lifecycle state of an MCP task returned by a task-augmented tool call.")
@@ -118,14 +172,29 @@ model RunnerMcpResourceReadRequest {
   metadata?: Record<unknown>;
 }
 
-@doc("Text or base64 resource content returned by an MCP server. Exactly one of text or blob is present.")
-model RunnerMcpResourceContent {
+@doc("Metadata shared by MCP text and blob resources.")
+model RunnerMcpResourceContentMetadata {
   uri: url;
   mimeType?: string;
-  text?: string;
-  blob?: string;
   @encodedName("application/json", "_meta")
   metadata?: Record<unknown>;
+}
+
+@doc("Text resource content returned by an MCP server.")
+model RunnerMcpTextResourceContent extends RunnerMcpResourceContentMetadata {
+  text: string;
+}
+
+@doc("Base64-encoded resource content returned by an MCP server.")
+model RunnerMcpBlobResourceContent extends RunnerMcpResourceContentMetadata {
+  blob: bytes;
+}
+
+@doc("Exactly one MCP text or blob resource variant.")
+@oneOf
+union RunnerMcpResourceContent {
+  text: RunnerMcpTextResourceContent,
+  blob: RunnerMcpBlobResourceContent,
 }
 
 @doc("Stable qyl projection of an MCP resources/read result.")

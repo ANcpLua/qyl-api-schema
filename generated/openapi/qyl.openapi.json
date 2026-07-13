@@ -2277,6 +2277,40 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "Service unavailable (503)",
+            "headers": {
+              "Retry-After": {
+                "required": false,
+                "description": "Expected availability time",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ServiceUnavailableError"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -2444,6 +2478,40 @@
               "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Common.Errors.BadGatewayError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable (503)",
+            "headers": {
+              "Retry-After": {
+                "required": false,
+                "description": "Expected availability time",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ServiceUnavailableError"
                 }
               }
             }
@@ -2633,6 +2701,40 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "Service unavailable (503)",
+            "headers": {
+              "Retry-After": {
+                "required": false,
+                "description": "Expected availability time",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ServiceUnavailableError"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -2716,6 +2818,40 @@
               "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Common.Errors.InternalServerError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable (503)",
+            "headers": {
+              "Retry-After": {
+                "required": false,
+                "description": "Expected availability time",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ServiceUnavailableError"
                 }
               }
             }
@@ -2815,6 +2951,40 @@
               "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Common.Errors.InternalServerError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable (503)",
+            "headers": {
+              "Retry-After": {
+                "required": false,
+                "description": "Expected availability time",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ServiceUnavailableError"
                 }
               }
             }
@@ -2926,6 +3096,40 @@
               "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Common.Errors.InternalServerError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable (503)",
+            "headers": {
+              "Retry-After": {
+                "required": false,
+                "description": "Expected availability time",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ServiceUnavailableError"
                 }
               }
             }
@@ -3063,6 +3267,40 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "Service unavailable (503)",
+            "headers": {
+              "Retry-After": {
+                "required": false,
+                "description": "Expected availability time",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ServiceUnavailableError"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -3187,6 +3425,40 @@
               "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Common.Errors.InternalServerError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable (503)",
+            "headers": {
+              "Retry-After": {
+                "required": false,
+                "description": "Expected availability time",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ServiceUnavailableError"
                 }
               }
             }
@@ -3317,6 +3589,40 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "Service unavailable (503)",
+            "headers": {
+              "Retry-After": {
+                "required": false,
+                "description": "Expected availability time",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ServiceUnavailableError"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -3361,6 +3667,33 @@
         },
         "description": "Key-value attribute pair following OTel conventions"
       },
+      "Common.AttributeBytesValue": {
+        "type": "object",
+        "required": [
+          "type",
+          "base64"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "bytes"
+            ]
+          },
+          "base64": {
+            "type": "string",
+            "contentEncoding": "base64"
+          }
+        },
+        "description": "Base64 bytes projected by qyl without colliding with an ordinary string attribute."
+      },
+      "Common.AttributeKeyValueListValue": {
+        "type": "object",
+        "unevaluatedProperties": {
+          "$ref": "#/components/schemas/Common.AttributeValue"
+        },
+        "description": "Recursive OTLP key-value-list projected as a JSON object."
+      },
       "Common.AttributeValue": {
         "anyOf": [
           {
@@ -3378,37 +3711,19 @@
             "format": "double"
           },
           {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "$ref": "#/components/schemas/Common.AttributeBytesValue"
           },
           {
             "type": "array",
             "items": {
-              "type": "boolean"
+              "$ref": "#/components/schemas/Common.AttributeValue"
             }
           },
           {
-            "type": "array",
-            "items": {
-              "type": "integer",
-              "format": "int64"
-            }
-          },
-          {
-            "type": "array",
-            "items": {
-              "type": "number",
-              "format": "double"
-            }
-          },
-          {
-            "type": "string",
-            "contentEncoding": "base64"
+            "$ref": "#/components/schemas/Common.AttributeKeyValueListValue"
           }
         ],
-        "description": "Primitive attribute value types supported by OpenTelemetry"
+        "description": "Lossless JSON projection of an OpenTelemetry AnyValue attribute."
       },
       "Common.Attributes": {
         "type": "object",
@@ -6812,71 +7127,82 @@
         },
         "description": "Trace summary without the full span collection"
       },
-      "Runner.Mcp.RunnerMcpContent": {
+      "Runner.Mcp.RunnerMcpAudioContent": {
         "type": "object",
         "required": [
-          "type"
+          "type",
+          "data",
+          "mimeType"
         ],
         "properties": {
           "type": {
-            "type": "string"
-          },
-          "text": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "audio"
+            ]
           },
           "data": {
-            "type": "string"
+            "type": "string",
+            "contentEncoding": "base64"
           },
           "mimeType": {
             "type": "string"
-          },
-          "uri": {
+          }
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpContentMetadata"
+          }
+        ],
+        "description": "Base64-encoded audio content."
+      },
+      "Runner.Mcp.RunnerMcpBlobResourceContent": {
+        "type": "object",
+        "required": [
+          "blob"
+        ],
+        "properties": {
+          "blob": {
             "type": "string",
-            "format": "uri"
+            "contentEncoding": "base64"
+          }
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpResourceContentMetadata"
+          }
+        ],
+        "description": "Base64-encoded resource content returned by an MCP server."
+      },
+      "Runner.Mcp.RunnerMcpContent": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpTextContent"
           },
-          "name": {
-            "type": "string"
+          {
+            "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpImageContent"
           },
-          "title": {
-            "type": "string"
+          {
+            "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpAudioContent"
           },
-          "description": {
-            "type": "string"
+          {
+            "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpEmbeddedResourceContent"
           },
-          "size": {
-            "type": "integer",
-            "format": "int64",
-            "minimum": 0
+          {
+            "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpResourceLinkContent"
           },
-          "icons": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpIcon"
-            }
+          {
+            "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpToolUseContent"
           },
-          "resource": {
-            "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpResourceContent"
-          },
-          "id": {
-            "type": "string"
-          },
-          "input": {},
-          "toolUseId": {
-            "type": "string"
-          },
-          "content": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpContent"
-            }
-          },
-          "structuredContent": {
-            "type": "object",
-            "unevaluatedProperties": {}
-          },
-          "isError": {
-            "type": "boolean"
-          },
+          {
+            "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpToolResultContent"
+          }
+        ],
+        "description": "One MCP content item. The type literal selects the required variant fields."
+      },
+      "Runner.Mcp.RunnerMcpContentMetadata": {
+        "type": "object",
+        "properties": {
           "annotations": {
             "type": "object",
             "unevaluatedProperties": {}
@@ -6886,7 +7212,31 @@
             "unevaluatedProperties": {}
           }
         },
-        "description": "One MCP content item projected onto a stable qyl JSON shape. Variant-specific required fields follow its type discriminator."
+        "description": "Metadata shared by every MCP content variant."
+      },
+      "Runner.Mcp.RunnerMcpEmbeddedResourceContent": {
+        "type": "object",
+        "required": [
+          "type",
+          "resource"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "resource"
+            ]
+          },
+          "resource": {
+            "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpResourceContent"
+          }
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpContentMetadata"
+          }
+        ],
+        "description": "A resource embedded in MCP content."
       },
       "Runner.Mcp.RunnerMcpIcon": {
         "type": "object",
@@ -6912,7 +7262,47 @@
         },
         "description": "Icon metadata carried by MCP tools and resource links."
       },
+      "Runner.Mcp.RunnerMcpImageContent": {
+        "type": "object",
+        "required": [
+          "type",
+          "data",
+          "mimeType"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "image"
+            ]
+          },
+          "data": {
+            "type": "string",
+            "contentEncoding": "base64"
+          },
+          "mimeType": {
+            "type": "string"
+          }
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpContentMetadata"
+          }
+        ],
+        "description": "Base64-encoded image content."
+      },
       "Runner.Mcp.RunnerMcpResourceContent": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpTextResourceContent"
+          },
+          {
+            "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpBlobResourceContent"
+          }
+        ],
+        "description": "Exactly one MCP text or blob resource variant."
+      },
+      "Runner.Mcp.RunnerMcpResourceContentMetadata": {
         "type": "object",
         "required": [
           "uri"
@@ -6925,18 +7315,61 @@
           "mimeType": {
             "type": "string"
           },
-          "text": {
-            "type": "string"
-          },
-          "blob": {
-            "type": "string"
-          },
           "_meta": {
             "type": "object",
             "unevaluatedProperties": {}
           }
         },
-        "description": "Text or base64 resource content returned by an MCP server. Exactly one of text or blob is present."
+        "description": "Metadata shared by MCP text and blob resources."
+      },
+      "Runner.Mcp.RunnerMcpResourceLinkContent": {
+        "type": "object",
+        "required": [
+          "type",
+          "uri",
+          "name"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "resource_link"
+            ]
+          },
+          "uri": {
+            "type": "string",
+            "format": "uri"
+          },
+          "name": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "icons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpIcon"
+            }
+          }
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpContentMetadata"
+          }
+        ],
+        "description": "A link to a resource that an MCP server can read."
       },
       "Runner.Mcp.RunnerMcpResourceReadRequest": {
         "type": "object",
@@ -7031,6 +7464,47 @@
           "cancelled"
         ],
         "description": "Lifecycle state of an MCP task returned by a task-augmented tool call."
+      },
+      "Runner.Mcp.RunnerMcpTextContent": {
+        "type": "object",
+        "required": [
+          "type",
+          "text"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "text"
+            ]
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpContentMetadata"
+          }
+        ],
+        "description": "Text provided to or returned by an MCP model or tool."
+      },
+      "Runner.Mcp.RunnerMcpTextResourceContent": {
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpResourceContentMetadata"
+          }
+        ],
+        "description": "Text resource content returned by an MCP server."
       },
       "Runner.Mcp.RunnerMcpTool": {
         "type": "object",
@@ -7138,6 +7612,44 @@
         },
         "description": "Execution metadata advertised for an MCP tool."
       },
+      "Runner.Mcp.RunnerMcpToolResultContent": {
+        "type": "object",
+        "required": [
+          "type",
+          "toolUseId",
+          "content"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "tool_result"
+            ]
+          },
+          "toolUseId": {
+            "type": "string"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpContent"
+            }
+          },
+          "structuredContent": {
+            "type": "object",
+            "unevaluatedProperties": {}
+          },
+          "isError": {
+            "type": "boolean"
+          }
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpContentMetadata"
+          }
+        ],
+        "description": "The result of an MCP sampling tool invocation."
+      },
       "Runner.Mcp.RunnerMcpToolTaskSupport": {
         "type": "string",
         "enum": [
@@ -7146,6 +7658,36 @@
           "required"
         ],
         "description": "Task-augmentation support advertised for an MCP tool."
+      },
+      "Runner.Mcp.RunnerMcpToolUseContent": {
+        "type": "object",
+        "required": [
+          "type",
+          "id",
+          "name",
+          "input"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "tool_use"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "input": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpContentMetadata"
+          }
+        ],
+        "description": "An MCP sampling request to invoke a tool."
       },
       "Runner.Mcp.RunnerMcpToolsResponse": {
         "type": "object",

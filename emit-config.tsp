@@ -13,6 +13,8 @@ using Qyl.Api.Schema.Emit.TsTypes;
 @@csharpNamespace(Qyl.Api.Contracts.Mcp.Tools, "Qyl.Api.Contracts.Mcp.Tools");
 @@csharpNamespace(Qyl.Api.Contracts.Runner, "Qyl.Api.Contracts.Runner");
 @@csharpNamespace(Qyl.Api.Contracts.Runner.Mcp, "Qyl.Api.Contracts.Runner.Mcp");
+@@csharpPolymorphic(Qyl.Api.Contracts.Runner.Mcp.RunnerMcpContent, "type");
+@@csharpPolymorphic(Qyl.Api.Contracts.Runner.Mcp.RunnerMcpResourceContent);
 
 @@csharpNamespace(Qyl.Api.Contracts.Common, "Qyl.Api.Contracts.Common");
 @@csharpNamespace(Qyl.Api.Contracts.Common.Errors, "Qyl.Api.Contracts.Common.Errors");

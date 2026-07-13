@@ -34,6 +34,7 @@
         "PackApiPackage",
         "PackContractsNuget",
         "RestoreTypeSpecDeps",
+        "VerifyContractFixtures",
         "VerifyEmitDeterministic",
         "VerifyGeneratedArtifactsCurrent",
         "VerifyKeysLockstep",

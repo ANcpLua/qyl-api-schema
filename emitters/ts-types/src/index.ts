@@ -76,7 +76,13 @@ export async function $onEmit(context: EmitContext): Promise<void> {
       if (isBuiltin(m)) return;
       if (!m.name) return;
       collectMediaType(program, m, emittedMediaTypes, mediaTypeBlock);
-      if (isArrayModelType(m) || isRecordModelType(m)) return;
+      if (isArrayModelType(m)) return;
+      if (isRecordModelType(m)) {
+        if (m.name === "Record" || emittedModels.has(m.name)) return;
+        emittedModels.add(m.name);
+        modelBlock.push(renderRecordInterface(program, m));
+        return;
+      }
       if (!hasBodyProperties(program, m)) return;
       const name = emittedModelName(m);
       if (emittedModels.has(name)) return;
@@ -146,6 +152,15 @@ function renderInterface(
   return lines.join("\n");
 }
 
+function renderRecordInterface(
+  program: import("@typespec/compiler").Program,
+  model: Model,
+): string {
+  const value = model.indexer?.value;
+  if (!value) throw new Error(`Named record '${model.name}' has no indexer value.`);
+  return `export interface ${model.name} {\n  [key: string]: ${mapType(program, value)};\n}\n`;
+}
+
 function hasBodyProperties(program: import("@typespec/compiler").Program, model: Model): boolean {
   for (let current: Model | undefined = model; current; current = current.baseModel) {
     for (const property of current.properties.values()) {
@@ -185,7 +200,10 @@ function mapType(program: import("@typespec/compiler").Program, type: Type): str
     }
     case "Model":
       if (isArrayModelType(type)) return `${mapType(program, type.indexer!.value)}[]`;
-      if (isRecordModelType(type)) return `Record<string, ${mapType(program, type.indexer!.value)}>`;
+      if (isRecordModelType(type)) {
+        if (type.name && type.name !== "Record") return emittedModelName(type);
+        return `Record<string, ${mapType(program, type.indexer!.value)}>`;
+      }
       return emittedModelName(type);
     case "Enum":
       return (type as Enum).name;

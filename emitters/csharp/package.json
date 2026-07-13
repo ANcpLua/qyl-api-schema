@@ -1,7 +1,7 @@
 {
   "name": "@ancplua/typespec-emit-csharp",
   "version": "0.1.0",
-  "description": "ANcpLua TypeSpec emitter for C# records/enums with @csharpNamespace routing",
+  "description": "ANcpLua TypeSpec emitter for C# DTOs, enums, and explicit polymorphic unions",
   "type": "module",
   "main": "dist/index.js",
   "tspMain": "lib/main.tsp",

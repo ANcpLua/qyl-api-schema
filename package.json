@@ -89,13 +89,15 @@
     "format": "tsp format **/*.tsp",
     "lint": "npm run build:emitters && tsp compile main.tsp --no-emit --warn-as-error",
     "lint:public": "tsp compile index.tsp --no-emit --warn-as-error",
-    "verify:routes": "node scripts/verify-route-contracts.mjs"
+    "verify:routes": "node scripts/verify-route-contracts.mjs",
+    "verify:contracts": "node scripts/verify-contract-fixtures.mjs"
   },
   "peerDependencies": {
     "@typespec/compiler": "^1.13.0 || >=1.13.0-dev.0",
     "@typespec/events": "^0.83.0",
     "@typespec/http": "^1.13.0",
     "@typespec/openapi": "^1.13.0",
+    "@typespec/openapi3": "^1.13.0",
     "@typespec/sse": "^0.83.0"
   },
   "devDependencies": {
@@ -108,6 +110,7 @@
     "@typespec/openapi": "1.13.0",
     "@typespec/openapi3": "1.13.0",
     "@typespec/sse": "0.83.0",
+    "ajv": "8.20.0",
     "typescript": "6.0.3"
   }
 }

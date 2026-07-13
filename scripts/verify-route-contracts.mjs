@@ -50,6 +50,7 @@ if (missingRunnerOperations.length > 0 || unexpectedRunnerOperations.length > 0)
 }
 for (const operationId of expectedRunnerOperations) {
   verifyExactResponse(operationId, "403", "ForbiddenError");
+  verifyExactResponse(operationId, "503", "ServiceUnavailableError");
 }
 
 const validationQueries = new Map([
@@ -77,6 +78,6 @@ for (const [operationId, runtimeValidatedQueries] of validationQueries) {
 }
 
 console.log(
-  `Verified ${expectedRunnerOperations.size} runner security responses and ` +
+  `Verified ${expectedRunnerOperations.size} runner security/capacity responses and ` +
   `${validationQueries.size} typed-query validation responses.`,
 );

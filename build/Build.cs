@@ -290,12 +290,22 @@ sealed class Build : NukeBuild
         });
 
     Target VerifyRouteContracts => _ => _
-        .Description("Assert implemented route guards and typed-query validation failures are declared in OpenAPI.")
+        .Description("Assert implemented route guards, capacity failures, and typed-query validation failures are declared in OpenAPI.")
         .DependsOn(VerifyGeneratedArtifactsCurrent)
         .Executes(() =>
         {
             NpmRun(s => s
                 .SetCommand("verify:routes")
+                .SetProcessWorkingDirectory(DomainSpecRoot));
+        });
+
+    Target VerifyContractFixtures => _ => _
+        .Description("Validate recursive attribute fixtures and exact MCP content/resource unions against emitted JSON Schema.")
+        .DependsOn(VerifyGeneratedArtifactsCurrent)
+        .Executes(() =>
+        {
+            NpmRun(s => s
+                .SetCommand("verify:contracts")
                 .SetProcessWorkingDirectory(DomainSpecRoot));
         });
 
@@ -383,13 +393,14 @@ sealed class Build : NukeBuild
     // Local "everything green" gate.
     // ---------------------------------------------------------------------
     Target Check => _ => _
-        .Description("Local everything-green gate: restore -> lockstep -> compile -> generated-current -> emit-all -> determinism -> npm pack -> C# contracts pack.")
+        .Description("Local everything-green gate: restore -> compile -> generated/contract invariants -> emit deterministically -> pack npm and C# contracts.")
         .DependsOn(
             RestoreTypeSpecDeps,
             VerifyKeysLockstep,
             CompileDomainSpec,
             VerifyGeneratedArtifactsCurrent,
             VerifyRouteContracts,
+            VerifyContractFixtures,
             EmitAll,
             VerifyEmitDeterministic,
             PackApiPackage,

@@ -209,7 +209,18 @@ scalar LanguageCode extends string;
 // OpenTelemetry Attribute Value Types
 // =============================================================================
 
-@doc("Primitive attribute value types supported by OpenTelemetry")
+@doc("Base64 bytes projected by qyl without colliding with an ordinary string attribute.")
+model AttributeBytesValue {
+  type: "bytes";
+  base64: bytes;
+}
+
+@doc("Recursive OTLP key-value-list projected as a JSON object.")
+model AttributeKeyValueListValue {
+  ...Record<AttributeValue>;
+}
+
+@doc("Lossless JSON projection of an OpenTelemetry AnyValue attribute.")
 union AttributeValue {
   @doc("String value")
   stringValue: string,
@@ -223,20 +234,14 @@ union AttributeValue {
   @doc("64-bit floating point value")
   doubleValue: float64,
 
-  @doc("Array of strings")
-  stringArrayValue: string[],
+  @doc("Bytes value projected as an explicit tagged object")
+  bytesValue: AttributeBytesValue,
 
-  @doc("Array of booleans")
-  boolArrayValue: boolean[],
+  @doc("Nested and heterogeneous array value")
+  arrayValue: AttributeValue[],
 
-  @doc("Array of integers")
-  intArrayValue: int64[],
-
-  @doc("Array of doubles")
-  doubleArrayValue: float64[],
-
-  @doc("Bytes value (base64 encoded)")
-  bytesValue: bytes,
+  @doc("Recursive key-value-list value")
+  keyValueListValue: AttributeKeyValueListValue,
 }
 
 @doc("Key-value attribute pair following OTel conventions")

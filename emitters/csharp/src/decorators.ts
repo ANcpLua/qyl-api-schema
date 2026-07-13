@@ -17,6 +17,14 @@ export function $csharpEnum(context: DecoratorContext, target: Enum | Union): vo
   context.program.stateMap(stateKeys.csharpEnum).set(target, true);
 }
 
+export function $csharpPolymorphic(
+  context: DecoratorContext,
+  target: Union,
+  discriminator?: string,
+): void {
+  context.program.stateMap(stateKeys.csharpPolymorphic).set(target, discriminator ?? null);
+}
+
 export function getCsharpNamespace(program: { stateMap: (k: symbol) => Map<Type, unknown> }, target: Type): string | undefined {
   return program.stateMap(stateKeys.csharpNamespace).get(target) as string | undefined;
 }
@@ -27,4 +35,15 @@ export function hasCsharpRecord(program: { stateMap: (k: symbol) => Map<Type, un
 
 export function hasCsharpEnum(program: { stateMap: (k: symbol) => Map<Type, unknown> }, target: Type): boolean {
   return program.stateMap(stateKeys.csharpEnum).has(target);
+}
+
+export function hasCsharpPolymorphic(program: { stateMap: (k: symbol) => Map<Type, unknown> }, target: Type): boolean {
+  return program.stateMap(stateKeys.csharpPolymorphic).has(target);
+}
+
+export function getCsharpPolymorphicDiscriminator(
+  program: { stateMap: (k: symbol) => Map<Type, unknown> },
+  target: Union,
+): string | null | undefined {
+  return program.stateMap(stateKeys.csharpPolymorphic).get(target) as string | null | undefined;
 }

@@ -28,35 +28,35 @@ namespace Qyl.Api.Contracts.Runner {
   @tag("Runner resources")
   interface RunnerResourcesApi {
     @get
-    snapshot(): RunnerResourceState[] | ForbiddenError | InternalServerError;
+    snapshot(): RunnerResourceState[] | ForbiddenError | ServiceUnavailableError | InternalServerError;
 
     @get
     @route("/stream")
-    stream(): SSEStream<RunnerResourceEvents> | ForbiddenError | InternalServerError;
+    stream(): SSEStream<RunnerResourceEvents> | ForbiddenError | ServiceUnavailableError | InternalServerError;
 
     @get
     @route("/{resource}/logs")
     logs(
       @path resource: string,
-    ): RunnerLogLine[] | ForbiddenError | NotFoundError | InternalServerError;
+    ): RunnerLogLine[] | ForbiddenError | NotFoundError | ServiceUnavailableError | InternalServerError;
 
     @get
     @route("/{resource}/logs/stream")
     streamLogs(
       @path resource: string,
-    ): SSEStream<RunnerLogEvents> | ForbiddenError | NotFoundError | InternalServerError;
+    ): SSEStream<RunnerLogEvents> | ForbiddenError | NotFoundError | ServiceUnavailableError | InternalServerError;
 
     @post
     @route("/{resource}/restart")
     restart(
       @path resource: string,
-    ): RunnerActionAccepted | ForbiddenError | NotFoundError | ConflictError | InternalServerError;
+    ): RunnerActionAccepted | ForbiddenError | NotFoundError | ConflictError | ServiceUnavailableError | InternalServerError;
 
     @post
     @route("/{resource}/stop")
     stop(
       @path resource: string,
-    ): RunnerActionAccepted | ForbiddenError | NotFoundError | ConflictError | InternalServerError;
+    ): RunnerActionAccepted | ForbiddenError | NotFoundError | ConflictError | ServiceUnavailableError | InternalServerError;
   }
 
   @route("/runner/mcp/{resource}")
@@ -71,6 +71,7 @@ namespace Qyl.Api.Contracts.Runner {
       | NotFoundError
       | ConflictError
       | BadGatewayError
+      | ServiceUnavailableError
       | InternalServerError;
 
     @post
@@ -84,6 +85,7 @@ namespace Qyl.Api.Contracts.Runner {
       | NotFoundError
       | ConflictError
       | BadGatewayError
+      | ServiceUnavailableError
       | InternalServerError;
 
     @post
@@ -97,6 +99,7 @@ namespace Qyl.Api.Contracts.Runner {
       | NotFoundError
       | ConflictError
       | BadGatewayError
+      | ServiceUnavailableError
       | InternalServerError;
   }
 }

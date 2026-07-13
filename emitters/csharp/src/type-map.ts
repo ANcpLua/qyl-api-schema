@@ -1,6 +1,6 @@
 import type { Program, Scalar, Type } from "@typespec/compiler";
 import { isArrayModelType, isRecordModelType, getFormat } from "@typespec/compiler";
-import { getCsharpNamespace } from "./decorators.js";
+import { getCsharpNamespace, hasCsharpPolymorphic } from "./decorators.js";
 import { reportDiagnostic } from "./lib.js";
 
 const SCALAR_MAP: Record<string, string> = {
@@ -49,6 +49,7 @@ export function mapType(program: Program, type: Type): string {
     case "EnumMember":
       return qualifyModelOrEnum(program, (type as { enum: Type }).enum);
     case "Union":
+      if (hasCsharpPolymorphic(program, type)) return qualifyModelOrEnum(program, type);
       // Preserve homogeneous primitive literal unions as their wire primitive. Structural
       // unions such as LogBody and AttributeValue still require a generated discriminated
       // representation before they can be stronger than object.

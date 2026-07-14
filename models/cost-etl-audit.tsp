@@ -143,10 +143,13 @@ enum GenAiEtlCandidatePath {
   insufficientEvidence: "insufficient_evidence",
 }
 
-@doc("Task-specific metric that can falsify a proposed replacement.")
+@doc("Task-specific metrics that can falsify a proposed replacement.")
 enum GenAiEtlValidationMetric {
   accuracy: "accuracy",
   macroF1: "macro_f1",
+  calibrationError: "calibration_error",
+  spanPrecision: "span_precision",
+  spanRecall: "span_recall",
   spanF1: "span_f1",
   fieldExactMatch: "field_exact_match",
   schemaValidity: "schema_validity",
@@ -300,8 +303,10 @@ model GenAiEtlAuditCluster {
   @encodedName("application/json", "candidate_path")
   candidatePath: GenAiEtlCandidatePath;
 
-  @encodedName("application/json", "validation_metric")
-  validationMetric: GenAiEtlValidationMetric;
+  @doc("Task-specific metrics required to falsify the proposed replacement.")
+  @encodedName("application/json", "validation_metrics")
+  @minItems(1)
+  validationMetrics: GenAiEtlValidationMetric[];
 
   @encodedName("application/json", "residual_path")
   residualPath: GenAiEtlResidualPath;

@@ -4858,7 +4858,7 @@
           "p95_latency_ms",
           "cost_attribution",
           "candidate_path",
-          "validation_metric",
+          "validation_metrics",
           "residual_path",
           "evidence_signals",
           "missing_evidence",
@@ -4966,8 +4966,13 @@
           "candidate_path": {
             "$ref": "#/components/schemas/Cost.GenAiEtlCandidatePath"
           },
-          "validation_metric": {
-            "$ref": "#/components/schemas/Cost.GenAiEtlValidationMetric"
+          "validation_metrics": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cost.GenAiEtlValidationMetric"
+            },
+            "minItems": 1,
+            "description": "Task-specific metrics required to falsify the proposed replacement."
           },
           "residual_path": {
             "$ref": "#/components/schemas/Cost.GenAiEtlResidualPath"
@@ -5385,6 +5390,9 @@
         "enum": [
           "accuracy",
           "macro_f1",
+          "calibration_error",
+          "span_precision",
+          "span_recall",
           "span_f1",
           "field_exact_match",
           "schema_validity",
@@ -5397,7 +5405,7 @@
           "task_success",
           "unavailable"
         ],
-        "description": "Task-specific metric that can falsify a proposed replacement."
+        "description": "Task-specific metrics that can falsify a proposed replacement."
       },
       "Cost.ProviderCostAttribution": {
         "type": "string",

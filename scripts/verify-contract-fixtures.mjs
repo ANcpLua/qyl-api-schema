@@ -90,7 +90,27 @@ assertInvalid(
   "MCP resource with both text and blob",
 );
 
+const auditCluster = defs["Cost.GenAiEtlAuditCluster"];
+if (!auditCluster?.required?.includes("validation_metrics") ||
+    auditCluster.required.includes("validation_metric") ||
+    auditCluster.properties?.validation_metrics?.type !== "array" ||
+    auditCluster.properties.validation_metrics.minItems !== 1 ||
+    auditCluster.properties.validation_metrics.items?.$ref !==
+      "#/$defs/Cost.GenAiEtlValidationMetric" ||
+    "validation_metric" in (auditCluster.properties ?? {})) {
+  throw new Error(
+    "Cost.GenAiEtlAuditCluster must require a non-empty validation_metrics array and expose no scalar validation_metric.",
+  );
+}
+const validationMetrics = defs["Cost.GenAiEtlValidationMetric"]?.enum ?? [];
+for (const metric of ["calibration_error", "span_precision", "span_recall"]) {
+  if (!validationMetrics.includes(metric)) {
+    throw new Error(`Cost.GenAiEtlValidationMetric must include ${metric}.`);
+  }
+}
+
 console.log(
   `Verified ${attributeFixtures.length} recursive AttributeValue fixtures, ` +
-  `${contentFixtures.length} MCP content variants, and exclusive MCP resource variants.`,
+  `${contentFixtures.length} MCP content variants, exclusive MCP resource variants, ` +
+  "and the compound ETL validation-metrics contract.",
 );

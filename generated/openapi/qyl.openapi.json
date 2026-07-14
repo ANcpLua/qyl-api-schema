@@ -4844,7 +4844,6 @@
           "cluster_id",
           "workflow_key",
           "service_name",
-          "span_name",
           "output_contract",
           "task_family",
           "call_count",
@@ -4872,13 +4871,14 @@
           },
           "workflow_key": {
             "type": "string",
-            "description": "Privacy-safe workflow identity used to group repeated calls."
+            "description": "Privacy-safe derived grouping identity used to group repeated calls."
           },
           "service_name": {
             "type": "string"
           },
           "span_name": {
-            "type": "string"
+            "type": "string",
+            "description": "Present only when an upstream source proves or canonicalizes a low-cardinality, privacy-safe span name."
           },
           "operation_name": {
             "type": "string"

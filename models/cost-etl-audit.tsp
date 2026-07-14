@@ -217,15 +217,16 @@ model GenAiEtlAuditCluster {
   @encodedName("application/json", "cluster_id")
   clusterId: string;
 
-  @doc("Privacy-safe workflow identity used to group repeated calls.")
+  @doc("Privacy-safe derived grouping identity used to group repeated calls.")
   @encodedName("application/json", "workflow_key")
   workflowKey: string;
 
   @encodedName("application/json", "service_name")
   serviceName: string;
 
+  @doc("Present only when an upstream source proves or canonicalizes a low-cardinality, privacy-safe span name.")
   @encodedName("application/json", "span_name")
-  spanName: string;
+  spanName?: string;
 
   @encodedName("application/json", "operation_name")
   operationName?: string;

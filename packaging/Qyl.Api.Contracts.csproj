@@ -1,19 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- Packs the C# contracts emitted by @ancplua/typespec-emit-csharp (into ../generated/contracts)
-       as the Qyl.Api.Contracts NuGet. The emitted code is BCL-only DTOs with schema JSON names,
-       relies on ImplicitUsings and System.Text.Json.Serialization), file-scoped namespaces + required/init —
-       net10.0 compiles it without polyfills. Run the C# emitter (npm run compile, or the
-       EmitCSharp / PackContractsNuget Nuke targets) before packing. -->
-
   <PropertyGroup>
-    <!-- TargetFramework / LangVersion / Nullable / ImplicitUsings inherited from ../Directory.Build.props -->
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
 
     <PackageId>Qyl.Api.Contracts</PackageId>
-    <!-- No <Version> here: the release version is the git tag, injected at pack time via
-         `dotnet pack -p:Version=...` (Build.cs NugetPackageVersion reads the CI-stamped package.json).
-         A raw `dotnet pack` outside the release workflow defaults to 1.0.0 (local-only, never published). -->
+    <!-- Release automation injects the tag-derived package version. -->
     <Authors>ancplua</Authors>
     <Description>Generated C# request, response, enum, and model contract types for the qyl observability API, emitted from @ancplua/qyl-api-schema.</Description>
     <PackageTags>qyl;observability;contracts;typespec</PackageTags>
@@ -21,10 +12,9 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <IsPackable>true</IsPackable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <!-- Emitted partial XML-doc coverage; the source is generated, not hand-maintained. -->
+    <!-- Generated contracts do not promise XML documentation for every member. -->
     <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <!-- The emitter must stay trim/AOT-clean (GetTypeInfo-based converter overloads, no
-         reflection-annotated serializer calls); these analyzers make a regression fail this pack. -->
+    <!-- Generated serializers must remain trim- and AOT-compatible. -->
     <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
 

@@ -1,8 +1,5 @@
 <Project>
 
-  <!-- Shared convention baseline for the Qyl.Api.Contracts package and Nuke build host.
-       Project-specific settings (package metadata, Nuke bootstrap props, and per-project
-       NoWarn) stay in the individual csproj files. -->
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <LangVersion>latest</LangVersion>

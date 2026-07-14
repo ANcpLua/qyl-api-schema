@@ -1,19 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- TargetFramework / LangVersion / Nullable / ImplicitUsings inherited from ../Directory.Build.props -->
     <OutputType>Exe</OutputType>
     <RootNamespace></RootNamespace>
 
-    <!--
-      CS0649: Field is never assigned (Nuke parameter fields are injected by reflection).
-      CS0169: Field is never used (same reason).
-    -->
+    <!-- Nuke injects parameter fields through reflection. -->
     <NoWarn>CS0649;CS0169</NoWarn>
 
-    <!--
-      Nuke bootstrap conventions: build host root is the repo root one level up.
-    -->
     <NukeRootDirectory>..</NukeRootDirectory>
     <NukeScriptDirectory>..</NukeScriptDirectory>
     <NukeTelemetryVersion>1</NukeTelemetryVersion>
@@ -23,16 +16,7 @@
     <PackageReference Include="Nuke.Common" Version="10.1.0" />
   </ItemGroup>
 
-  <!--
-    Transitive security overrides. Nuke.Common 10.1.0 pulls vulnerable transitive
-    versions of these packages; the overrides pin patched releases so NuGetAudit
-    (on by default in .NET 10) does not flag the build host.
-      - NU1901: NuGet.Packaging <7.3.1   (https://github.com/advisories/GHSA-g4vj-cjjj-v7hg)
-      - NU1903: System.Security.Cryptography.Xml <10.0.7
-                (https://github.com/advisories/GHSA-37gx-xxp4-5rgx,
-                 https://github.com/advisories/GHSA-w3x6-4m5h-cxqf)
-    Drop these when Nuke.Common ships an update that bumps these transitively.
-  -->
+  <!-- Override vulnerable Nuke.Common transitives. -->
   <ItemGroup>
     <PackageReference Include="NuGet.Packaging" Version="7.6.0" PrivateAssets="all" />
     <PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.9" PrivateAssets="all" />

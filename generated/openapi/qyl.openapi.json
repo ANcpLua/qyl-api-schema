@@ -5799,11 +5799,6 @@
               "type": "string"
             },
             "description": "Providers used in session"
-          },
-          "estimated_cost_usd": {
-            "type": "number",
-            "format": "double",
-            "description": "Estimated cost in USD"
           }
         },
         "description": "Session GenAI usage summary"

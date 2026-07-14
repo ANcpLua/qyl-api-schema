@@ -236,10 +236,6 @@ model SessionGenAiUsage {
   @doc("Providers used in session")
   @encodedName("application/json", "providers_used")
   providersUsed: string[];
-
-  @doc("Estimated cost in USD")
-  @encodedName("application/json", "estimated_cost_usd")
-  estimatedCostUsd?: float64;
 }
 
 // =============================================================================

@@ -183,7 +183,9 @@ interface GenAiEtlAuditApi {
   @get
   report(
     ...ProjectScopeHeader,
+    @doc("Optional audit-period start. Omitted dates select the previous 30 completed UTC days; an explicit range may not exceed 180 days.")
     @query startTime?: utcDateTime,
+    @doc("Optional audit-period end. Omitted dates select the previous 30 completed UTC days; an explicit range may not exceed 180 days.")
     @query endTime?: utcDateTime,
     @query @minValue(1) @maxValue(100) limit?: int32 = 25,
   ): GenAiEtlAuditReport | ValidationError | UnauthorizedError | InternalServerError;
@@ -192,7 +194,9 @@ interface GenAiEtlAuditApi {
   @route("/evaluate")
   evaluate(
     ...ProjectScopeHeader,
+    @doc("Optional audit-period start. Omitted dates select the previous 30 completed UTC days; an explicit range may not exceed 180 days.")
     @query startTime?: utcDateTime,
+    @doc("Optional audit-period end. Omitted dates select the previous 30 completed UTC days; an explicit range may not exceed 180 days.")
     @query endTime?: utcDateTime,
     @body request: GenAiEtlAuditEvaluationRequest,
   ): GenAiEtlAuditEvaluationResponse | ValidationError | UnauthorizedError | InternalServerError;

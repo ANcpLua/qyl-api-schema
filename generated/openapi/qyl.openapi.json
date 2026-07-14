@@ -76,6 +76,7 @@
             "name": "startTime",
             "in": "query",
             "required": false,
+            "description": "Optional audit-period start. Omitted dates select the previous 30 completed UTC days; an explicit range may not exceed 180 days.",
             "schema": {
               "type": "string",
               "format": "date-time"
@@ -86,6 +87,7 @@
             "name": "endTime",
             "in": "query",
             "required": false,
+            "description": "Optional audit-period end. Omitted dates select the previous 30 completed UTC days; an explicit range may not exceed 180 days.",
             "schema": {
               "type": "string",
               "format": "date-time"
@@ -224,6 +226,7 @@
             "name": "startTime",
             "in": "query",
             "required": false,
+            "description": "Optional audit-period start. Omitted dates select the previous 30 completed UTC days; an explicit range may not exceed 180 days.",
             "schema": {
               "type": "string",
               "format": "date-time"
@@ -234,6 +237,7 @@
             "name": "endTime",
             "in": "query",
             "required": false,
+            "description": "Optional audit-period end. Omitted dates select the previous 30 completed UTC days; an explicit range may not exceed 180 days.",
             "schema": {
               "type": "string",
               "format": "date-time"

@@ -1,9 +1,8 @@
 <Project>
 
-  <!-- Shared convention baseline for qyl-api-schema's C# projects: the Qyl.Api.Contracts
-       package and the Nuke build host. Centralizes the four properties both csproj files
-       previously duplicated. Project-specific settings (package metadata, Nuke bootstrap
-       props, per-project NoWarn) stay in the individual csproj files. -->
+  <!-- Shared convention baseline for the Qyl.Api.Contracts package and Nuke build host.
+       Project-specific settings (package metadata, Nuke bootstrap props, and per-project
+       NoWarn) stay in the individual csproj files. -->
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <LangVersion>latest</LangVersion>

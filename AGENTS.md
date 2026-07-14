@@ -34,8 +34,8 @@ is a contract regardless of its source-language accessibility.
 
 Allowed outputs are TypeSpec, OpenAPI, JSON Schema, BCL-only C# contracts, and
 TypeScript contract types. Do not emit server scaffolds, controllers, mock business
-logic, DuckDB/storage schemas, runtime services, or compatibility packages for
-retired identities.
+logic, DuckDB/storage schemas, runtime services, or alternate package and namespace
+identities.
 
 The package and namespace identities are:
 
@@ -64,9 +64,8 @@ package versions are non-authoritative development placeholders. TypeSpec
 `@added` or `@removed` annotation. Remove empty version axes rather than preserving
 timeline decoration.
 
-Deprecated telemetry-key normalization is an ingestion concern in Qyl runtime. The
-public contract describes current fields and does not retain old wire aliases as
-compatibility DTOs.
+Telemetry-key normalization is an ingestion concern in Qyl runtime. Product DTOs
+expose canonical fields only and do not include ingestion aliases.
 
 ## Verification
 

@@ -489,6 +489,9 @@
                       "description": "Whether there are more items available"
                     }
                   },
+                  "unevaluatedProperties": {
+                    "not": {}
+                  },
                   "description": "Cursor-based paginated response wrapper"
                 }
               }
@@ -1249,6 +1252,9 @@
                       "description": "Whether there are more items available"
                     }
                   },
+                  "unevaluatedProperties": {
+                    "not": {}
+                  },
                   "description": "Cursor-based paginated response wrapper"
                 }
               }
@@ -1656,6 +1662,9 @@
                       "description": "Whether there are more items available"
                     }
                   },
+                  "unevaluatedProperties": {
+                    "not": {}
+                  },
                   "description": "Cursor-based paginated response wrapper"
                 }
               }
@@ -2045,6 +2054,9 @@
                       "description": "Whether there are more items available"
                     }
                   },
+                  "unevaluatedProperties": {
+                    "not": {}
+                  },
                   "description": "Cursor-based paginated response wrapper"
                 }
               }
@@ -2316,6 +2328,9 @@
                       "type": "boolean",
                       "description": "Whether there are more items available"
                     }
+                  },
+                  "unevaluatedProperties": {
+                    "not": {}
                   },
                   "description": "Cursor-based paginated response wrapper"
                 }
@@ -4024,6 +4039,9 @@
             "description": "Attribute value"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Key-value attribute pair following OTel conventions"
       },
       "Common.AttributeBytesValue": {
@@ -4043,6 +4061,9 @@
             "type": "string",
             "contentEncoding": "base64"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Base64 bytes projected by qyl without colliding with an ordinary string attribute."
       },
@@ -4097,6 +4118,9 @@
             },
             "description": "List of key-value attributes"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Collection of attributes"
       },
@@ -4197,6 +4221,9 @@
             "description": "Stable dependency category; never contains raw exception text"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "allOf": [
           {
             "$ref": "#/components/schemas/Common.Errors.ProblemDetails"
@@ -4220,6 +4247,9 @@
             "type": "string",
             "description": "The conflicting resource ID"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "allOf": [
           {
@@ -4245,6 +4275,9 @@
             "description": "Required permission that is missing"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "allOf": [
           {
             "$ref": "#/components/schemas/Common.Errors.ProblemDetails"
@@ -4268,6 +4301,9 @@
             "type": "string",
             "description": "Error code for support reference"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "allOf": [
           {
@@ -4296,6 +4332,9 @@
             "type": "string",
             "description": "The identifier that was not found"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "allOf": [
           {
@@ -4357,6 +4396,9 @@
             ]
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "allOf": [
           {
             "$ref": "#/components/schemas/Common.Errors.ProblemDetails"
@@ -4386,6 +4428,9 @@
             "description": "Reason for unavailability"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "allOf": [
           {
             "$ref": "#/components/schemas/Common.Errors.ProblemDetails"
@@ -4405,6 +4450,9 @@
               "Unauthorized"
             ]
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "allOf": [
           {
@@ -4433,6 +4481,9 @@
             },
             "description": "List of validation errors"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "allOf": [
           {
@@ -4465,6 +4516,9 @@
             "type": "string",
             "description": "The rejected value (if safe to include)"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Individual validation error detail"
       },
@@ -4524,6 +4578,9 @@
             "description": "Dropped attributes count"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Instrumentation scope identifying the library/component emitting telemetry"
       },
       "Common.IpAddress": {
@@ -4575,6 +4632,9 @@
             "description": "Filter expression"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Aggregation query parameters"
       },
       "Common.Pagination.CursorPaginationParams": {
@@ -4602,6 +4662,9 @@
             "default": "desc"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Cursor-based pagination parameters"
       },
       "Common.Pagination.OffsetPaginationParams": {
@@ -4622,6 +4685,9 @@
             "description": "Items per page (1-1000)",
             "default": 100
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Offset-based pagination parameters"
       },
@@ -4657,6 +4723,9 @@
             "description": "Maximum events per second (rate limiting)",
             "default": 100
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Streaming parameters for SSE endpoints"
       },
@@ -4694,6 +4763,9 @@
             "description": "Maximum number of items to return",
             "default": 1000
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Time-range based query parameters"
       },
@@ -4860,7 +4932,8 @@
           "error_rate",
           "average_latency_ms",
           "p95_latency_ms",
-          "cost_attribution",
+          "catalog_token_estimate",
+          "candidate_status",
           "candidate_path",
           "validation_metrics",
           "residual_path",
@@ -4929,27 +5002,13 @@
           "p95_latency_ms": {
             "$ref": "#/components/schemas/Common.DurationMs"
           },
-          "observed_cost_usd": {
+          "catalog_token_estimate": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/Common.CostUsd"
+                "$ref": "#/components/schemas/Cost.GenAiEtlCatalogTokenCostEstimate"
               }
             ],
-            "description": "Provider-sourced cost attributable to this cluster, absent when attribution is not defensible."
-          },
-          "cost_per_call_usd": {
-            "$ref": "#/components/schemas/Common.CostUsd"
-          },
-          "cost_attribution": {
-            "$ref": "#/components/schemas/Cost.ProviderCostAttribution"
-          },
-          "spend_share": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.Ratio"
-              }
-            ],
-            "description": "Fraction of attributable spend represented by this cluster."
+            "description": "Outcome and, when calculated, detailed current-catalog token-and-request estimate for this cluster. Aggregate provider billing is never attributed to a cluster."
           },
           "measurable_coverage": {
             "allOf": [
@@ -4966,6 +5025,14 @@
               }
             ],
             "description": "Fraction of calls proven safe to route to a residual path."
+          },
+          "candidate_status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Cost.GenAiEtlCandidateStatus"
+              }
+            ],
+            "description": "Evidence status qualifying the proposed candidate path."
           },
           "candidate_path": {
             "$ref": "#/components/schemas/Cost.GenAiEtlCandidatePath"
@@ -5000,6 +5067,9 @@
             }
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Observed economics and evidence for one repeated GenAI workflow cluster."
       },
       "Cost.GenAiEtlAuditEvaluationRequest": {
@@ -5016,6 +5086,9 @@
             "minItems": 1,
             "maxItems": 100
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Batch of cluster scenarios evaluated against one audit period."
       },
@@ -5047,6 +5120,9 @@
             }
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Batch result for ETL replacement scenarios."
       },
       "Cost.GenAiEtlAuditReport": {
@@ -5056,7 +5132,8 @@
           "period_start",
           "period_end",
           "summary",
-          "cost_sources",
+          "billing_sources",
+          "catalog_sources",
           "clusters"
         ],
         "properties": {
@@ -5075,11 +5152,19 @@
           "summary": {
             "$ref": "#/components/schemas/Cost.GenAiEtlAuditSummary"
           },
-          "cost_sources": {
+          "billing_sources": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Cost.ProviderCostSource"
-            }
+              "$ref": "#/components/schemas/Cost.ProviderBillingSource"
+            },
+            "description": "Provider-owned aggregate billing sources. These totals are not attributed to clusters or used as evaluation baselines."
+          },
+          "catalog_sources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cost.ModelCatalogSource"
+            },
+            "description": "Configured live model catalog sources and their current synchronization state."
           },
           "clusters": {
             "type": "array",
@@ -5087,6 +5172,9 @@
               "$ref": "#/components/schemas/Cost.GenAiEtlAuditCluster"
             }
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Trace-level ETL audit for a bounded period."
       },
@@ -5096,7 +5184,7 @@
           "total_calls",
           "total_input_tokens",
           "total_output_tokens",
-          "priced_call_coverage"
+          "catalog_token_priced_call_coverage"
         ],
         "properties": {
           "total_calls": {
@@ -5108,29 +5196,29 @@
           "total_output_tokens": {
             "$ref": "#/components/schemas/Common.TokenCount"
           },
-          "attributed_cost_usd": {
+          "estimated_catalog_token_cost_usd": {
             "allOf": [
               {
                 "$ref": "#/components/schemas/Common.CostUsd"
               }
             ],
-            "description": "Provider-sourced cost attributable to the returned trace population."
+            "description": "Counterfactual token and request cost of the full observed audit population before the cluster response limit is applied, using the current live catalog snapshot; this is not an official billed total or a historical price claim."
           },
-          "priced_call_coverage": {
+          "catalog_token_priced_call_coverage": {
             "allOf": [
               {
                 "$ref": "#/components/schemas/Common.Ratio"
               }
             ],
-            "description": "Fraction of calls covered by provider cost attribution."
+            "description": "Fraction of observed calls covered by all-or-nothing calculated token-and-request estimates; missing pricing is not treated as zero."
           },
-          "economic_concentration": {
+          "estimated_token_economic_concentration": {
             "allOf": [
               {
                 "$ref": "#/components/schemas/Common.Ratio"
               }
             ],
-            "description": "Fraction of attributable spend represented by the returned top clusters."
+            "description": "Returned top-cluster token-and-request estimate divided by estimated_catalog_token_cost_usd for the full observed audit population."
           },
           "measurable_coverage": {
             "allOf": [
@@ -5148,24 +5236,57 @@
             ],
             "description": "Fraction of calls proven safe to defer to a residual path."
           },
-          "candidate_etl_spend_share": {
+          "candidate_etl_estimated_token_spend_share": {
             "allOf": [
               {
                 "$ref": "#/components/schemas/Common.Ratio"
               }
             ],
-            "description": "Fraction of attributable spend attached to ETL-shaped candidates."
+            "description": "Fraction of estimated current-catalog token-and-request spend attached to ETL-shaped candidates."
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Aggregate trace-level economics for the requested audit period."
       },
-      "Cost.GenAiEtlCalculationStatus": {
-        "type": "string",
-        "enum": [
-          "calculated",
-          "missing_frontier_cost"
+      "Cost.GenAiEtlCalculatedClusterEvaluationBase": {
+        "type": "object",
+        "required": [
+          "status",
+          "frontier_cost_per_call_usd",
+          "current_period_cost_usd",
+          "gross_replaceable_value_usd",
+          "net_replaceable_value_usd"
         ],
-        "description": "Whether the replaceable-value formula had a defensible baseline cost."
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "calculated"
+            ]
+          },
+          "frontier_cost_per_call_usd": {
+            "$ref": "#/components/schemas/Common.CostUsd"
+          },
+          "current_period_cost_usd": {
+            "$ref": "#/components/schemas/Common.CostUsd"
+          },
+          "gross_replaceable_value_usd": {
+            "type": "number",
+            "format": "double"
+          },
+          "net_replaceable_value_usd": {
+            "type": "number",
+            "format": "double",
+            "description": "Net period value; this may be negative when maintenance or error cost exceeds gross savings."
+          }
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Cost.GenAiEtlClusterEvaluationBase"
+          }
+        ]
       },
       "Cost.GenAiEtlCandidatePath": {
         "type": "string",
@@ -5180,16 +5301,350 @@
         ],
         "description": "Lowest-risk implementation class suggested by currently available evidence."
       },
+      "Cost.GenAiEtlCandidateStatus": {
+        "type": "string",
+        "enum": [
+          "hypothesis_only",
+          "insufficient_evidence"
+        ],
+        "description": "Evidence status of the proposed replacement path."
+      },
+      "Cost.GenAiEtlCatalogTokenAmbiguousModelEstimate": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ambiguous_model"
+            ]
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Cost.GenAiEtlCatalogTokenEstimateFailureBase"
+          }
+        ]
+      },
+      "Cost.GenAiEtlCatalogTokenCalculatedEstimate": {
+        "type": "object",
+        "required": [
+          "status",
+          "estimated_catalog_token_cost_usd",
+          "estimated_catalog_token_cost_per_call_usd",
+          "provenance",
+          "components"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "calculated"
+            ]
+          },
+          "estimated_catalog_token_cost_usd": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.CostUsd"
+              }
+            ],
+            "description": "Estimated token and request cost for the reported cluster period using the current catalog snapshot; this is counterfactual for historical periods and is not an official billed total."
+          },
+          "estimated_catalog_token_cost_per_call_usd": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.CostUsd"
+              }
+            ],
+            "description": "Estimated token and request cost per observed cluster call; this is not an official billed total."
+          },
+          "provenance": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Cost.ModelCatalogPriceProvenance"
+              }
+            ],
+            "description": "Exact catalog snapshot and model-match evidence."
+          },
+          "components": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cost.ModelCatalogTokenEstimateComponent"
+            },
+            "minItems": 1,
+            "description": "Included token or request usage and rate contributions. Ordered source overrides carry conditional evidence; ordinary inclusive subtype replacements do not require it."
+          },
+          "exclusions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cost.ModelCatalogTokenEstimateExclusion"
+            },
+            "minItems": 1,
+            "description": "Meters or conditional adjustments explicitly omitted from this calculated estimate."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Calculated all-or-nothing current-catalog token and request estimate for a complete workflow cluster."
+      },
+      "Cost.GenAiEtlCatalogTokenClusterEvaluation": {
+        "type": "object",
+        "required": [
+          "frontier_cost_basis",
+          "catalog_provenance"
+        ],
+        "properties": {
+          "frontier_cost_basis": {
+            "type": "string",
+            "enum": [
+              "catalog_token_estimate"
+            ]
+          },
+          "catalog_provenance": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Cost.ModelCatalogPriceProvenance"
+              }
+            ],
+            "description": "Exact live-catalog snapshot and model-match evidence used for the calculated frontier cost."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Cost.GenAiEtlCalculatedClusterEvaluationBase"
+          }
+        ]
+      },
+      "Cost.GenAiEtlCatalogTokenConditionalPricingUnresolvableEstimate": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "conditional_pricing_unresolvable"
+            ]
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Cost.GenAiEtlCatalogTokenEstimateFailureBase"
+          }
+        ]
+      },
+      "Cost.GenAiEtlCatalogTokenCostEstimate": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Cost.GenAiEtlCatalogTokenCalculatedEstimate"
+          },
+          {
+            "$ref": "#/components/schemas/Cost.GenAiEtlCatalogTokenSourceUnavailableEstimate"
+          },
+          {
+            "$ref": "#/components/schemas/Cost.GenAiEtlCatalogTokenStaleSourceEstimate"
+          },
+          {
+            "$ref": "#/components/schemas/Cost.GenAiEtlCatalogTokenMissingModelIdentityEstimate"
+          },
+          {
+            "$ref": "#/components/schemas/Cost.GenAiEtlCatalogTokenModelNotFoundEstimate"
+          },
+          {
+            "$ref": "#/components/schemas/Cost.GenAiEtlCatalogTokenAmbiguousModelEstimate"
+          },
+          {
+            "$ref": "#/components/schemas/Cost.GenAiEtlCatalogTokenIncompleteUsageEstimate"
+          },
+          {
+            "$ref": "#/components/schemas/Cost.GenAiEtlCatalogTokenConditionalPricingUnresolvableEstimate"
+          },
+          {
+            "$ref": "#/components/schemas/Cost.GenAiEtlCatalogTokenUnsupportedPricingEstimate"
+          }
+        ],
+        "description": "All-or-nothing current-catalog token and request estimate. The status literal selects the complete calculated or fail-closed response shape."
+      },
+      "Cost.GenAiEtlCatalogTokenEstimateFailureBase": {
+        "type": "object",
+        "properties": {
+          "exclusions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cost.ModelCatalogTokenEstimateExclusion"
+            },
+            "minItems": 1,
+            "description": "Available meter or conditional evidence explaining why the cluster estimate failed closed."
+          }
+        }
+      },
+      "Cost.GenAiEtlCatalogTokenIncompleteUsageEstimate": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "incomplete_usage"
+            ]
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Cost.GenAiEtlCatalogTokenEstimateFailureBase"
+          }
+        ]
+      },
+      "Cost.GenAiEtlCatalogTokenMissingModelIdentityEstimate": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "missing_model_identity"
+            ]
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Cost.GenAiEtlCatalogTokenEstimateFailureBase"
+          }
+        ]
+      },
+      "Cost.GenAiEtlCatalogTokenModelNotFoundEstimate": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "model_not_found"
+            ]
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Cost.GenAiEtlCatalogTokenEstimateFailureBase"
+          }
+        ]
+      },
+      "Cost.GenAiEtlCatalogTokenSourceUnavailableEstimate": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "source_unavailable"
+            ]
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Cost.GenAiEtlCatalogTokenEstimateFailureBase"
+          }
+        ]
+      },
+      "Cost.GenAiEtlCatalogTokenStaleSourceEstimate": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "stale_source"
+            ]
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Cost.GenAiEtlCatalogTokenEstimateFailureBase"
+          }
+        ]
+      },
+      "Cost.GenAiEtlCatalogTokenUnsupportedPricingEstimate": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "unsupported_pricing"
+            ]
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Cost.GenAiEtlCatalogTokenEstimateFailureBase"
+          }
+        ]
+      },
       "Cost.GenAiEtlClusterEvaluation": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Cost.GenAiEtlScenarioClusterEvaluation"
+          },
+          {
+            "$ref": "#/components/schemas/Cost.GenAiEtlCatalogTokenClusterEvaluation"
+          },
+          {
+            "$ref": "#/components/schemas/Cost.GenAiEtlUnavailableClusterEvaluation"
+          }
+        ],
+        "description": "Result of replaceable_value = calls * coverage * (frontier - alternative) - maintenance - error. The frontier_cost_basis literal selects a complete calculated result or a fail-closed unavailable result."
+      },
+      "Cost.GenAiEtlClusterEvaluationBase": {
         "type": "object",
         "required": [
           "cluster_id",
-          "status",
           "call_count",
           "coverage",
           "served_call_count",
           "residual_call_count",
-          "frontier_cost_basis",
           "alternative_cost_per_call_usd",
           "period_maintenance_cost_usd",
           "period_error_cost_usd"
@@ -5197,9 +5652,6 @@
         "properties": {
           "cluster_id": {
             "type": "string"
-          },
-          "status": {
-            "$ref": "#/components/schemas/Cost.GenAiEtlCalculationStatus"
           },
           "call_count": {
             "$ref": "#/components/schemas/Common.Count"
@@ -5215,35 +5667,16 @@
             "type": "number",
             "format": "double"
           },
-          "frontier_cost_per_call_usd": {
-            "$ref": "#/components/schemas/Common.CostUsd"
-          },
-          "frontier_cost_basis": {
-            "$ref": "#/components/schemas/Cost.ProviderCostAttribution"
-          },
           "alternative_cost_per_call_usd": {
             "$ref": "#/components/schemas/Common.CostUsd"
-          },
-          "current_period_cost_usd": {
-            "$ref": "#/components/schemas/Common.CostUsd"
-          },
-          "gross_replaceable_value_usd": {
-            "type": "number",
-            "format": "double"
           },
           "period_maintenance_cost_usd": {
             "$ref": "#/components/schemas/Common.CostUsd"
           },
           "period_error_cost_usd": {
             "$ref": "#/components/schemas/Common.CostUsd"
-          },
-          "net_replaceable_value_usd": {
-            "type": "number",
-            "format": "double",
-            "description": "Net period value; this may be negative when maintenance or error cost exceeds gross savings."
           }
-        },
-        "description": "Result of replaceable_value = calls * coverage * (frontier - alternative) - maintenance - error."
+        }
       },
       "Cost.GenAiEtlClusterScenario": {
         "type": "object",
@@ -5272,7 +5705,7 @@
                 "$ref": "#/components/schemas/Common.CostUsd"
               }
             ],
-            "description": "Explicit baseline cost per call. When absent, qyl uses provider-attributed cluster cost and otherwise fails closed."
+            "description": "Explicit scenario baseline cost per call. It wins over a calculated catalog estimate; when both are absent, evaluation fails closed."
           },
           "alternative_cost_per_call_usd": {
             "$ref": "#/components/schemas/Common.CostUsd"
@@ -5284,6 +5717,9 @@
             "$ref": "#/components/schemas/Common.CostUsd"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "What-if assumptions for one workflow cluster over the requested period."
       },
       "Cost.GenAiEtlEvidenceSignal": {
@@ -5293,7 +5729,7 @@
           "output_contract",
           "provider_model",
           "token_usage",
-          "provider_cost",
+          "catalog_token_estimate",
           "recurring_schema",
           "bounded_reference",
           "task_metric",
@@ -5304,6 +5740,15 @@
           "fallback_policy"
         ],
         "description": "Observable evidence needed to promote an inferred replacement safely."
+      },
+      "Cost.GenAiEtlFrontierCostBasis": {
+        "type": "string",
+        "enum": [
+          "scenario",
+          "catalog_token_estimate",
+          "unavailable"
+        ],
+        "description": "Evidence basis for the frontier cost used in a replacement-value calculation."
       },
       "Cost.GenAiEtlOutputContract": {
         "type": "string",
@@ -5337,6 +5782,9 @@
             "type": "string",
             "description": "Stable evidence code explaining the current gate state."
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Promotion readiness for one gate."
       },
@@ -5374,6 +5822,28 @@
         ],
         "description": "Fallback used for requests outside a promoted replacement's safe coverage."
       },
+      "Cost.GenAiEtlScenarioClusterEvaluation": {
+        "type": "object",
+        "required": [
+          "frontier_cost_basis"
+        ],
+        "properties": {
+          "frontier_cost_basis": {
+            "type": "string",
+            "enum": [
+              "scenario"
+            ]
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Cost.GenAiEtlCalculatedClusterEvaluationBase"
+          }
+        ]
+      },
       "Cost.GenAiEtlTaskFamily": {
         "type": "string",
         "enum": [
@@ -5388,6 +5858,35 @@
           "unknown"
         ],
         "description": "Task family inferred for a repeated GenAI workflow cluster."
+      },
+      "Cost.GenAiEtlUnavailableClusterEvaluation": {
+        "type": "object",
+        "required": [
+          "status",
+          "frontier_cost_basis"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "missing_frontier_cost"
+            ]
+          },
+          "frontier_cost_basis": {
+            "type": "string",
+            "enum": [
+              "unavailable"
+            ]
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Cost.GenAiEtlClusterEvaluationBase"
+          }
+        ]
       },
       "Cost.GenAiEtlValidationMetric": {
         "type": "string",
@@ -5411,21 +5910,843 @@
         ],
         "description": "Task-specific metrics that can falsify a proposed replacement."
       },
-      "Cost.ProviderCostAttribution": {
+      "Cost.ModelCatalogAdditiveSurchargeEvidence": {
+        "type": "object",
+        "required": [
+          "rate_relation"
+        ],
+        "properties": {
+          "rate_relation": {
+            "type": "string",
+            "enum": [
+              "additive_surcharge"
+            ]
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        }
+      },
+      "Cost.ModelCatalogBaseRateEvidence": {
+        "type": "object",
+        "required": [
+          "rate_relation"
+        ],
+        "properties": {
+          "rate_relation": {
+            "type": "string",
+            "enum": [
+              "base_rate"
+            ]
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        }
+      },
+      "Cost.ModelCatalogBillingMode": {
+        "type": "string",
+        "enum": [
+          "per_unit",
+          "per_request"
+        ],
+        "description": "How a catalog rate charges its measured quantity."
+      },
+      "Cost.ModelCatalogConditionalAdjustmentNotAppliedExclusion": {
+        "type": "object",
+        "required": [
+          "reason"
+        ],
+        "properties": {
+          "reason": {
+            "type": "string",
+            "enum": [
+              "conditional_adjustment_not_applied"
+            ]
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Cost.ModelCatalogConditionalExclusionBase"
+          }
+        ]
+      },
+      "Cost.ModelCatalogConditionalExclusionBase": {
+        "type": "object",
+        "required": [
+          "component",
+          "usage_dimension",
+          "unit",
+          "source_billing_mode",
+          "rate_evidence"
+        ],
+        "properties": {
+          "component": {
+            "type": "string"
+          },
+          "usage_dimension": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "source_billing_mode": {
+            "type": "string",
+            "description": "Source-specific billing mode retained from the catalog or deterministically derived from the provider-defined meter."
+          },
+          "billing_mode": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Cost.ModelCatalogBillingMode"
+              }
+            ],
+            "description": "Normalized billing mode when qyl recognizes the conditional source meter; absent when the source meter has no supported normalization."
+          },
+          "rate_evidence": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Cost.ModelCatalogPublishedReplacementEvidence"
+              }
+            ],
+            "description": "The ordered source override that was not applied or was superseded."
+          },
+          "unit_price_usd": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.CostUsd"
+              }
+            ],
+            "description": "Catalog rate omitted from the estimate, when the source supplied one."
+          }
+        }
+      },
+      "Cost.ModelCatalogConditionalRateEvidence": {
+        "type": "object",
+        "required": [
+          "source_order",
+          "condition_usage_dimension",
+          "exclusive_minimum_quantity",
+          "observed_per_call_quantity"
+        ],
+        "properties": {
+          "source_order": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Cost.ModelCatalogSourceOrder"
+              }
+            ],
+            "description": "One-based position of this override in the source response; later matching overrides win. Tier zero is reserved for the published base rate and is not a source override."
+          },
+          "condition_usage_dimension": {
+            "type": "string",
+            "description": "Observed per-call usage dimension evaluated by the source condition."
+          },
+          "exclusive_minimum_quantity": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0,
+            "description": "Exclusive minimum quantity declared by the source condition."
+          },
+          "observed_per_call_quantity": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0,
+            "description": "Observed per-call quantity compared with the exclusive minimum."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Ordered evidence proving whether a conditional catalog override applied to an observed request quantity."
+      },
+      "Cost.ModelCatalogExclusionRateEvidence": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Cost.ModelCatalogBaseRateEvidence"
+          },
+          {
+            "$ref": "#/components/schemas/Cost.ModelCatalogAdditiveSurchargeEvidence"
+          },
+          {
+            "$ref": "#/components/schemas/Cost.ModelCatalogInclusiveReplacementEvidence"
+          },
+          {
+            "$ref": "#/components/schemas/Cost.ModelCatalogPublishedReplacementEvidence"
+          }
+        ],
+        "description": "Relation-specific evidence for a catalog rate omitted from a token-and-request estimate. The rate_relation literal selects the required target and ordered evidence shape."
+      },
+      "Cost.ModelCatalogInclusiveReplacementEvidence": {
+        "type": "object",
+        "required": [
+          "rate_relation",
+          "replaces_usage_dimension"
+        ],
+        "properties": {
+          "rate_relation": {
+            "type": "string",
+            "enum": [
+              "replaces_inclusive_base_rate"
+            ]
+          },
+          "replaces_usage_dimension": {
+            "type": "string",
+            "description": "Inclusive base usage dimension replaced by this subtype rate."
+          },
+          "conditional_evidence": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Cost.ModelCatalogConditionalRateEvidence"
+              }
+            ],
+            "description": "Ordered evidence when a source override altered the selected subtype rate."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        }
+      },
+      "Cost.ModelCatalogMatchKind": {
+        "type": "string",
+        "enum": [
+          "exact_model_id",
+          "exact_canonical_slug"
+        ],
+        "description": "Deterministic exact match used to resolve an observed model identity to a catalog record. Fuzzy, prefix, suffix, date, and alias matching are not permitted."
+      },
+      "Cost.ModelCatalogObservedIdentityBasis": {
+        "type": "string",
+        "enum": [
+          "response_model",
+          "request_model_fallback"
+        ],
+        "description": "Telemetry attribute used as the observed model identity for an exact catalog match."
+      },
+      "Cost.ModelCatalogOptionallyNormalizedBillingExclusionBase": {
+        "type": "object",
+        "properties": {
+          "billing_mode": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Cost.ModelCatalogBillingMode"
+              }
+            ],
+            "description": "Normalized billing mode when qyl recognizes the source meter; absent when the source meter has no supported normalization."
+          }
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Cost.ModelCatalogTokenEstimateExclusionBase"
+          }
+        ]
+      },
+      "Cost.ModelCatalogOutsideTokenScopeExclusion": {
+        "type": "object",
+        "required": [
+          "reason"
+        ],
+        "properties": {
+          "reason": {
+            "type": "string",
+            "enum": [
+              "outside_token_estimate_scope"
+            ]
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Cost.ModelCatalogOptionallyNormalizedBillingExclusionBase"
+          }
+        ]
+      },
+      "Cost.ModelCatalogPriceProvenance": {
+        "type": "object",
+        "required": [
+          "source_id",
+          "source_endpoint",
+          "snapshot_id",
+          "price_model_id",
+          "observed_model_id",
+          "observed_model_identity_basis",
+          "model_match_kind",
+          "retrieved_at",
+          "price_semantics"
+        ],
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "description": "Unique stable identifier of the configured catalog source."
+          },
+          "source_endpoint": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.UrlString"
+              }
+            ],
+            "description": "Configured API endpoint from which the catalog was retrieved."
+          },
+          "snapshot_id": {
+            "type": "string",
+            "description": "Content-addressed identifier of the exact catalog snapshot used for this estimate."
+          },
+          "price_model_id": {
+            "type": "string",
+            "description": "Exact model identifier selected from the source catalog."
+          },
+          "observed_model_id": {
+            "type": "string",
+            "description": "Exact observed telemetry value compared with the selected catalog record."
+          },
+          "observed_model_identity_basis": {
+            "$ref": "#/components/schemas/Cost.ModelCatalogObservedIdentityBasis"
+          },
+          "model_match_kind": {
+            "$ref": "#/components/schemas/Cost.ModelCatalogMatchKind"
+          },
+          "retrieved_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "UTC time when the current catalog snapshot used for this counterfactual estimate was retrieved. For historical audit periods, this is not evidence of the price that applied historically."
+          },
+          "price_semantics": {
+            "$ref": "#/components/schemas/Cost.ModelCatalogPriceSemantics"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Provenance for the live catalog rates used to estimate one cluster."
+      },
+      "Cost.ModelCatalogPriceSemantics": {
+        "type": "string",
+        "enum": [
+          "minimum_available_rate",
+          "published_rate"
+        ],
+        "description": "How a live catalog rate was selected when estimating cluster cost."
+      },
+      "Cost.ModelCatalogPublishedReplacementEvidence": {
+        "type": "object",
+        "required": [
+          "rate_relation",
+          "replaces_usage_dimension",
+          "conditional_evidence"
+        ],
+        "properties": {
+          "rate_relation": {
+            "type": "string",
+            "enum": [
+              "replaces_published_rate"
+            ]
+          },
+          "replaces_usage_dimension": {
+            "type": "string",
+            "description": "Published usage dimension whose prior base, surcharge, or subtype rate was replaced."
+          },
+          "conditional_evidence": {
+            "$ref": "#/components/schemas/Cost.ModelCatalogConditionalRateEvidence"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        }
+      },
+      "Cost.ModelCatalogRateRelation": {
+        "type": "string",
+        "enum": [
+          "base_rate",
+          "additive_surcharge",
+          "replaces_inclusive_base_rate",
+          "replaces_published_rate"
+        ],
+        "description": "How a selected catalog rate relates to the source's published base rate for the same component."
+      },
+      "Cost.ModelCatalogSource": {
+        "type": "object",
+        "required": [
+          "source_id",
+          "priority",
+          "status",
+          "source_endpoint"
+        ],
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "description": "Unique stable identifier of the configured catalog source."
+          },
+          "priority": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.Count"
+              }
+            ],
+            "description": "Configured source priority used for deterministic selection when multiple current catalogs match. Zero is highest priority; lower values win."
+          },
+          "status": {
+            "$ref": "#/components/schemas/Cost.ModelCatalogSourceStatus"
+          },
+          "price_semantics": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Cost.ModelCatalogPriceSemantics"
+              }
+            ],
+            "description": "Rate-selection semantics published by this source's active snapshot."
+          },
+          "source_endpoint": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.UrlString"
+              }
+            ],
+            "description": "Configured API endpoint used to fetch the live model catalog."
+          },
+          "last_attempt_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "UTC time of the latest fetch attempt."
+          },
+          "last_verified_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "UTC time when the source was last verified successfully, including a verification that retained unchanged content."
+          },
+          "retrieved_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "UTC time when the content of the currently retained catalog snapshot was retrieved."
+          },
+          "active_snapshot_id": {
+            "type": "string",
+            "description": "Content-addressed identifier of the catalog snapshot currently used for estimates."
+          },
+          "model_count": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.Count"
+              }
+            ],
+            "description": "Number of model records in the active catalog snapshot."
+          },
+          "failure_category": {
+            "type": "string",
+            "description": "Stable, non-sensitive failure category for the last attempt."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Synchronization metadata for one configurable live model catalog source."
+      },
+      "Cost.ModelCatalogSourceOrder": {
+        "type": "integer",
+        "format": "int64",
+        "minimum": 1,
+        "description": "One-based position of a conditional override in its source response."
+      },
+      "Cost.ModelCatalogSourceStatus": {
+        "type": "string",
+        "enum": [
+          "unconfigured",
+          "pending",
+          "current",
+          "stale",
+          "sync_failed"
+        ],
+        "description": "Current synchronization state for a configured live model catalog."
+      },
+      "Cost.ModelCatalogSupersededOverrideExclusion": {
+        "type": "object",
+        "required": [
+          "reason"
+        ],
+        "properties": {
+          "reason": {
+            "type": "string",
+            "enum": [
+              "superseded_by_later_override"
+            ]
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Cost.ModelCatalogConditionalExclusionBase"
+          }
+        ]
+      },
+      "Cost.ModelCatalogSupportedBillingExclusionBase": {
+        "type": "object",
+        "required": [
+          "billing_mode"
+        ],
+        "properties": {
+          "billing_mode": {
+            "$ref": "#/components/schemas/Cost.ModelCatalogBillingMode"
+          }
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Cost.ModelCatalogTokenEstimateExclusionBase"
+          }
+        ]
+      },
+      "Cost.ModelCatalogTokenAdditiveSurchargeComponent": {
+        "type": "object",
+        "required": [
+          "rate_relation"
+        ],
+        "properties": {
+          "rate_relation": {
+            "type": "string",
+            "enum": [
+              "additive_surcharge"
+            ]
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Cost.ModelCatalogTokenEstimateComponentBase"
+          }
+        ]
+      },
+      "Cost.ModelCatalogTokenBaseRateComponent": {
+        "type": "object",
+        "required": [
+          "rate_relation"
+        ],
+        "properties": {
+          "rate_relation": {
+            "type": "string",
+            "enum": [
+              "base_rate"
+            ]
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Cost.ModelCatalogTokenEstimateComponentBase"
+          }
+        ]
+      },
+      "Cost.ModelCatalogTokenConditionalOverrideRateComponent": {
+        "type": "object",
+        "required": [
+          "rate_relation",
+          "replaces_usage_dimension",
+          "conditional_evidence"
+        ],
+        "properties": {
+          "rate_relation": {
+            "type": "string",
+            "enum": [
+              "replaces_published_rate"
+            ]
+          },
+          "replaces_usage_dimension": {
+            "type": "string",
+            "description": "Published usage dimension whose prior base, surcharge, or subtype rate was replaced."
+          },
+          "conditional_evidence": {
+            "$ref": "#/components/schemas/Cost.ModelCatalogConditionalRateEvidence"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Cost.ModelCatalogTokenEstimateComponentBase"
+          }
+        ]
+      },
+      "Cost.ModelCatalogTokenEstimateComponent": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Cost.ModelCatalogTokenBaseRateComponent"
+          },
+          {
+            "$ref": "#/components/schemas/Cost.ModelCatalogTokenAdditiveSurchargeComponent"
+          },
+          {
+            "$ref": "#/components/schemas/Cost.ModelCatalogTokenInclusiveReplacementRateComponent"
+          },
+          {
+            "$ref": "#/components/schemas/Cost.ModelCatalogTokenConditionalOverrideRateComponent"
+          }
+        ],
+        "description": "One evidenced token or request component contributing to a current-catalog estimate. The rate_relation literal selects the required evidence shape."
+      },
+      "Cost.ModelCatalogTokenEstimateComponentBase": {
+        "type": "object",
+        "required": [
+          "component",
+          "usage_dimension",
+          "unit",
+          "source_billing_mode",
+          "billing_mode",
+          "quantity",
+          "unit_price_usd",
+          "estimated_cost_usd"
+        ],
+        "properties": {
+          "component": {
+            "type": "string",
+            "description": "Source-defined pricing component, such as prompt, completion, request, cache read, cache write, or internal reasoning."
+          },
+          "usage_dimension": {
+            "type": "string",
+            "description": "Qyl-observed usage dimension to which this rate was applied, such as input_tokens or output_tokens."
+          },
+          "unit": {
+            "type": "string",
+            "description": "Source-declared unit represented by the rate."
+          },
+          "source_billing_mode": {
+            "type": "string",
+            "description": "Source-specific billing mode retained from the catalog or deterministically derived from the provider-defined meter."
+          },
+          "billing_mode": {
+            "$ref": "#/components/schemas/Cost.ModelCatalogBillingMode"
+          },
+          "quantity": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0,
+            "description": "Measured quantity to which the catalog unit price was applied."
+          },
+          "unit_price_usd": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.CostUsd"
+              }
+            ],
+            "description": "Catalog price in USD per source-defined unit."
+          },
+          "estimated_cost_usd": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.CostUsd"
+              }
+            ],
+            "description": "Estimated USD contribution of this component for the reported cluster period."
+          }
+        },
+        "description": "Fields shared by every included token or request pricing component."
+      },
+      "Cost.ModelCatalogTokenEstimateExclusion": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Cost.ModelCatalogUsageNotObservedExclusion"
+          },
+          {
+            "$ref": "#/components/schemas/Cost.ModelCatalogConditionalAdjustmentNotAppliedExclusion"
+          },
+          {
+            "$ref": "#/components/schemas/Cost.ModelCatalogSupersededOverrideExclusion"
+          },
+          {
+            "$ref": "#/components/schemas/Cost.ModelCatalogOutsideTokenScopeExclusion"
+          },
+          {
+            "$ref": "#/components/schemas/Cost.ModelCatalogUnsupportedUsageExclusion"
+          },
+          {
+            "$ref": "#/components/schemas/Cost.ModelCatalogUnsupportedBillingExclusion"
+          }
+        ],
+        "description": "Auditable catalog meter or conditional adjustment excluded from a token-and-request estimate. The reason literal selects the required evidence shape."
+      },
+      "Cost.ModelCatalogTokenEstimateExclusionBase": {
+        "type": "object",
+        "required": [
+          "component",
+          "usage_dimension",
+          "unit",
+          "source_billing_mode",
+          "rate_evidence"
+        ],
+        "properties": {
+          "component": {
+            "type": "string"
+          },
+          "usage_dimension": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "source_billing_mode": {
+            "type": "string",
+            "description": "Source-specific billing mode retained from the catalog or deterministically derived from the provider-defined meter, including unsupported modes."
+          },
+          "rate_evidence": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Cost.ModelCatalogExclusionRateEvidence"
+              }
+            ],
+            "description": "Relation, replacement target, and ordered override evidence for the omitted rate."
+          },
+          "unit_price_usd": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.CostUsd"
+              }
+            ],
+            "description": "Catalog rate omitted from the estimate, when the source supplied one."
+          }
+        },
+        "description": "Fields shared by every catalog meter or conditional adjustment excluded from a token-and-request estimate."
+      },
+      "Cost.ModelCatalogTokenExclusionReason": {
+        "type": "string",
+        "enum": [
+          "usage_not_observed",
+          "conditional_adjustment_not_applied",
+          "superseded_by_later_override",
+          "outside_token_estimate_scope",
+          "unsupported_usage_dimension",
+          "unsupported_billing_mode"
+        ],
+        "description": "Why a catalog meter or conditional adjustment was not included in a token-and-request estimate."
+      },
+      "Cost.ModelCatalogTokenInclusiveReplacementRateComponent": {
+        "type": "object",
+        "required": [
+          "rate_relation",
+          "replaces_usage_dimension"
+        ],
+        "properties": {
+          "rate_relation": {
+            "type": "string",
+            "enum": [
+              "replaces_inclusive_base_rate"
+            ]
+          },
+          "replaces_usage_dimension": {
+            "type": "string",
+            "description": "Inclusive base usage dimension replaced by this subtype rate."
+          },
+          "conditional_evidence": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Cost.ModelCatalogConditionalRateEvidence"
+              }
+            ],
+            "description": "Ordered override evidence when the source conditionally altered this subtype rate."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Cost.ModelCatalogTokenEstimateComponentBase"
+          }
+        ]
+      },
+      "Cost.ModelCatalogUnsupportedBillingExclusion": {
+        "type": "object",
+        "required": [
+          "reason"
+        ],
+        "properties": {
+          "billing_mode": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Cost.ModelCatalogBillingMode"
+              }
+            ],
+            "description": "Normalized billing mode when the source mode has a partial known mapping; absent when no supported normalization exists."
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "unsupported_billing_mode"
+            ]
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Cost.ModelCatalogTokenEstimateExclusionBase"
+          }
+        ]
+      },
+      "Cost.ModelCatalogUnsupportedUsageExclusion": {
+        "type": "object",
+        "required": [
+          "reason"
+        ],
+        "properties": {
+          "reason": {
+            "type": "string",
+            "enum": [
+              "unsupported_usage_dimension"
+            ]
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Cost.ModelCatalogOptionallyNormalizedBillingExclusionBase"
+          }
+        ]
+      },
+      "Cost.ModelCatalogUsageNotObservedExclusion": {
+        "type": "object",
+        "required": [
+          "reason"
+        ],
+        "properties": {
+          "reason": {
+            "type": "string",
+            "enum": [
+              "usage_not_observed"
+            ]
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Cost.ModelCatalogSupportedBillingExclusionBase"
+          }
+        ]
+      },
+      "Cost.ProviderBillingAttribution": {
         "type": "string",
         "enum": [
           "provider_model_period",
           "provider_period",
-          "scenario",
           "unavailable"
         ],
-        "description": "Granularity at which a cost value can be attributed to telemetry."
+        "description": "Granularity at which official provider-billed cost can be attributed to telemetry."
       },
-      "Cost.ProviderCostSource": {
+      "Cost.ProviderBillingSource": {
         "type": "object",
         "required": [
           "provider",
-          "kind",
           "status",
           "source_endpoint",
           "attribution"
@@ -5435,21 +6756,13 @@
             "type": "string",
             "description": "Canonical GenAI provider or cloud billing system name."
           },
-          "kind": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Cost.ProviderCostSourceKind"
-              }
-            ],
-            "description": "Whether the API returned billed cost or a public catalog price."
-          },
           "status": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/Cost.ProviderCostSourceStatus"
+                "$ref": "#/components/schemas/Cost.ProviderBillingSourceStatus"
               }
             ],
-            "description": "Current synchronization and attribution state."
+            "description": "Current billing synchronization state."
           },
           "source_endpoint": {
             "allOf": [
@@ -5462,7 +6775,7 @@
           "attribution": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/Cost.ProviderCostAttribution"
+                "$ref": "#/components/schemas/Cost.ProviderBillingAttribution"
               }
             ],
             "description": "Attribution granularity supported by this source response."
@@ -5480,12 +6793,12 @@
           "period_start": {
             "type": "string",
             "format": "date-time",
-            "description": "Start of the provider billing or catalog validity period."
+            "description": "Start of the provider billing period."
           },
           "period_end": {
             "type": "string",
             "format": "date-time",
-            "description": "End of the provider billing or catalog validity period."
+            "description": "End of the provider billing period."
           },
           "currency_code": {
             "type": "string",
@@ -5508,27 +6821,21 @@
             "description": "Stable, non-sensitive failure category for the last attempt."
           }
         },
-        "description": "Provenance for cost data fetched directly from a provider-owned API."
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Provenance for billed cost data fetched directly from a provider-owned API."
       },
-      "Cost.ProviderCostSourceKind": {
-        "type": "string",
-        "enum": [
-          "actual_billed_cost",
-          "official_public_catalog"
-        ],
-        "description": "How a provider-owned API supplied a cost value."
-      },
-      "Cost.ProviderCostSourceStatus": {
+      "Cost.ProviderBillingSourceStatus": {
         "type": "string",
         "enum": [
           "unconfigured",
           "pending",
           "current",
           "stale",
-          "sync_failed",
-          "not_attributable"
+          "sync_failed"
         ],
-        "description": "Current synchronization state for a provider-owned cost source."
+        "description": "Current synchronization state for a provider-owned billing source."
       },
       "Domains.Observe.Session.DeviceType": {
         "type": "string",
@@ -5567,6 +6874,9 @@
             ],
             "description": "Previous session ID (for session continuity)"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Session span/event attributes"
       },
@@ -5609,6 +6919,9 @@
             "type": "string",
             "description": "Browser version"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Session client information"
       },
@@ -5716,6 +7029,9 @@
             "description": "GenAI usage summary"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Complete session entity with aggregated data",
         "x-csharp-type": "SessionEntity"
       },
@@ -5756,6 +7072,9 @@
             ],
             "description": "Event domain"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Session lifecycle event"
       },
@@ -5814,6 +7133,9 @@
             "description": "Providers used in session"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Session GenAI usage summary"
       },
       "Domains.Observe.Session.SessionGeoInfo": {
@@ -5843,6 +7165,9 @@
             "type": "string",
             "description": "Timezone"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Session geographic information"
       },
@@ -5914,6 +7239,9 @@
             "description": "Bounce rate (single-page sessions)"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Aggregated session statistics"
       },
       "Health.HealthCheckEntry": {
@@ -5933,6 +7261,9 @@
             "type": "number",
             "format": "double"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "One named health-check result."
       },
@@ -5958,6 +7289,9 @@
             }
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Readiness or liveness report returned by /health and /alive."
       },
       "Health.HealthStatus": {
@@ -5980,6 +7314,9 @@
             "default": 24
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Input for display_mcp_dashboard."
       },
       "Mcp.Tools.DisplayMcpDashboardOutput": {
@@ -5991,6 +7328,9 @@
           "stats": {
             "$ref": "#/components/schemas/Mcp.Tools.McpDashboardStats"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Structured output for display_mcp_dashboard."
       },
@@ -6010,6 +7350,9 @@
             "maximum": 100,
             "default": 20
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Input for display_traces."
       },
@@ -6032,6 +7375,9 @@
           "mode": {
             "$ref": "#/components/schemas/Mcp.Tools.McpDataMode"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Structured output for display_traces."
       },
@@ -6072,6 +7418,9 @@
             "maximum": 168
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Input for the app-only fetch_telemetry tool."
       },
       "Mcp.Tools.FetchTelemetryOutput": {
@@ -6102,6 +7451,9 @@
             "$ref": "#/components/schemas/Mcp.Tools.McpDataMode"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Structured output for the app-only fetch_telemetry tool."
       },
       "Mcp.Tools.FetchTelemetryView": {
@@ -6124,6 +7476,9 @@
             "$ref": "#/components/schemas/Common.TraceId"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Input for get_trace."
       },
       "Mcp.Tools.GetTraceOutput": {
@@ -6140,6 +7495,9 @@
             "$ref": "#/components/schemas/Mcp.Tools.McpDataMode"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Structured output for get_trace."
       },
       "Mcp.Tools.ListSessionsInput": {
@@ -6155,6 +7513,9 @@
           "active_only": {
             "type": "boolean"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Input for list_sessions."
       },
@@ -6175,6 +7536,9 @@
             "$ref": "#/components/schemas/Mcp.Tools.McpDataMode"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Structured output for list_sessions."
       },
       "Mcp.Tools.ListTracesInput": {
@@ -6187,6 +7551,9 @@
             "maximum": 100,
             "default": 20
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Input for list_traces."
       },
@@ -6206,6 +7573,9 @@
           "mode": {
             "$ref": "#/components/schemas/Mcp.Tools.McpDataMode"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Structured output for list_traces."
       },
@@ -6231,6 +7601,9 @@
             "format": "int32",
             "minimum": 0
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         }
       },
       "Mcp.Tools.McpDashboardStats": {
@@ -6296,6 +7669,9 @@
             "$ref": "#/components/schemas/Mcp.Tools.McpDataMode"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Aggregate MCP traffic statistics shown by qyl.mcp."
       },
       "Mcp.Tools.McpDashboardTotals": {
@@ -6322,6 +7698,9 @@
             "minimum": 0,
             "maximum": 1
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         }
       },
       "Mcp.Tools.McpDashboardWindow": {
@@ -6345,6 +7724,9 @@
             "format": "double",
             "minimum": 0
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         }
       },
       "Mcp.Tools.McpDataMode": {
@@ -6370,6 +7752,9 @@
             "format": "int32",
             "minimum": 0
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         }
       },
       "Mcp.Tools.McpToolStats": {
@@ -6412,6 +7797,9 @@
             "format": "double",
             "minimum": 0
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         }
       },
       "Mcp.Tools.SearchLogsInput": {
@@ -6440,6 +7828,9 @@
             "default": 50
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Input for search_logs."
       },
       "Mcp.Tools.SearchLogsOutput": {
@@ -6458,6 +7849,9 @@
           "mode": {
             "$ref": "#/components/schemas/Mcp.Tools.McpDataMode"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Structured output for search_logs."
       },
@@ -6691,6 +8085,9 @@
             "description": "Array of values"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Array log body"
       },
       "OTel.Logs.LogBodyBytes": {
@@ -6704,6 +8101,9 @@
             "contentEncoding": "base64",
             "description": "Binary value (base64 encoded)"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Binary log body"
       },
@@ -6721,6 +8121,9 @@
             "description": "Key-value pairs"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Structured key-value log body"
       },
       "OTel.Logs.LogBodyString": {
@@ -6733,6 +8136,9 @@
             "type": "string",
             "description": "String value"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "String log body"
       },
@@ -6839,6 +8245,9 @@
             "description": "Instrumentation scope"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "OpenTelemetry Log Record"
       },
       "OTel.Logs.LogTemplate": {
@@ -6863,6 +8272,9 @@
             "type": "string",
             "description": "Rendered message"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Log message template with placeholders"
       },
@@ -7010,6 +8422,9 @@
             "description": "Stack table (ordered location sequences)"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "OpenTelemetry Profile representing a continuous profiling snapshot"
       },
       "OTel.Profiles.ProfileFunction": {
@@ -7036,6 +8451,9 @@
             "description": "First line number of the function in source"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Function identity in a profiled binary"
       },
       "OTel.Profiles.ProfileLine": {
@@ -7056,6 +8474,9 @@
             "format": "int64",
             "description": "Source column number"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Source line within a location"
       },
@@ -7078,6 +8499,9 @@
             ],
             "description": "Linked span ID (8 bytes)"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Cross-signal link from profile sample to trace/span"
       },
@@ -7109,6 +8533,9 @@
             },
             "description": "Attribute indices"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Code location within a profiled binary"
       },
@@ -7143,6 +8570,9 @@
             },
             "description": "Attribute indices"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Memory mapping for a loaded binary or shared library"
       },
@@ -7212,6 +8642,9 @@
             "description": "End of time range (exclusive, ISO 8601)"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Filter parameters for querying profiles"
       },
       "OTel.Profiles.ProfileSample": {
@@ -7251,6 +8684,9 @@
             "description": "Timestamps for each value in nanoseconds since epoch"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Individual profiling sample"
       },
       "OTel.Profiles.ProfileStack": {
@@ -7264,6 +8700,9 @@
             },
             "description": "Location indices from leaf (index 0) to root"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Ordered sequence of location indices forming a call stack"
       },
@@ -7318,6 +8757,9 @@
             "description": "Stats grouped by frame type"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Aggregated profile statistics"
       },
       "OTel.Profiles.ProfileStatsByDimension": {
@@ -7355,6 +8797,9 @@
             "description": "Average duration in nanoseconds"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Profile statistics for a specific dimension value"
       },
       "OTel.Profiles.ProfileValueType": {
@@ -7370,6 +8815,9 @@
             "format": "int32",
             "description": "Unit string index into string table"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Sample type descriptor (what was measured and in what unit)"
       },
@@ -7608,6 +9056,9 @@
             "description": "Dropped attributes count"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Resource describes the entity producing telemetry"
       },
       "OTel.Traces.Span": {
@@ -7759,6 +9210,9 @@
             "description": "Instrumentation scope"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "OpenTelemetry Span representing a single operation in a distributed trace"
       },
       "OTel.Traces.SpanEvent": {
@@ -7796,6 +9250,9 @@
             ],
             "description": "Dropped attributes count"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Event occurring during a span's lifetime"
       },
@@ -7850,6 +9307,9 @@
             "format": "int32",
             "description": "Link flags"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Link to another span (e.g., batch processing)"
       },
@@ -7916,6 +9376,9 @@
             "type": "string",
             "description": "Filter by attribute key-value pair"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Filter parameters for querying spans"
       },
@@ -8023,6 +9486,9 @@
             "description": "Stats grouped by operation name"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Aggregated span statistics"
       },
       "OTel.Traces.SpanStatsByDimension": {
@@ -8060,6 +9526,9 @@
             "description": "Error rate for this dimension"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Span statistics for a specific dimension value"
       },
       "OTel.Traces.SpanStatus": {
@@ -8081,6 +9550,9 @@
             "description": "Status message (only for ERROR status)"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Span status"
       },
       "OTel.Traces.Trace": {
@@ -8096,6 +9568,9 @@
             },
             "description": "All spans in this trace"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "allOf": [
           {
@@ -8191,6 +9666,9 @@
             "type": "string"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "allOf": [
           {
             "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpContentMetadata"
@@ -8208,6 +9686,9 @@
             "type": "string",
             "contentEncoding": "base64"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "allOf": [
           {
@@ -8273,6 +9754,9 @@
             "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpResourceContent"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "allOf": [
           {
             "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpContentMetadata"
@@ -8302,6 +9786,9 @@
             "type": "string"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Icon metadata carried by MCP tools and resource links."
       },
       "Runner.Mcp.RunnerMcpImageContent": {
@@ -8325,6 +9812,9 @@
           "mimeType": {
             "type": "string"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "allOf": [
           {
@@ -8406,6 +9896,9 @@
             }
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "allOf": [
           {
             "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpContentMetadata"
@@ -8428,6 +9921,9 @@
             "unevaluatedProperties": {}
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Resource URI accepted by the runner's MCP projection."
       },
       "Runner.Mcp.RunnerMcpResourceReadResponse": {
@@ -8446,6 +9942,9 @@
             "type": "object",
             "unevaluatedProperties": {}
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Stable qyl projection of an MCP resources/read result."
       },
@@ -8484,6 +9983,9 @@
             "format": "double"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Task returned by an MCP task-augmented tool call. ttl and pollInterval are encoded as milliseconds."
       },
       "Runner.Mcp.RunnerMcpTaskMetadata": {
@@ -8493,6 +9995,9 @@
             "type": "number",
             "format": "double"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Task-augmentation metadata accepted on an MCP tool call. ttl is encoded as milliseconds."
       },
@@ -8524,6 +10029,9 @@
             "type": "string"
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "allOf": [
           {
             "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpContentMetadata"
@@ -8540,6 +10048,9 @@
           "text": {
             "type": "string"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "allOf": [
           {
@@ -8590,6 +10101,9 @@
             "unevaluatedProperties": {}
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Stable qyl projection of an MCP tool advertised by a runner resource."
       },
       "Runner.Mcp.RunnerMcpToolCallRequest": {
@@ -8612,6 +10126,9 @@
             "type": "object",
             "unevaluatedProperties": {}
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Tool call accepted by the runner's MCP projection."
       },
@@ -8643,6 +10160,9 @@
             "unevaluatedProperties": {}
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Stable qyl projection of an MCP tool-call result."
       },
       "Runner.Mcp.RunnerMcpToolExecution": {
@@ -8651,6 +10171,9 @@
           "taskSupport": {
             "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpToolTaskSupport"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Execution metadata advertised for an MCP tool."
       },
@@ -8684,6 +10207,9 @@
           "isError": {
             "type": "boolean"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "allOf": [
           {
@@ -8724,6 +10250,9 @@
           },
           "input": {}
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "allOf": [
           {
             "$ref": "#/components/schemas/Runner.Mcp.RunnerMcpContentMetadata"
@@ -8751,6 +10280,9 @@
             "unevaluatedProperties": {}
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "MCP tools currently advertised by a runner resource."
       },
       "Runner.RunnerLogEvents": {
@@ -8773,6 +10305,9 @@
           "line": {
             "type": "string"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "One bounded child-process log line exposed by the runner."
       },
@@ -8797,6 +10332,9 @@
           "version": {
             "type": "string"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Identity reported by a connected MCP server during initialization."
       },
@@ -8875,6 +10413,9 @@
             "minimum": 0
           }
         },
+        "unevaluatedProperties": {
+          "not": {}
+        },
         "description": "Current client-visible state of one runner resource."
       },
       "Streaming.HeartbeatEvent": {
@@ -8894,6 +10435,9 @@
             "type": "string",
             "format": "date-time"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "Keep-alive event emitted while no new log is available."
       },
@@ -8928,6 +10472,9 @@
             "type": "string",
             "format": "date-time"
           }
+        },
+        "unevaluatedProperties": {
+          "not": {}
         },
         "description": "One log delivered by the collector's live stream."
       }

@@ -20,6 +20,7 @@ options:
     file-type: json
     openapi-versions:
       - "3.2.0"
+    seal-object-schemas: true
     omit-unreachable-types: false
     operation-id-strategy: parent-container
 

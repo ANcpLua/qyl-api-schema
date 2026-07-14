@@ -27,6 +27,9 @@
       "name": "Sessions"
     },
     {
+      "name": "GenAI cost"
+    },
+    {
       "name": "Health"
     }
   ],
@@ -59,6 +62,299 @@
         },
         "tags": [
           "Health"
+        ]
+      }
+    },
+    "/api/v1/cost/etl-audit": {
+      "get": {
+        "operationId": "GenAiEtlAuditApi_report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectScopeHeader"
+          },
+          {
+            "name": "startTime",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "explode": false
+          },
+          {
+            "name": "endTime",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "explode": false
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            },
+            "explode": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The request has succeeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Cost.GenAiEtlAuditReport"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - validation failed (400)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - authentication required (401)",
+            "headers": {
+              "WWW-Authenticate": {
+                "required": false,
+                "description": "Authentication scheme expected",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.UnauthorizedError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (500)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.InternalServerError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "GenAI cost"
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/cost/etl-audit/evaluate": {
+      "post": {
+        "operationId": "GenAiEtlAuditApi_evaluate",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectScopeHeader"
+          },
+          {
+            "name": "startTime",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "explode": false
+          },
+          {
+            "name": "endTime",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "explode": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The request has succeeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Cost.GenAiEtlAuditEvaluationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - validation failed (400)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - authentication required (401)",
+            "headers": {
+              "WWW-Authenticate": {
+                "required": false,
+                "description": "Authentication scheme expected",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.UnauthorizedError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (500)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.InternalServerError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "GenAI cost"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Cost.GenAiEtlAuditEvaluationRequest"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
         ]
       }
     },
@@ -4541,6 +4837,685 @@
         "minLength": 1,
         "maxLength": 256,
         "description": "User identifier (pseudonymized for privacy)"
+      },
+      "Cost.GenAiEtlAuditCluster": {
+        "type": "object",
+        "required": [
+          "cluster_id",
+          "workflow_key",
+          "service_name",
+          "span_name",
+          "output_contract",
+          "task_family",
+          "call_count",
+          "input_tokens",
+          "output_tokens",
+          "cache_read_input_tokens",
+          "cache_creation_input_tokens",
+          "reasoning_output_tokens",
+          "error_count",
+          "error_rate",
+          "average_latency_ms",
+          "p95_latency_ms",
+          "cost_attribution",
+          "candidate_path",
+          "validation_metric",
+          "residual_path",
+          "evidence_signals",
+          "missing_evidence",
+          "promotion_gates"
+        ],
+        "properties": {
+          "cluster_id": {
+            "type": "string",
+            "description": "Stable identifier derived from the privacy-safe cluster dimensions."
+          },
+          "workflow_key": {
+            "type": "string",
+            "description": "Privacy-safe workflow identity used to group repeated calls."
+          },
+          "service_name": {
+            "type": "string"
+          },
+          "span_name": {
+            "type": "string"
+          },
+          "operation_name": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "output_contract": {
+            "$ref": "#/components/schemas/Cost.GenAiEtlOutputContract"
+          },
+          "task_family": {
+            "$ref": "#/components/schemas/Cost.GenAiEtlTaskFamily"
+          },
+          "call_count": {
+            "$ref": "#/components/schemas/Common.Count"
+          },
+          "input_tokens": {
+            "$ref": "#/components/schemas/Common.TokenCount"
+          },
+          "output_tokens": {
+            "$ref": "#/components/schemas/Common.TokenCount"
+          },
+          "cache_read_input_tokens": {
+            "$ref": "#/components/schemas/Common.TokenCount"
+          },
+          "cache_creation_input_tokens": {
+            "$ref": "#/components/schemas/Common.TokenCount"
+          },
+          "reasoning_output_tokens": {
+            "$ref": "#/components/schemas/Common.TokenCount"
+          },
+          "error_count": {
+            "$ref": "#/components/schemas/Common.Count"
+          },
+          "error_rate": {
+            "$ref": "#/components/schemas/Common.Ratio"
+          },
+          "average_latency_ms": {
+            "$ref": "#/components/schemas/Common.DurationMs"
+          },
+          "p95_latency_ms": {
+            "$ref": "#/components/schemas/Common.DurationMs"
+          },
+          "observed_cost_usd": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.CostUsd"
+              }
+            ],
+            "description": "Provider-sourced cost attributable to this cluster, absent when attribution is not defensible."
+          },
+          "cost_per_call_usd": {
+            "$ref": "#/components/schemas/Common.CostUsd"
+          },
+          "cost_attribution": {
+            "$ref": "#/components/schemas/Cost.ProviderCostAttribution"
+          },
+          "spend_share": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.Ratio"
+              }
+            ],
+            "description": "Fraction of attributable spend represented by this cluster."
+          },
+          "measurable_coverage": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.Ratio"
+              }
+            ],
+            "description": "Fraction of calls with a task-specific correctness signal."
+          },
+          "safe_deferral_coverage": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.Ratio"
+              }
+            ],
+            "description": "Fraction of calls proven safe to route to a residual path."
+          },
+          "candidate_path": {
+            "$ref": "#/components/schemas/Cost.GenAiEtlCandidatePath"
+          },
+          "validation_metric": {
+            "$ref": "#/components/schemas/Cost.GenAiEtlValidationMetric"
+          },
+          "residual_path": {
+            "$ref": "#/components/schemas/Cost.GenAiEtlResidualPath"
+          },
+          "evidence_signals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cost.GenAiEtlEvidenceSignal"
+            }
+          },
+          "missing_evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cost.GenAiEtlEvidenceSignal"
+            }
+          },
+          "promotion_gates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cost.GenAiEtlPromotionGate"
+            }
+          }
+        },
+        "description": "Observed economics and evidence for one repeated GenAI workflow cluster."
+      },
+      "Cost.GenAiEtlAuditEvaluationRequest": {
+        "type": "object",
+        "required": [
+          "scenarios"
+        ],
+        "properties": {
+          "scenarios": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cost.GenAiEtlClusterScenario"
+            },
+            "minItems": 1,
+            "maxItems": 100
+          }
+        },
+        "description": "Batch of cluster scenarios evaluated against one audit period."
+      },
+      "Cost.GenAiEtlAuditEvaluationResponse": {
+        "type": "object",
+        "required": [
+          "generated_at",
+          "period_start",
+          "period_end",
+          "results"
+        ],
+        "properties": {
+          "generated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "period_start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "period_end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cost.GenAiEtlClusterEvaluation"
+            }
+          }
+        },
+        "description": "Batch result for ETL replacement scenarios."
+      },
+      "Cost.GenAiEtlAuditReport": {
+        "type": "object",
+        "required": [
+          "generated_at",
+          "period_start",
+          "period_end",
+          "summary",
+          "cost_sources",
+          "clusters"
+        ],
+        "properties": {
+          "generated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "period_start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "period_end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/Cost.GenAiEtlAuditSummary"
+          },
+          "cost_sources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cost.ProviderCostSource"
+            }
+          },
+          "clusters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cost.GenAiEtlAuditCluster"
+            }
+          }
+        },
+        "description": "Trace-level ETL audit for a bounded period."
+      },
+      "Cost.GenAiEtlAuditSummary": {
+        "type": "object",
+        "required": [
+          "total_calls",
+          "total_input_tokens",
+          "total_output_tokens",
+          "priced_call_coverage"
+        ],
+        "properties": {
+          "total_calls": {
+            "$ref": "#/components/schemas/Common.Count"
+          },
+          "total_input_tokens": {
+            "$ref": "#/components/schemas/Common.TokenCount"
+          },
+          "total_output_tokens": {
+            "$ref": "#/components/schemas/Common.TokenCount"
+          },
+          "attributed_cost_usd": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.CostUsd"
+              }
+            ],
+            "description": "Provider-sourced cost attributable to the returned trace population."
+          },
+          "priced_call_coverage": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.Ratio"
+              }
+            ],
+            "description": "Fraction of calls covered by provider cost attribution."
+          },
+          "economic_concentration": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.Ratio"
+              }
+            ],
+            "description": "Fraction of attributable spend represented by the returned top clusters."
+          },
+          "measurable_coverage": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.Ratio"
+              }
+            ],
+            "description": "Fraction of calls with a task-specific correctness signal."
+          },
+          "safe_deferral_coverage": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.Ratio"
+              }
+            ],
+            "description": "Fraction of calls proven safe to defer to a residual path."
+          },
+          "candidate_etl_spend_share": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.Ratio"
+              }
+            ],
+            "description": "Fraction of attributable spend attached to ETL-shaped candidates."
+          }
+        },
+        "description": "Aggregate trace-level economics for the requested audit period."
+      },
+      "Cost.GenAiEtlCalculationStatus": {
+        "type": "string",
+        "enum": [
+          "calculated",
+          "missing_frontier_cost"
+        ],
+        "description": "Whether the replaceable-value formula had a defensible baseline cost."
+      },
+      "Cost.GenAiEtlCandidatePath": {
+        "type": "string",
+        "enum": [
+          "exact_cache",
+          "deterministic_code",
+          "bounded_retrieval",
+          "small_classifier_extractor",
+          "smaller_generative_model",
+          "frontier_model",
+          "insufficient_evidence"
+        ],
+        "description": "Lowest-risk implementation class suggested by currently available evidence."
+      },
+      "Cost.GenAiEtlClusterEvaluation": {
+        "type": "object",
+        "required": [
+          "cluster_id",
+          "status",
+          "call_count",
+          "coverage",
+          "served_call_count",
+          "residual_call_count",
+          "frontier_cost_basis",
+          "alternative_cost_per_call_usd",
+          "period_maintenance_cost_usd",
+          "period_error_cost_usd"
+        ],
+        "properties": {
+          "cluster_id": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/Cost.GenAiEtlCalculationStatus"
+          },
+          "call_count": {
+            "$ref": "#/components/schemas/Common.Count"
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/Common.Ratio"
+          },
+          "served_call_count": {
+            "type": "number",
+            "format": "double"
+          },
+          "residual_call_count": {
+            "type": "number",
+            "format": "double"
+          },
+          "frontier_cost_per_call_usd": {
+            "$ref": "#/components/schemas/Common.CostUsd"
+          },
+          "frontier_cost_basis": {
+            "$ref": "#/components/schemas/Cost.ProviderCostAttribution"
+          },
+          "alternative_cost_per_call_usd": {
+            "$ref": "#/components/schemas/Common.CostUsd"
+          },
+          "current_period_cost_usd": {
+            "$ref": "#/components/schemas/Common.CostUsd"
+          },
+          "gross_replaceable_value_usd": {
+            "type": "number",
+            "format": "double"
+          },
+          "period_maintenance_cost_usd": {
+            "$ref": "#/components/schemas/Common.CostUsd"
+          },
+          "period_error_cost_usd": {
+            "$ref": "#/components/schemas/Common.CostUsd"
+          },
+          "net_replaceable_value_usd": {
+            "type": "number",
+            "format": "double",
+            "description": "Net period value; this may be negative when maintenance or error cost exceeds gross savings."
+          }
+        },
+        "description": "Result of replaceable_value = calls * coverage * (frontier - alternative) - maintenance - error."
+      },
+      "Cost.GenAiEtlClusterScenario": {
+        "type": "object",
+        "required": [
+          "cluster_id",
+          "coverage",
+          "alternative_cost_per_call_usd",
+          "period_maintenance_cost_usd",
+          "period_error_cost_usd"
+        ],
+        "properties": {
+          "cluster_id": {
+            "type": "string"
+          },
+          "coverage": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.Ratio"
+              }
+            ],
+            "description": "Fraction of cluster calls the replacement is expected to serve safely."
+          },
+          "frontier_cost_per_call_usd": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.CostUsd"
+              }
+            ],
+            "description": "Explicit baseline cost per call. When absent, qyl uses provider-attributed cluster cost and otherwise fails closed."
+          },
+          "alternative_cost_per_call_usd": {
+            "$ref": "#/components/schemas/Common.CostUsd"
+          },
+          "period_maintenance_cost_usd": {
+            "$ref": "#/components/schemas/Common.CostUsd"
+          },
+          "period_error_cost_usd": {
+            "$ref": "#/components/schemas/Common.CostUsd"
+          }
+        },
+        "description": "What-if assumptions for one workflow cluster over the requested period."
+      },
+      "Cost.GenAiEtlEvidenceSignal": {
+        "type": "string",
+        "enum": [
+          "workflow_identity",
+          "output_contract",
+          "provider_model",
+          "token_usage",
+          "provider_cost",
+          "recurring_schema",
+          "bounded_reference",
+          "task_metric",
+          "accepted_output_replay",
+          "downstream_fate",
+          "calibrated_confidence",
+          "shadow_comparison",
+          "fallback_policy"
+        ],
+        "description": "Observable evidence needed to promote an inferred replacement safely."
+      },
+      "Cost.GenAiEtlOutputContract": {
+        "type": "string",
+        "enum": [
+          "prose",
+          "label",
+          "span_list",
+          "record",
+          "vector",
+          "catalog_reference",
+          "number",
+          "boolean",
+          "unknown"
+        ],
+        "description": "Machine-readable output contract inferred for a workflow cluster."
+      },
+      "Cost.GenAiEtlPromotionGate": {
+        "type": "object",
+        "required": [
+          "gate",
+          "state"
+        ],
+        "properties": {
+          "gate": {
+            "$ref": "#/components/schemas/Cost.GenAiEtlPromotionGateKind"
+          },
+          "state": {
+            "$ref": "#/components/schemas/Cost.GenAiEtlPromotionGateState"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Stable evidence code explaining the current gate state."
+          }
+        },
+        "description": "Promotion readiness for one gate."
+      },
+      "Cost.GenAiEtlPromotionGateKind": {
+        "type": "string",
+        "enum": [
+          "contract_stability",
+          "offline_replay",
+          "calibrated_confidence",
+          "shadow_traffic",
+          "limited_serving",
+          "rollback_residual_policy"
+        ],
+        "description": "Promotion gate from replay through limited serving and rollback."
+      },
+      "Cost.GenAiEtlPromotionGateState": {
+        "type": "string",
+        "enum": [
+          "passed",
+          "failed",
+          "not_evaluated",
+          "blocked_missing_evidence"
+        ],
+        "description": "Evaluation state of a promotion gate."
+      },
+      "Cost.GenAiEtlResidualPath": {
+        "type": "string",
+        "enum": [
+          "frontier_model",
+          "human_review",
+          "retry",
+          "degraded_response",
+          "none",
+          "undetermined"
+        ],
+        "description": "Fallback used for requests outside a promoted replacement's safe coverage."
+      },
+      "Cost.GenAiEtlTaskFamily": {
+        "type": "string",
+        "enum": [
+          "open_reasoning_generation",
+          "classification",
+          "sequence_labeling",
+          "structured_extraction",
+          "retrieval_entity_resolution",
+          "similarity_clustering",
+          "normalization_transformation",
+          "numeric_analytical",
+          "unknown"
+        ],
+        "description": "Task family inferred for a repeated GenAI workflow cluster."
+      },
+      "Cost.GenAiEtlValidationMetric": {
+        "type": "string",
+        "enum": [
+          "accuracy",
+          "macro_f1",
+          "span_f1",
+          "field_exact_match",
+          "schema_validity",
+          "match_accuracy",
+          "recall_at_k",
+          "mean_reciprocal_rank",
+          "exact_match",
+          "numeric_tolerance",
+          "human_preference",
+          "task_success",
+          "unavailable"
+        ],
+        "description": "Task-specific metric that can falsify a proposed replacement."
+      },
+      "Cost.ProviderCostAttribution": {
+        "type": "string",
+        "enum": [
+          "provider_model_period",
+          "provider_period",
+          "scenario",
+          "unavailable"
+        ],
+        "description": "Granularity at which a cost value can be attributed to telemetry."
+      },
+      "Cost.ProviderCostSource": {
+        "type": "object",
+        "required": [
+          "provider",
+          "kind",
+          "status",
+          "source_endpoint",
+          "attribution"
+        ],
+        "properties": {
+          "provider": {
+            "type": "string",
+            "description": "Canonical GenAI provider or cloud billing system name."
+          },
+          "kind": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Cost.ProviderCostSourceKind"
+              }
+            ],
+            "description": "Whether the API returned billed cost or a public catalog price."
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Cost.ProviderCostSourceStatus"
+              }
+            ],
+            "description": "Current synchronization and attribution state."
+          },
+          "source_endpoint": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.UrlString"
+              }
+            ],
+            "description": "Official provider-owned API endpoint used for the fetch."
+          },
+          "attribution": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Cost.ProviderCostAttribution"
+              }
+            ],
+            "description": "Attribution granularity supported by this source response."
+          },
+          "last_attempt_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "UTC time of the latest fetch attempt."
+          },
+          "last_success_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "UTC time of the latest successful fetch."
+          },
+          "period_start": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Start of the provider billing or catalog validity period."
+          },
+          "period_end": {
+            "type": "string",
+            "format": "date-time",
+            "description": "End of the provider billing or catalog validity period."
+          },
+          "currency_code": {
+            "type": "string",
+            "description": "ISO 4217 currency code returned by the provider."
+          },
+          "reported_cost_usd": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common.CostUsd"
+              }
+            ],
+            "description": "Cost returned by the provider for this period, converted from provider-declared USD units without rate inference."
+          },
+          "model": {
+            "type": "string",
+            "description": "Model identifier returned by the provider when the source supports it."
+          },
+          "failure_category": {
+            "type": "string",
+            "description": "Stable, non-sensitive failure category for the last attempt."
+          }
+        },
+        "description": "Provenance for cost data fetched directly from a provider-owned API."
+      },
+      "Cost.ProviderCostSourceKind": {
+        "type": "string",
+        "enum": [
+          "actual_billed_cost",
+          "official_public_catalog"
+        ],
+        "description": "How a provider-owned API supplied a cost value."
+      },
+      "Cost.ProviderCostSourceStatus": {
+        "type": "string",
+        "enum": [
+          "unconfigured",
+          "current",
+          "stale",
+          "sync_failed",
+          "not_attributable"
+        ],
+        "description": "Current synchronization state for a provider-owned cost source."
       },
       "Domains.Observe.Session.DeviceType": {
         "type": "string",

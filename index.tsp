@@ -23,6 +23,7 @@ import "./models/health.tsp";
 import "./models/runner.tsp";
 import "./models/runner-mcp.tsp";
 import "./models/mcp-tools.tsp";
+import "./models/cost-etl-audit.tsp";
 
 import "./api/routes.tsp";
 import "./api/streaming.tsp";

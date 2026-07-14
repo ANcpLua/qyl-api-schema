@@ -9,6 +9,7 @@ import "../otel/logs.tsp";
 import "../otel/profiles.tsp";
 import "../models/session.tsp";
 import "../models/health.tsp";
+import "../models/cost-etl-audit.tsp";
 
 using TypeSpec.Http;
 using TypeSpec.OpenAPI;
@@ -22,6 +23,7 @@ using Qyl.Api.Contracts.OTel.Enums;
 using Qyl.Api.Contracts.OTel.Profiles;
 using Qyl.Api.Contracts.Domains.Observe.Session;
 using Qyl.Api.Contracts.Health;
+using Qyl.Api.Contracts.Cost;
 
 @service(#{ title: "qyl API" })
 namespace Qyl.Api.Contracts;
@@ -168,6 +170,32 @@ interface SessionsApi {
     @query startTime?: utcDateTime,
     @query endTime?: utcDateTime,
   ): SessionStats | ValidationError | UnauthorizedError | InternalServerError;
+}
+
+// -----------------------------------------------------------------------------
+// GenAI cost and ETL audit
+// -----------------------------------------------------------------------------
+
+@route("/api/v1/cost/etl-audit")
+@tag("GenAI cost")
+@useAuth(QylApiKeyHeaderAuth)
+interface GenAiEtlAuditApi {
+  @get
+  report(
+    ...ProjectScopeHeader,
+    @query startTime?: utcDateTime,
+    @query endTime?: utcDateTime,
+    @query @minValue(1) @maxValue(100) limit?: int32 = 25,
+  ): GenAiEtlAuditReport | ValidationError | UnauthorizedError | InternalServerError;
+
+  @post
+  @route("/evaluate")
+  evaluate(
+    ...ProjectScopeHeader,
+    @query startTime?: utcDateTime,
+    @query endTime?: utcDateTime,
+    @body request: GenAiEtlAuditEvaluationRequest,
+  ): GenAiEtlAuditEvaluationResponse | ValidationError | UnauthorizedError | InternalServerError;
 }
 
 // -----------------------------------------------------------------------------

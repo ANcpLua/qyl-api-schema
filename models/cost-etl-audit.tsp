@@ -24,6 +24,9 @@ enum ProviderCostSourceStatus {
   @doc("The source has no configured provider credential or cloud identity.")
   unconfigured: "unconfigured",
 
+  @doc("A provider credential or cloud identity is configured, but no fetch has completed yet.")
+  pending: "pending",
+
   @doc("The most recent provider fetch completed inside its freshness window.")
   current: "current",
 

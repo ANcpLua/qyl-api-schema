@@ -5510,6 +5510,7 @@
         "type": "string",
         "enum": [
           "unconfigured",
+          "pending",
           "current",
           "stale",
           "sync_failed",

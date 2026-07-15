@@ -33,6 +33,13 @@ function assertReferences(definition, expected) {
   }
 }
 
+function assertAnyOfReferences(definition, expected) {
+  const actual = (defs[definition]?.anyOf ?? []).map((variant) => variant.$ref);
+  if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+    throw new Error(`${definition} anyOf variants drifted: ${JSON.stringify(actual)}.`);
+  }
+}
+
 const bytes = { type: "bytes", base64: "/wCA/g==" };
 if (Buffer.from(bytes.base64, "base64").toString("base64") !== bytes.base64) {
   throw new Error("The byte fixture is not canonical base64.");
@@ -52,6 +59,92 @@ if (bytesSchema?.properties?.type?.enum?.[0] !== "bytes" ||
     bytesSchema?.properties?.base64?.contentEncoding !== "base64") {
   throw new Error("Common.AttributeBytesValue must retain the tagged base64 wire shape.");
 }
+
+assertAnyOfReferences("OTel.Metrics.MetricNumberValue", [
+  "#/$defs/OTel.Metrics.MetricIntegerValue",
+  "#/$defs/OTel.Metrics.MetricDoubleValue",
+]);
+assertAnyOfReferences("OTel.Metrics.MetricPoint", [
+  "#/$defs/OTel.Metrics.GaugeMetricPoint",
+  "#/$defs/OTel.Metrics.SumMetricPoint",
+  "#/$defs/OTel.Metrics.HistogramMetricPoint",
+  "#/$defs/OTel.Metrics.ExponentialHistogramMetricPoint",
+  "#/$defs/OTel.Metrics.SummaryMetricPoint",
+]);
+
+const validateMetricNumber = validatorFor("OTel.Metrics.MetricNumberValue");
+assertValid(validateMetricNumber, { as_int: "42" }, "integer metric value");
+assertValid(validateMetricNumber, { as_double: 2.5 }, "double metric value");
+assertInvalid(validateMetricNumber, { as_int: "42", as_double: 2.5 }, "ambiguous metric value");
+assertInvalid(validateMetricNumber, { as_int: 42 }, "numeric JSON encoding for a 64-bit metric integer");
+assertInvalid(validateMetricNumber, {}, "missing metric value");
+
+const metricCommon = {
+  name: "gen_ai.client.token.usage",
+  unit: "{token}",
+  start_time_unix_nano: "1000",
+  time_unix_nano: "2000",
+  flags: 0,
+  resource: { "service.name": "checkout" },
+  instrumentation_scope: { name: "OpenTelemetry.Instrumentation.GenAI", version: "1.0.0" },
+  attributes: [
+    { key: "gen_ai.provider.name", value: "openai" },
+    { key: "gen_ai.request.model", value: "gpt-4.1" },
+    { key: "gen_ai.token.type", value: "input" },
+  ],
+};
+const validateMetricPoint = validatorFor("OTel.Metrics.MetricPoint");
+const metricFixtures = [
+  { ...metricCommon, type: "gauge", value: { as_double: 1.5 } },
+  {
+    ...metricCommon,
+    type: "sum",
+    value: { as_int: "3" },
+    aggregation_temporality: 2,
+    is_monotonic: true,
+  },
+  {
+    ...metricCommon,
+    type: "histogram",
+    count: "2",
+    sum: 180,
+    bucket_counts: ["0", "1", "1"],
+    explicit_bounds: [64, 256],
+    min: 50,
+    max: 130,
+    aggregation_temporality: 1,
+    exemplars: [{ time_unix_nano: "1500", value: { as_int: "130" }, trace_id: "0af7651916cd43dd8448eb211c80319c", span_id: "b7ad6b7169203331" }],
+  },
+  {
+    ...metricCommon,
+    type: "exponential_histogram",
+    count: "2",
+    sum: 3.5,
+    scale: 3,
+    zero_count: "0",
+    zero_threshold: 0,
+    positive: { offset: 0, bucket_counts: ["1", "1"] },
+    negative: { offset: 0, bucket_counts: [] },
+    aggregation_temporality: 2,
+  },
+  {
+    ...metricCommon,
+    type: "summary",
+    count: "2",
+    sum: 3.5,
+    quantile_values: [{ quantile: 0.5, value: 1.5 }, { quantile: 1, value: 2 }],
+  },
+];
+for (const fixture of metricFixtures) assertValid(validateMetricPoint, fixture, `OTLP ${fixture.type} metric point`);
+assertInvalid(validateMetricPoint, { ...metricCommon, type: "gauge" }, "gauge without a numeric value");
+assertInvalid(validateMetricPoint, { ...metricFixtures[0], type: "counter" }, "unknown metric type");
+assertInvalid(validateMetricPoint, { ...metricFixtures[1], aggregation_temporality: 0 }, "unspecified aggregation temporality");
+assertInvalid(validateMetricPoint, { ...metricFixtures[0], time_unix_nano: "0" }, "zero metric timestamp");
+assertInvalid(validateMetricPoint, { ...metricFixtures[0], time_unix_nano: 2000 }, "numeric JSON encoding for a metric timestamp");
+assertInvalid(validateMetricPoint, {
+  ...metricFixtures[4],
+  quantile_values: [{ quantile: 0.5, value: -1 }],
+}, "negative summary quantile value");
 
 const contentRefs = [
   "RunnerMcpTextContent",

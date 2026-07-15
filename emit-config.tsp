@@ -11,11 +11,26 @@ using Qyl.Api.Schema.Emit.TsTypes;
 @@csharpNamespace(Qyl.Api.Contracts.Streaming, "Qyl.Api.Contracts.Streaming");
 @@csharpNamespace(Qyl.Api.Contracts.Health, "Qyl.Api.Contracts.Health");
 @@csharpNamespace(Qyl.Api.Contracts.Cost, "Qyl.Api.Contracts.Cost");
-@@csharpPolymorphic(Qyl.Api.Contracts.Cost.GenAiEtlCatalogTokenCostEstimate, "status");
-@@csharpPolymorphic(Qyl.Api.Contracts.Cost.ModelCatalogTokenEstimateComponent, "rate_relation");
-@@csharpPolymorphic(Qyl.Api.Contracts.Cost.ModelCatalogExclusionRateEvidence, "rate_relation");
-@@csharpPolymorphic(Qyl.Api.Contracts.Cost.ModelCatalogTokenEstimateExclusion, "reason");
-@@csharpPolymorphic(Qyl.Api.Contracts.Cost.GenAiEtlClusterEvaluation, "frontier_cost_basis");
+@@csharpPolymorphic(
+  Qyl.Api.Contracts.Cost.GenAiEtlCatalogTokenCostEstimate,
+  "status"
+);
+@@csharpPolymorphic(
+  Qyl.Api.Contracts.Cost.ModelCatalogTokenEstimateComponent,
+  "rate_relation"
+);
+@@csharpPolymorphic(
+  Qyl.Api.Contracts.Cost.ModelCatalogExclusionRateEvidence,
+  "rate_relation"
+);
+@@csharpPolymorphic(
+  Qyl.Api.Contracts.Cost.ModelCatalogTokenEstimateExclusion,
+  "reason"
+);
+@@csharpPolymorphic(
+  Qyl.Api.Contracts.Cost.GenAiEtlClusterEvaluation,
+  "frontier_cost_basis"
+);
 @@csharpNamespace(Qyl.Api.Contracts.Mcp.Tools, "Qyl.Api.Contracts.Mcp.Tools");
 @@csharpNamespace(Qyl.Api.Contracts.Runner, "Qyl.Api.Contracts.Runner");
 @@csharpNamespace(Qyl.Api.Contracts.Runner.Mcp, "Qyl.Api.Contracts.Runner.Mcp");
@@ -23,17 +38,41 @@ using Qyl.Api.Schema.Emit.TsTypes;
 @@csharpPolymorphic(Qyl.Api.Contracts.Runner.Mcp.RunnerMcpResourceContent);
 
 @@csharpNamespace(Qyl.Api.Contracts.Common, "Qyl.Api.Contracts.Common");
-@@csharpNamespace(Qyl.Api.Contracts.Common.Errors, "Qyl.Api.Contracts.Common.Errors");
-@@csharpNamespace(Qyl.Api.Contracts.Common.Pagination, "Qyl.Api.Contracts.Common.Pagination");
+@@csharpNamespace(
+  Qyl.Api.Contracts.Common.Errors,
+  "Qyl.Api.Contracts.Common.Errors"
+);
+@@csharpNamespace(
+  Qyl.Api.Contracts.Common.Pagination,
+  "Qyl.Api.Contracts.Common.Pagination"
+);
 
-@@csharpNamespace(Qyl.Api.Contracts.Domains.Observe.Session, "Qyl.Api.Contracts.Domains.Observe.Session");
+@@csharpNamespace(
+  Qyl.Api.Contracts.Domains.Observe.Session,
+  "Qyl.Api.Contracts.Domains.Observe.Session"
+);
 
 @@csharpNamespace(Qyl.Api.Contracts.OTel, "Qyl.Api.Contracts.OTel");
 @@csharpNamespace(Qyl.Api.Contracts.OTel.Enums, "Qyl.Api.Contracts.OTel.Enums");
 @@csharpNamespace(Qyl.Api.Contracts.OTel.Logs, "Qyl.Api.Contracts.OTel.Logs");
-@@csharpNamespace(Qyl.Api.Contracts.OTel.Profiles, "Qyl.Api.Contracts.OTel.Profiles");
-@@csharpNamespace(Qyl.Api.Contracts.OTel.Resource, "Qyl.Api.Contracts.OTel.Resource");
-@@csharpNamespace(Qyl.Api.Contracts.OTel.Traces, "Qyl.Api.Contracts.OTel.Traces");
+@@csharpNamespace(
+  Qyl.Api.Contracts.OTel.Metrics,
+  "Qyl.Api.Contracts.OTel.Metrics"
+);
+@@csharpPolymorphic(Qyl.Api.Contracts.OTel.Metrics.MetricPoint, "type");
+@@csharpPolymorphic(Qyl.Api.Contracts.OTel.Metrics.MetricNumberValue);
+@@csharpNamespace(
+  Qyl.Api.Contracts.OTel.Profiles,
+  "Qyl.Api.Contracts.OTel.Profiles"
+);
+@@csharpNamespace(
+  Qyl.Api.Contracts.OTel.Resource,
+  "Qyl.Api.Contracts.OTel.Resource"
+);
+@@csharpNamespace(
+  Qyl.Api.Contracts.OTel.Traces,
+  "Qyl.Api.Contracts.OTel.Traces"
+);
 
 @@tsBrand(Qyl.Api.Contracts.Common.TraceId);
 @@tsBrand(Qyl.Api.Contracts.Common.SpanId);

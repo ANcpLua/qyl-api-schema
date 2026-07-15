@@ -6,6 +6,7 @@ import "../common/errors.tsp";
 import "../common/pagination.tsp";
 import "../otel/span.tsp";
 import "../otel/logs.tsp";
+import "../otel/metrics.tsp";
 import "../otel/profiles.tsp";
 import "../models/session.tsp";
 import "../models/health.tsp";
@@ -19,6 +20,7 @@ using Qyl.Api.Contracts.Common.Errors;
 using Qyl.Api.Contracts.Common.Pagination;
 using Qyl.Api.Contracts.OTel.Traces;
 using Qyl.Api.Contracts.OTel.Logs;
+using Qyl.Api.Contracts.OTel.Metrics;
 using Qyl.Api.Contracts.OTel.Enums;
 using Qyl.Api.Contracts.OTel.Profiles;
 using Qyl.Api.Contracts.Domains.Observe.Session;
@@ -47,23 +49,34 @@ interface TracesApi {
   @get
   list(
     ...ProjectScopeHeader,
-    @query @minValue(1) @maxValue(1000) limit?: int32 = 100,
+
+    @query
+    @minValue(1)
+    @maxValue(1000)
+    limit?: int32 = 100,
+
     @query cursor?: string,
-  ): CursorPage<Trace> | ValidationError | UnauthorizedError | InternalServerError;
+  ):
+    | CursorPage<Trace>
+    | ValidationError
+    | UnauthorizedError
+    | InternalServerError;
 
   @get
   @route("/{traceId}")
-  get(
-    ...ProjectScopeHeader,
-    @path traceId: TraceId,
-  ): Trace | NotFoundError | UnauthorizedError | InternalServerError;
+  get(...ProjectScopeHeader, @path traceId: TraceId):
+    | Trace
+    | NotFoundError
+    | UnauthorizedError
+    | InternalServerError;
 
   @get
   @route("/{traceId}/spans")
-  getSpans(
-    ...ProjectScopeHeader,
-    @path traceId: TraceId,
-  ): CursorPage<Span> | NotFoundError | UnauthorizedError | InternalServerError;
+  getSpans(...ProjectScopeHeader, @path traceId: TraceId):
+    | CursorPage<Span>
+    | NotFoundError
+    | UnauthorizedError
+    | InternalServerError;
 }
 
 // -----------------------------------------------------------------------------
@@ -85,8 +98,47 @@ interface LogsApi {
     @query startTime?: utcDateTime,
     @query endTime?: utcDateTime,
     @query query?: string,
-    @query @minValue(1) @maxValue(10000) limit?: int32 = 100,
-  ): CursorPage<LogRecord> | ValidationError | UnauthorizedError | InternalServerError;
+
+    @query
+    @minValue(1)
+    @maxValue(10000)
+    limit?: int32 = 100,
+  ):
+    | CursorPage<LogRecord>
+    | ValidationError
+    | UnauthorizedError
+    | InternalServerError;
+}
+
+// -----------------------------------------------------------------------------
+// Metrics
+// -----------------------------------------------------------------------------
+
+@route("/api/v1/metrics")
+@tag("Metrics")
+@useAuth(QylApiKeyHeaderAuth)
+interface MetricsApi {
+  @doc("List persisted OTLP metric data points without re-aggregating producer values.")
+  @get
+  list(
+    ...ProjectScopeHeader,
+    @query name?: string,
+    @query type?: MetricType,
+    @query serviceName?: string,
+    @query startTime?: utcDateTime,
+    @query endTime?: utcDateTime,
+
+    @query
+    @minValue(1)
+    @maxValue(1000)
+    limit?: int32 = 100,
+
+    @query cursor?: string,
+  ):
+    | CursorPage<MetricPoint>
+    | ValidationError
+    | UnauthorizedError
+    | InternalServerError;
 }
 
 // -----------------------------------------------------------------------------
@@ -104,22 +156,31 @@ interface ProfilesApi {
     @query traceId?: TraceId,
     @query serviceName?: string,
     @query sampleType?: string,
-    @query @minValue(1) @maxValue(1000) limit?: int32 = 100,
+
+    @query
+    @minValue(1)
+    @maxValue(1000)
+    limit?: int32 = 100,
   ): Profile[] | ValidationError | UnauthorizedError | InternalServerError;
 
   @get
   @route("/{profileId}")
-  get(
-    ...ProjectScopeHeader,
-    @path profileId: string,
-  ): Profile | NotFoundError | UnauthorizedError | InternalServerError;
+  get(...ProjectScopeHeader, @path profileId: string):
+    | Profile
+    | NotFoundError
+    | UnauthorizedError
+    | InternalServerError;
 
   @get
   @route("/by-trace/{traceId}")
   getByTrace(
     ...ProjectScopeHeader,
     @path traceId: TraceId,
-    @query @minValue(1) @maxValue(1000) limit?: int32 = 100,
+
+    @query
+    @minValue(1)
+    @maxValue(1000)
+    limit?: int32 = 100,
   ): Profile[] | ValidationError | UnauthorizedError | InternalServerError;
 
   @get
@@ -127,7 +188,11 @@ interface ProfilesApi {
   getBySpan(
     ...ProjectScopeHeader,
     @path spanId: SpanId,
-    @query @minValue(1) @maxValue(1000) limit?: int32 = 100,
+
+    @query
+    @minValue(1)
+    @maxValue(1000)
+    limit?: int32 = 100,
   ): Profile[] | ValidationError | UnauthorizedError | InternalServerError;
 }
 
@@ -145,23 +210,34 @@ interface SessionsApi {
     @query isActive?: boolean,
     @query startTime?: utcDateTime,
     @query endTime?: utcDateTime,
-    @query @minValue(1) @maxValue(1000) limit?: int32 = 100,
+
+    @query
+    @minValue(1)
+    @maxValue(1000)
+    limit?: int32 = 100,
+
     @query cursor?: string,
-  ): CursorPage<SessionEntity> | ValidationError | UnauthorizedError | InternalServerError;
+  ):
+    | CursorPage<SessionEntity>
+    | ValidationError
+    | UnauthorizedError
+    | InternalServerError;
 
   @get
   @route("/{sessionId}")
-  get(
-    ...ProjectScopeHeader,
-    @path sessionId: SessionId,
-  ): SessionEntity | NotFoundError | UnauthorizedError | InternalServerError;
+  get(...ProjectScopeHeader, @path sessionId: SessionId):
+    | SessionEntity
+    | NotFoundError
+    | UnauthorizedError
+    | InternalServerError;
 
   @get
   @route("/{sessionId}/traces")
-  getTraces(
-    ...ProjectScopeHeader,
-    @path sessionId: SessionId,
-  ): CursorPage<Trace> | NotFoundError | UnauthorizedError | InternalServerError;
+  getTraces(...ProjectScopeHeader, @path sessionId: SessionId):
+    | CursorPage<Trace>
+    | NotFoundError
+    | UnauthorizedError
+    | InternalServerError;
 
   @get
   @route("/stats")
@@ -183,23 +259,44 @@ interface GenAiEtlAuditApi {
   @get
   report(
     ...ProjectScopeHeader,
+
     @doc("Optional audit-period start. Omitted dates select the previous 30 completed UTC days; an explicit range may not exceed 180 days.")
-    @query startTime?: utcDateTime,
+    @query
+    startTime?: utcDateTime,
+
     @doc("Optional audit-period end. Omitted dates select the previous 30 completed UTC days; an explicit range may not exceed 180 days.")
-    @query endTime?: utcDateTime,
-    @query @minValue(1) @maxValue(100) limit?: int32 = 25,
-  ): GenAiEtlAuditReport | ValidationError | UnauthorizedError | InternalServerError;
+    @query
+    endTime?: utcDateTime,
+
+    @query
+    @minValue(1)
+    @maxValue(100)
+    limit?: int32 = 25,
+  ):
+    | GenAiEtlAuditReport
+    | ValidationError
+    | UnauthorizedError
+    | InternalServerError;
 
   @post
   @route("/evaluate")
   evaluate(
     ...ProjectScopeHeader,
+
     @doc("Optional audit-period start. Omitted dates select the previous 30 completed UTC days; an explicit range may not exceed 180 days.")
-    @query startTime?: utcDateTime,
+    @query
+    startTime?: utcDateTime,
+
     @doc("Optional audit-period end. Omitted dates select the previous 30 completed UTC days; an explicit range may not exceed 180 days.")
-    @query endTime?: utcDateTime,
+    @query
+    endTime?: utcDateTime,
+
     @body request: GenAiEtlAuditEvaluationRequest,
-  ): GenAiEtlAuditEvaluationResponse | ValidationError | UnauthorizedError | InternalServerError;
+  ):
+    | GenAiEtlAuditEvaluationResponse
+    | ValidationError
+    | UnauthorizedError
+    | InternalServerError;
 }
 
 // -----------------------------------------------------------------------------
@@ -211,22 +308,26 @@ interface HealthApi {
   @get
   @route("/alive")
   @operationId("health_alive")
-  alive(): {
-    @statusCode statusCode: 200;
-    @body body: HealthReport;
-  } | {
-    @statusCode statusCode: 503;
-    @body body: HealthReport;
-  };
+  alive():
+    | {
+        @statusCode statusCode: 200;
+        @body body: HealthReport;
+      }
+    | {
+        @statusCode statusCode: 503;
+        @body body: HealthReport;
+      };
 
   @get
   @route("/health")
   @operationId("health_ready")
-  ready(): {
-    @statusCode statusCode: 200;
-    @body body: HealthReport;
-  } | {
-    @statusCode statusCode: 503;
-    @body body: HealthReport;
-  };
+  ready():
+    | {
+        @statusCode statusCode: 200;
+        @body body: HealthReport;
+      }
+    | {
+        @statusCode statusCode: 503;
+        @body body: HealthReport;
+      };
 }

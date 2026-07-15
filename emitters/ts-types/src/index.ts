@@ -15,6 +15,7 @@ import type {
 } from "@typespec/compiler";
 import {
   emitFile,
+  getEncode,
   isArrayModelType,
   isRecordModelType,
   navigateProgram,
@@ -186,6 +187,7 @@ function mapType(program: import("@typespec/compiler").Program, type: Type): str
     case "Scalar": {
       const s = type as Scalar;
       if (program.stateMap(stateKeys.tsBrand).has(s)) return s.name;
+      if (getEncode(program, s)?.type.name === "string") return "string";
       if (["int8","int16","int32","int64","uint8","uint16","uint32","uint64","float32","float64","decimal","decimal128"].includes(s.name)) return "number";
       if (s.name === "boolean") return "boolean";
       if (s.name === "bytes") return "string";

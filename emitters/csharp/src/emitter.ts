@@ -1,5 +1,5 @@
-import type { EmitContext, Enum, Model, Program, Union } from "@typespec/compiler";
-import { emitFile, navigateProgram, resolveEncodedName } from "@typespec/compiler";
+import type { EmitContext, Enum, Model, ModelProperty, Program, Scalar, Type, Union } from "@typespec/compiler";
+import { emitFile, getEncode, isArrayModelType, navigateProgram, resolveEncodedName } from "@typespec/compiler";
 import { getHeaderFieldName, isHeader, isStatusCode } from "@typespec/http";
 import {
   getCsharpNamespace,
@@ -154,14 +154,47 @@ function renderModel(program: Program, model: Model, emittedName: string, unions
     if (discriminator && jsonName === discriminator) continue;
     const type = mapType(program, prop.type);
     const name = pascal(prop.name);
+    const numberHandling = isStringEncodedNumber(program, prop)
+      ? "    [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)]\n"
+      : "";
     if (prop.optional) {
-      props.push(`    [JsonPropertyName("${jsonName}")]\n    public ${type}? ${name} { get; init; }`);
+      props.push(`${numberHandling}    [JsonPropertyName("${jsonName}")]\n    public ${type}? ${name} { get; init; }`);
     } else {
-      props.push(`    [JsonPropertyName("${jsonName}")]\n    public required ${type} ${name} { get; init; }`);
+      props.push(`${numberHandling}    [JsonPropertyName("${jsonName}")]\n    public required ${type} ${name} { get; init; }`);
     }
   }
   const body = props.length ? `\n${props.join("\n")}\n` : "\n";
   return `${keyword} ${emittedName}${implementsUnion}\n{${body}}\n`;
+}
+
+function isStringEncodedNumber(program: Program, property: ModelProperty): boolean {
+  const direct = getEncode(program, property);
+  if (direct?.type.name === "string") return isNumericType(property.type);
+  return hasStringEncodedNumericScalar(program, property.type);
+}
+
+function hasStringEncodedNumericScalar(program: Program, type: Type): boolean {
+  if (type.kind === "Scalar") {
+    const scalar = type as Scalar;
+    if (getEncode(program, scalar)?.type.name === "string") return isNumericScalar(scalar);
+    return scalar.baseScalar ? hasStringEncodedNumericScalar(program, scalar.baseScalar) : false;
+  }
+  if (type.kind === "Model" && isArrayModelType(type)) {
+    return hasStringEncodedNumericScalar(program, type.indexer!.value);
+  }
+  return false;
+}
+
+function isNumericType(type: Type): boolean {
+  if (type.kind === "Scalar") return isNumericScalar(type as Scalar);
+  return type.kind === "Model" && isArrayModelType(type) && isNumericType(type.indexer!.value);
+}
+
+function isNumericScalar(scalar: Scalar): boolean {
+  if (["int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "decimal", "decimal128"].includes(scalar.name)) {
+    return true;
+  }
+  return scalar.baseScalar ? isNumericScalar(scalar.baseScalar) : false;
 }
 
 function renderPolymorphicUnion(program: Program, union: Union): string {

@@ -182,9 +182,6 @@ enum MetricType {
 
 @doc("Aggregation temporality for metrics")
 enum AggregationTemporality {
-  @doc("Unspecified temporality")
-  unspecified: 0,
-
   @doc("Delta - values since last report")
   delta: 1,
 

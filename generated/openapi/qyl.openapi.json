@@ -21,6 +21,9 @@
       "name": "Logs"
     },
     {
+      "name": "Metrics"
+    },
+    {
       "name": "Profiles"
     },
     {
@@ -585,6 +588,220 @@
         },
         "tags": [
           "Logs"
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/metrics": {
+      "get": {
+        "operationId": "MetricsApi_list",
+        "description": "List persisted OTLP metric data points without re-aggregating producer values.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectScopeHeader"
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "explode": false
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/OTel.Enums.MetricType"
+            },
+            "explode": false
+          },
+          {
+            "name": "serviceName",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "explode": false
+          },
+          {
+            "name": "startTime",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "explode": false
+          },
+          {
+            "name": "endTime",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "explode": false
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1,
+              "maximum": 1000,
+              "default": 100
+            },
+            "explode": false
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "explode": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The request has succeeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "items",
+                    "has_more"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/OTel.Metrics.MetricPoint"
+                      },
+                      "description": "List of items in this page"
+                    },
+                    "next_cursor": {
+                      "type": "string",
+                      "description": "Cursor for the next page (null if no more pages)"
+                    },
+                    "prev_cursor": {
+                      "type": "string",
+                      "description": "Cursor for the previous page (null if first page)"
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "Whether there are more items available"
+                    }
+                  },
+                  "unevaluatedProperties": {
+                    "not": {}
+                  },
+                  "description": "Cursor-based paginated response wrapper"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - validation failed (400)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - authentication required (401)",
+            "headers": {
+              "WWW-Authenticate": {
+                "required": false,
+                "description": "Authentication scheme expected",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.UnauthorizedError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (500)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.InternalServerError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Metrics"
         ],
         "security": [
           {
@@ -7858,7 +8075,6 @@
       "OTel.Enums.AggregationTemporality": {
         "type": "number",
         "enum": [
-          0,
           1,
           2
         ],
@@ -8277,6 +8493,487 @@
           "not": {}
         },
         "description": "Log message template with placeholders"
+      },
+      "OTel.Metrics.ExponentialHistogramBuckets": {
+        "type": "object",
+        "required": [
+          "offset",
+          "bucket_counts"
+        ],
+        "properties": {
+          "offset": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Index of the first bucket count."
+          },
+          "bucket_counts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OTel.Metrics.MetricUInt64"
+            }
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Bucket range used by an OTLP exponential histogram data point."
+      },
+      "OTel.Metrics.ExponentialHistogramMetricPoint": {
+        "type": "object",
+        "required": [
+          "type",
+          "count",
+          "scale",
+          "zero_count",
+          "zero_threshold",
+          "positive",
+          "negative",
+          "aggregation_temporality"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "exponential_histogram"
+            ]
+          },
+          "count": {
+            "$ref": "#/components/schemas/OTel.Metrics.MetricUInt64"
+          },
+          "sum": {
+            "type": "number",
+            "format": "double"
+          },
+          "scale": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "zero_count": {
+            "$ref": "#/components/schemas/OTel.Metrics.MetricUInt64"
+          },
+          "zero_threshold": {
+            "type": "number",
+            "format": "double"
+          },
+          "positive": {
+            "$ref": "#/components/schemas/OTel.Metrics.ExponentialHistogramBuckets"
+          },
+          "negative": {
+            "$ref": "#/components/schemas/OTel.Metrics.ExponentialHistogramBuckets"
+          },
+          "min": {
+            "type": "number",
+            "format": "double"
+          },
+          "max": {
+            "type": "number",
+            "format": "double"
+          },
+          "aggregation_temporality": {
+            "$ref": "#/components/schemas/OTel.Enums.AggregationTemporality"
+          },
+          "exemplars": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OTel.Metrics.MetricExemplar"
+            }
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OTel.Metrics.MetricPointBase"
+          }
+        ],
+        "description": "Base-2 exponential histogram measurement."
+      },
+      "OTel.Metrics.GaugeMetricPoint": {
+        "type": "object",
+        "required": [
+          "type",
+          "value"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "gauge"
+            ]
+          },
+          "value": {
+            "$ref": "#/components/schemas/OTel.Metrics.MetricNumberValue"
+          },
+          "exemplars": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OTel.Metrics.MetricExemplar"
+            }
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OTel.Metrics.MetricPointBase"
+          }
+        ],
+        "description": "Instantaneous gauge measurement."
+      },
+      "OTel.Metrics.HistogramMetricPoint": {
+        "type": "object",
+        "required": [
+          "type",
+          "count",
+          "bucket_counts",
+          "explicit_bounds",
+          "aggregation_temporality"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "histogram"
+            ]
+          },
+          "count": {
+            "$ref": "#/components/schemas/OTel.Metrics.MetricUInt64"
+          },
+          "sum": {
+            "type": "number",
+            "format": "double"
+          },
+          "bucket_counts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OTel.Metrics.MetricUInt64"
+            }
+          },
+          "explicit_bounds": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          "min": {
+            "type": "number",
+            "format": "double"
+          },
+          "max": {
+            "type": "number",
+            "format": "double"
+          },
+          "aggregation_temporality": {
+            "$ref": "#/components/schemas/OTel.Enums.AggregationTemporality"
+          },
+          "exemplars": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OTel.Metrics.MetricExemplar"
+            }
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OTel.Metrics.MetricPointBase"
+          }
+        ],
+        "description": "Explicit-bucket histogram measurement."
+      },
+      "OTel.Metrics.MetricDoubleValue": {
+        "type": "object",
+        "required": [
+          "as_double"
+        ],
+        "properties": {
+          "as_double": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "A floating-point measurement value from an OTLP number data point or exemplar."
+      },
+      "OTel.Metrics.MetricExemplar": {
+        "type": "object",
+        "required": [
+          "time_unix_nano",
+          "value"
+        ],
+        "properties": {
+          "time_unix_nano": {
+            "$ref": "#/components/schemas/OTel.Metrics.MetricUnixNanos"
+          },
+          "value": {
+            "$ref": "#/components/schemas/OTel.Metrics.MetricNumberValue"
+          },
+          "span_id": {
+            "$ref": "#/components/schemas/Common.SpanId"
+          },
+          "trace_id": {
+            "$ref": "#/components/schemas/Common.TraceId"
+          },
+          "filtered_attributes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Common.Attribute"
+            }
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "A sampled measurement linked to the trace or span active when it was recorded."
+      },
+      "OTel.Metrics.MetricInt64": {
+        "type": "string",
+        "format": "int64",
+        "description": "An OTLP signed 64-bit metric integer encoded as a decimal JSON string.",
+        "x-csharp-type": "long"
+      },
+      "OTel.Metrics.MetricIntegerValue": {
+        "type": "object",
+        "required": [
+          "as_int"
+        ],
+        "properties": {
+          "as_int": {
+            "$ref": "#/components/schemas/OTel.Metrics.MetricInt64"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "An integer measurement value from an OTLP number data point or exemplar."
+      },
+      "OTel.Metrics.MetricNumberValue": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/OTel.Metrics.MetricIntegerValue"
+          },
+          {
+            "$ref": "#/components/schemas/OTel.Metrics.MetricDoubleValue"
+          }
+        ],
+        "description": "The exactly-one numeric value carried by an OTLP number data point or exemplar."
+      },
+      "OTel.Metrics.MetricPoint": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/OTel.Metrics.GaugeMetricPoint"
+          },
+          {
+            "$ref": "#/components/schemas/OTel.Metrics.SumMetricPoint"
+          },
+          {
+            "$ref": "#/components/schemas/OTel.Metrics.HistogramMetricPoint"
+          },
+          {
+            "$ref": "#/components/schemas/OTel.Metrics.ExponentialHistogramMetricPoint"
+          },
+          {
+            "$ref": "#/components/schemas/OTel.Metrics.SummaryMetricPoint"
+          }
+        ],
+        "description": "One persisted OTLP metric data point, discriminated by aggregation kind."
+      },
+      "OTel.Metrics.MetricPointBase": {
+        "type": "object",
+        "required": [
+          "name",
+          "start_time_unix_nano",
+          "time_unix_nano",
+          "flags",
+          "resource"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Metric stream name."
+          },
+          "description": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "metadata": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Common.Attribute"
+            },
+            "description": "Non-identifying metadata attached to the OTLP metric descriptor."
+          },
+          "attributes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Common.Attribute"
+            },
+            "description": "Attributes identifying this metric time series."
+          },
+          "start_time_unix_nano": {
+            "$ref": "#/components/schemas/OTel.Metrics.MetricStartUnixNanos"
+          },
+          "time_unix_nano": {
+            "$ref": "#/components/schemas/OTel.Metrics.MetricUnixNanos"
+          },
+          "flags": {
+            "type": "integer",
+            "format": "uint32",
+            "description": "OTLP data-point flags preserved as an extensible bit field."
+          },
+          "resource": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OTel.Resource.Resource"
+              }
+            ],
+            "description": "Resource describing the entity that produced the metric."
+          },
+          "resource_schema_url": {
+            "type": "string"
+          },
+          "instrumentation_scope": {
+            "$ref": "#/components/schemas/Common.InstrumentationScope"
+          },
+          "scope_schema_url": {
+            "type": "string"
+          }
+        },
+        "description": "Fields shared by every persisted OTLP metric data point."
+      },
+      "OTel.Metrics.MetricStartUnixNanos": {
+        "type": "string",
+        "format": "uint64",
+        "minimum": 0,
+        "description": "An optional OTLP metric start timestamp in Unix nanoseconds, encoded as a decimal JSON string.",
+        "x-csharp-type": "ulong"
+      },
+      "OTel.Metrics.MetricUInt64": {
+        "type": "string",
+        "format": "uint64",
+        "description": "An OTLP unsigned 64-bit metric count encoded as a decimal JSON string.",
+        "x-csharp-type": "ulong"
+      },
+      "OTel.Metrics.MetricUnixNanos": {
+        "type": "string",
+        "format": "uint64",
+        "minimum": 1,
+        "description": "A non-zero OTLP metric or exemplar timestamp in Unix nanoseconds.",
+        "x-csharp-type": "ulong"
+      },
+      "OTel.Metrics.SumMetricPoint": {
+        "type": "object",
+        "required": [
+          "type",
+          "value",
+          "aggregation_temporality",
+          "is_monotonic"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "sum"
+            ]
+          },
+          "value": {
+            "$ref": "#/components/schemas/OTel.Metrics.MetricNumberValue"
+          },
+          "aggregation_temporality": {
+            "$ref": "#/components/schemas/OTel.Enums.AggregationTemporality"
+          },
+          "is_monotonic": {
+            "type": "boolean"
+          },
+          "exemplars": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OTel.Metrics.MetricExemplar"
+            }
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OTel.Metrics.MetricPointBase"
+          }
+        ],
+        "description": "Delta or cumulative sum measurement."
+      },
+      "OTel.Metrics.SummaryMetricPoint": {
+        "type": "object",
+        "required": [
+          "type",
+          "count",
+          "sum",
+          "quantile_values"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "summary"
+            ]
+          },
+          "count": {
+            "$ref": "#/components/schemas/OTel.Metrics.MetricUInt64"
+          },
+          "sum": {
+            "type": "number",
+            "format": "double"
+          },
+          "quantile_values": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OTel.Metrics.SummaryQuantileValue"
+            }
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OTel.Metrics.MetricPointBase"
+          }
+        ],
+        "description": "Pre-aggregated summary measurement."
+      },
+      "OTel.Metrics.SummaryQuantileValue": {
+        "type": "object",
+        "required": [
+          "quantile",
+          "value"
+        ],
+        "properties": {
+          "quantile": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "value": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "A quantile and value reported by an OTLP summary data point."
       },
       "OTel.Profiles.Profile": {
         "type": "object",

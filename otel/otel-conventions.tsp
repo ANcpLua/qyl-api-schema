@@ -10,4 +10,5 @@ import "./enums.tsp";
 import "./resource.tsp";
 import "./span.tsp";
 import "./logs.tsp";
+import "./metrics.tsp";
 import "./profiles.tsp";

@@ -3,15 +3,21 @@ import Ajv2020 from "ajv/dist/2020.js";
 
 const schemaPath = "generated/json-schema/qyl-api-schema.json";
 const schema = JSON.parse(await readFile(schemaPath, "utf8"));
+const openapi = JSON.parse(await readFile("generated/openapi/qyl.openapi.json", "utf8"));
 const tsRuntime = await readFile("generated/ts-runtime/api.d.ts", "utf8");
 const csharpRuntime = await readFile(
   "generated/contracts/Qyl/Api/Contracts/Runner/Mcp.cs",
+  "utf8",
+);
+const csharpLogsRuntime = await readFile(
+  "generated/contracts/Qyl/Api/Contracts/OTel/Logs.cs",
   "utf8",
 );
 const defs = schema.$defs ?? {};
 const ajv = new Ajv2020({ allErrors: true, strict: true, validateFormats: false });
 ajv.addKeyword({ keyword: "x-csharp-struct", schemaType: "boolean" });
 ajv.addKeyword({ keyword: "x-csharp-type", schemaType: "string" });
+ajv.addKeyword({ keyword: "discriminator", schemaType: "object" });
 
 function validatorFor(definition) {
   return ajv.compile({
@@ -43,6 +49,86 @@ function assertAnyOfReferences(definition, expected) {
   if (JSON.stringify(actual) !== JSON.stringify(expected)) {
     throw new Error(`${definition} anyOf variants drifted: ${JSON.stringify(actual)}.`);
   }
+}
+
+const httpMethods = new Set(["delete", "get", "head", "options", "patch", "post", "put", "trace"]);
+const expectedOperationDefinitions = new Set();
+for (const [path, pathItem] of Object.entries(openapi.paths ?? {})) {
+  for (const [method, operation] of Object.entries(pathItem ?? {})) {
+    if (!httpMethods.has(method) || !operation || typeof operation !== "object") continue;
+
+    const operationId = operation.operationId;
+    const requestSchemas = Object.values(operation.requestBody?.content ?? {})
+      .filter((media) => media?.schema).map((media) => media.schema);
+    if (requestSchemas.length > 0) {
+      if (requestSchemas.length !== 1 || typeof operationId !== "string") {
+        throw new Error(`${method.toUpperCase()} ${path} must have one stably named request body schema.`);
+      }
+      expectedOperationDefinitions.add(`Operations.${operationId}.Request`);
+    }
+
+    for (const [status, response] of Object.entries(operation.responses ?? {})) {
+      const responseSchemas = Object.values(response?.content ?? {})
+        .filter((media) => media?.schema).map((media) => media.schema);
+      if (responseSchemas.length === 0) continue;
+      if (responseSchemas.length !== 1 || typeof operationId !== "string") {
+        throw new Error(`${method.toUpperCase()} ${path} response ${status} must have one stably named body schema.`);
+      }
+      expectedOperationDefinitions.add(`Operations.${operationId}.Response.${status}`);
+    }
+  }
+}
+const actualOperationDefinitions = new Set(Object.keys(defs).filter((name) => name.startsWith("Operations.")));
+const missingOperationDefinitions = [...expectedOperationDefinitions]
+  .filter((name) => !actualOperationDefinitions.has(name));
+const unexpectedOperationDefinitions = [...actualOperationDefinitions]
+  .filter((name) => !expectedOperationDefinitions.has(name));
+if (missingOperationDefinitions.length > 0 || unexpectedOperationDefinitions.length > 0) {
+  throw new Error(
+    `Operation body definition inventory drifted. Missing: ${missingOperationDefinitions.join(", ") || "none"}. ` +
+    `Unexpected: ${unexpectedOperationDefinitions.join(", ") || "none"}.`,
+  );
+}
+
+const auditRequestDefinition = defs["Operations.GenAiEtlAuditApi_evaluate.Request"];
+const auditResponseDefinition = defs["Operations.GenAiEtlAuditApi_evaluate.Response.200"];
+if (auditRequestDefinition?.$ref !== "#/$defs/Cost.GenAiEtlAuditEvaluationRequest" ||
+    auditResponseDefinition?.$ref !== "#/$defs/Cost.GenAiEtlAuditEvaluationResponse") {
+  throw new Error("GenAiEtlAuditApi_evaluate operation request/response definitions drifted.");
+}
+
+const cursorPageDefinitions = new Map([
+  ["Operations.LogsApi_list.Response.200", "#/$defs/OTel.Logs.LogRecord"],
+  ["Operations.MetricsApi_list.Response.200", "#/$defs/OTel.Metrics.MetricPoint"],
+  ["Operations.SessionsApi_list.Response.200", "#/$defs/Domains.Observe.Session.SessionEntity"],
+  ["Operations.SessionsApi_getTraces.Response.200", "#/$defs/OTel.Traces.Trace"],
+  ["Operations.TracesApi_list.Response.200", "#/$defs/OTel.Traces.Trace"],
+  ["Operations.TracesApi_getSpans.Response.200", "#/$defs/OTel.Traces.Span"],
+]);
+for (const [definition, itemReference] of cursorPageDefinitions) {
+  const page = defs[definition];
+  if (!page ||
+      !page.required?.includes("items") ||
+      !page.required?.includes("has_more") ||
+      page.properties?.items?.type !== "array" ||
+      page.properties.items.items?.$ref !== itemReference ||
+      page.properties?.next_cursor?.type !== "string" ||
+      page.properties?.prev_cursor?.type !== "string" ||
+      page.properties?.has_more?.type !== "boolean" ||
+      JSON.stringify(page.unevaluatedProperties) !== JSON.stringify({ not: {} })) {
+    throw new Error(`${definition} must remain the exact closed CursorPage envelope for ${itemReference}.`);
+  }
+
+  const validatePage = validatorFor(definition);
+  assertValid(
+    validatePage,
+    { items: [], next_cursor: "next", prev_cursor: "previous", has_more: false },
+    `${definition} valid empty page`,
+  );
+  assertInvalid(validatePage, { items: [] }, `${definition} without has_more`);
+  assertInvalid(validatePage, { items: [], has_more: "false" }, `${definition} with non-boolean has_more`);
+  assertInvalid(validatePage, { items: [{}], has_more: false }, `${definition} with an invalid item`);
+  assertInvalid(validatePage, { items: [], has_more: false, total: 0 }, `${definition} with an undeclared field`);
 }
 
 if (!/export interface RunnerMcpSessionBootstrapResponse extends RunnerMcpWorkbenchSession\s*\{\s*\}/u.test(tsRuntime)) {
@@ -97,6 +183,32 @@ const bytesSchema = defs["Common.AttributeBytesValue"];
 if (bytesSchema?.properties?.type?.enum?.[0] !== "bytes" ||
     bytesSchema?.properties?.base64?.contentEncoding !== "base64") {
   throw new Error("Common.AttributeBytesValue must retain the tagged base64 wire shape.");
+}
+
+const validateLogRecord = validatorFor("OTel.Logs.LogRecord");
+const eventLogRecord = {
+  time_unix_nano: 2,
+  observed_time_unix_nano: 3,
+  severity_number: 9,
+  body: { string_value: "evaluation completed" },
+  event_name: "gen_ai.evaluation.result",
+  resource: { "service.name": "evaluator" },
+};
+assertValid(validateLogRecord, eventLogRecord, "OTLP event log record");
+assertValid(
+  validateLogRecord,
+  Object.fromEntries(Object.entries(eventLogRecord).filter(([key]) => key !== "event_name")),
+  "ordinary OTLP log record without event_name",
+);
+assertInvalid(
+  validateLogRecord,
+  { ...eventLogRecord, event_name: 42 },
+  "OTLP event log record with non-string event_name",
+);
+if (!tsRuntime.includes('"event_name"?: string;') ||
+    !csharpLogsRuntime.includes('[JsonPropertyName("event_name")]') ||
+    !csharpLogsRuntime.includes("public string? EventName { get; init; }")) {
+  throw new Error("OTel LogRecord event_name must be generated for both TypeScript and C# consumers.");
 }
 
 assertAnyOfReferences("OTel.Metrics.MetricNumberValue", [
@@ -1120,6 +1232,8 @@ assertInvalid(
 
 console.log(
   `Verified ${attributeFixtures.length} recursive AttributeValue fixtures, ` +
+  `${expectedOperationDefinitions.size} operation body definitions, ` +
+  `${cursorPageDefinitions.size} exact CursorPage responses, ` +
   `${serverConfigurationFixtures.length} sanitized MCP transport configurations, ` +
   `${assertionFixtures.length} evaluation assertion variants, opaque SDK payload ownership, ` +
   "compound ETL validation metrics, and the aggregate-billing/live-catalog cutover.",

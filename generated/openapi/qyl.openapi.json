@@ -17881,6 +17881,10 @@
             ],
             "description": "Associated span ID"
           },
+          "event_name": {
+            "type": "string",
+            "description": "Fully qualified category identifying this log record as an event"
+          },
           "resource": {
             "allOf": [
               {

@@ -61,6 +61,10 @@ model LogRecord {
   @encodedName("application/json", "span_id")
   spanId?: SpanId;
 
+  @doc("Fully qualified category identifying this log record as an event")
+  @encodedName("application/json", "event_name")
+  eventName?: string;
+
   @doc("Resource describing the entity that produced this log")
   resource: Qyl.Api.Contracts.OTel.Resource.Resource;
 

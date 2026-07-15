@@ -12,6 +12,9 @@
       "name": "Runner resources"
     },
     {
+      "name": "Runner MCP"
+    },
+    {
       "name": "Runner workspaces"
     },
     {
@@ -2697,6 +2700,653 @@
         "tags": [
           "Health"
         ]
+      }
+    },
+    "/runner/mcp/{resource}/resources/read": {
+      "post": {
+        "operationId": "RunnerMcpApi_readResource",
+        "description": "Accepts and returns MCP SDK-owned resources/read bodies without redefining the protocol DTOs.",
+        "parameters": [
+          {
+            "name": "resource",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The request has succeeded.",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - validation failed (400)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ValidationError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - insufficient permissions (403)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ForbiddenError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found (404)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.NotFoundError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - resource state conflict (409)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ConflictError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (500)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.InternalServerError"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream dependency failed while fulfilling the request (502)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.BadGatewayError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable (503)",
+            "headers": {
+              "Retry-After": {
+                "required": false,
+                "description": "Expected availability time",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ServiceUnavailableError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Runner MCP"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          }
+        }
+      }
+    },
+    "/runner/mcp/{resource}/tools": {
+      "get": {
+        "operationId": "RunnerMcpApi_listTools",
+        "description": "Returns the MCP SDK-owned tools/list result without redefining its protocol body.",
+        "parameters": [
+          {
+            "name": "resource",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The request has succeeded.",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - insufficient permissions (403)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ForbiddenError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found (404)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.NotFoundError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - resource state conflict (409)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ConflictError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (500)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.InternalServerError"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream dependency failed while fulfilling the request (502)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.BadGatewayError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable (503)",
+            "headers": {
+              "Retry-After": {
+                "required": false,
+                "description": "Expected availability time",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ServiceUnavailableError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Runner MCP"
+        ]
+      }
+    },
+    "/runner/mcp/{resource}/tools/call": {
+      "post": {
+        "operationId": "RunnerMcpApi_callTool",
+        "description": "Accepts and returns MCP SDK-owned tools/call bodies without redefining the protocol DTOs.",
+        "parameters": [
+          {
+            "name": "resource",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The request has succeeded.",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - validation failed (400)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ValidationError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - insufficient permissions (403)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ForbiddenError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found (404)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.NotFoundError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - resource state conflict (409)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ConflictError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (500)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.InternalServerError"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream dependency failed while fulfilling the request (502)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.BadGatewayError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable (503)",
+            "headers": {
+              "Retry-After": {
+                "required": false,
+                "description": "Expected availability time",
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              },
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ServiceUnavailableError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Runner MCP"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          }
+        }
       }
     },
     "/runner/resources": {

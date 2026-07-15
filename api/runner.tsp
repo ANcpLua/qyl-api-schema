@@ -130,6 +130,54 @@ namespace Qyl.Api.Contracts.Runner {
       | InternalServerError;
   }
 
+  @route("/runner/mcp/{resource}")
+  @tag("Runner MCP")
+  interface RunnerMcpApi {
+    @doc("Returns the MCP SDK-owned tools/list result without redefining its protocol body.")
+    @get
+    @route("/tools")
+    listTools(@path resource: string):
+      | unknown
+      | ForbiddenError
+      | NotFoundError
+      | ConflictError
+      | BadGatewayError
+      | ServiceUnavailableError
+      | InternalServerError;
+
+    @doc("Accepts and returns MCP SDK-owned tools/call bodies without redefining the protocol DTOs.")
+    @post
+    @route("/tools/call")
+    callTool(
+      @path resource: string,
+      @body request: unknown,
+    ):
+      | unknown
+      | ValidationError
+      | ForbiddenError
+      | NotFoundError
+      | ConflictError
+      | BadGatewayError
+      | ServiceUnavailableError
+      | InternalServerError;
+
+    @doc("Accepts and returns MCP SDK-owned resources/read bodies without redefining the protocol DTOs.")
+    @post
+    @route("/resources/read")
+    readResource(
+      @path resource: string,
+      @body request: unknown,
+    ):
+      | unknown
+      | ValidationError
+      | ForbiddenError
+      | NotFoundError
+      | ConflictError
+      | BadGatewayError
+      | ServiceUnavailableError
+      | InternalServerError;
+  }
+
   @route("/runner/workspaces")
   @tag("Runner workspaces")
   @useAuth(RunnerMcpSessionCookieAuth)

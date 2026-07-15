@@ -9,6 +9,10 @@ const csharpRuntime = await readFile(
   "generated/contracts/Qyl/Api/Contracts/Runner/Mcp.cs",
   "utf8",
 );
+const csharpRunnerRuntime = await readFile(
+  "generated/contracts/Qyl/Api/Contracts/Runner.cs",
+  "utf8",
+);
 const csharpLogsRuntime = await readFile(
   "generated/contracts/Qyl/Api/Contracts/OTel/Logs.cs",
   "utf8",
@@ -92,6 +96,41 @@ if (missingOperationDefinitions.length > 0 || unexpectedOperationDefinitions.len
     `Operation body definition inventory drifted. Missing: ${missingOperationDefinitions.join(", ") || "none"}. ` +
     `Unexpected: ${unexpectedOperationDefinitions.join(", ") || "none"}.`,
   );
+}
+
+const opaqueMcpOperationFixtures = new Map([
+  ["Operations.RunnerMcpApi_listTools.Response.200", {
+    tools: [{ name: "inspect", inputSchema: { type: "object" }, futureSdkField: true }],
+    nextCursor: "page-2",
+    _meta: { catalog: "live" },
+  }],
+  ["Operations.RunnerMcpApi_callTool.Request", {
+    name: "inspect",
+    arguments: { count: 3 },
+    task: { ttl: 30_000 },
+    _meta: { progressToken: "progress-1" },
+  }],
+  ["Operations.RunnerMcpApi_callTool.Response.200", {
+    content: [{ type: "text", text: "complete", futureSdkField: true }],
+    structuredContent: { accepted: true },
+    isError: false,
+    task: { taskId: "task-1", status: "working" },
+    _meta: { result: "live" },
+  }],
+  ["Operations.RunnerMcpApi_readResource.Request", {
+    uri: "qyl://resource/static",
+    _meta: { request: "live" },
+  }],
+  ["Operations.RunnerMcpApi_readResource.Response.200", {
+    contents: [{ uri: "qyl://resource/static", mimeType: "text/plain", text: "body" }],
+    _meta: { source: "server" },
+  }],
+]);
+for (const [definition, fixture] of opaqueMcpOperationFixtures) {
+  if (JSON.stringify(defs[definition]) !== "{}") {
+    throw new Error(`${definition} must remain opaque; the MCP SDK owns its protocol body.`);
+  }
+  assertValid(validatorFor(definition), fixture, `${definition} representative SDK payload`);
 }
 
 const auditRequestDefinition = defs["Operations.GenAiEtlAuditApi_evaluate.Request"];
@@ -456,7 +495,7 @@ assertInvalid(
   "workspace preference update containing an undeclared credential",
 );
 
-for (const removedDefinition of [
+const removedMcpDefinitions = [
   "Runner.RunnerMcpServerInfo",
   "Runner.Mcp.RunnerMcpIcon",
   "Runner.Mcp.RunnerMcpToolTaskSupport",
@@ -483,9 +522,16 @@ for (const removedDefinition of [
   "Runner.Mcp.RunnerMcpBlobResourceContent",
   "Runner.Mcp.RunnerMcpResourceContent",
   "Runner.Mcp.RunnerMcpResourceReadResponse",
-]) {
+];
+for (const removedDefinition of removedMcpDefinitions) {
   if (removedDefinition in defs) {
     throw new Error(`${removedDefinition} must not survive the opaque SDK-payload cutover.`);
+  }
+
+  const typeName = removedDefinition.split(".").at(-1);
+  const declaration = new RegExp(`\\b(?:class|enum|interface|record|struct|type)\\s+${typeName}\\b`, "u");
+  if (declaration.test(tsRuntime) || declaration.test(csharpRuntime) || declaration.test(csharpRunnerRuntime)) {
+    throw new Error(`${typeName} must not survive in generated TypeScript or C# contracts.`);
   }
 }
 

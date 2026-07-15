@@ -63,7 +63,7 @@ npm run compile
 Important generated outputs include:
 
 - `generated/openapi/qyl.openapi.json`
-- `generated/json-schema/qyl-api-schema`
+- `generated/json-schema/qyl-api-schema.json`
 - `generated/contracts/**/*.cs`
 - `generated/ts-types/**`
 

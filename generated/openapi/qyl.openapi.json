@@ -18536,6 +18536,26 @@
         ],
         "description": "Pre-aggregated summary measurement."
       },
+      "OTel.Metrics.SummaryQuantileDouble": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/OTel.Metrics.SummaryQuantileFiniteValue"
+          },
+          {
+            "type": "string",
+            "enum": [
+              "Infinity"
+            ]
+          }
+        ],
+        "description": "A non-negative OTLP summary quantile value, including canonical positive infinity."
+      },
+      "OTel.Metrics.SummaryQuantileFiniteValue": {
+        "type": "number",
+        "format": "double",
+        "minimum": 0,
+        "description": "A finite, non-negative value observed at an OTLP summary quantile."
+      },
       "OTel.Metrics.SummaryQuantileValue": {
         "type": "object",
         "required": [
@@ -18550,7 +18570,7 @@
             "maximum": 1
           },
           "value": {
-            "$ref": "#/components/schemas/OTel.Metrics.MetricDouble"
+            "$ref": "#/components/schemas/OTel.Metrics.SummaryQuantileDouble"
           }
         },
         "unevaluatedProperties": {

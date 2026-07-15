@@ -99,11 +99,10 @@ export function isNamedFloatingPointUnion(type: Type): boolean {
     return false;
   }
 
+  const canonicalNamedValues = new Set(["NaN", "Infinity", "-Infinity"]);
   return hasFiniteDouble &&
-    namedValues.size === 3 &&
-    namedValues.has("NaN") &&
-    namedValues.has("Infinity") &&
-    namedValues.has("-Infinity");
+    namedValues.size > 0 &&
+    [...namedValues].every((value) => canonicalNamedValues.has(value));
 }
 
 function isFloat64Scalar(scalar: Scalar): boolean {

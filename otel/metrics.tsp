@@ -46,6 +46,16 @@ union MetricDouble {
   negativeInfinity: "-Infinity",
 }
 
+@doc("A finite, non-negative value observed at an OTLP summary quantile.")
+@minValue(0)
+scalar SummaryQuantileFiniteValue extends float64;
+
+@doc("A non-negative OTLP summary quantile value, including canonical positive infinity.")
+union SummaryQuantileDouble {
+  finite: SummaryQuantileFiniteValue,
+  positiveInfinity: "Infinity",
+}
+
 @doc("An integer measurement value from an OTLP number data point or exemplar.")
 model MetricIntegerValue {
   @encodedName("application/json", "as_int")
@@ -96,7 +106,7 @@ model SummaryQuantileValue {
   @maxValue(1)
   quantile: float64;
 
-  value: MetricDouble;
+  value: SummaryQuantileDouble;
 }
 
 @doc("Fields shared by every persisted OTLP metric data point.")

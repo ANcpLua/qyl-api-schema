@@ -179,6 +179,15 @@ for (const model of ["GaugeMetricPoint", "SumMetricPoint"]) {
   }
 }
 
+const summaryQuantileBody = /public sealed class SummaryQuantileValue\s*\{(?<body>[\s\S]*?)\n\}/u
+  .exec(csharpMetricsRuntime)?.groups?.body;
+if (!summaryQuantileBody?.includes(
+  "[JsonNumberHandling(JsonNumberHandling.AllowNamedFloatingPointLiterals)]\n" +
+  "    [JsonPropertyName(\"value\")]\n    public required double Value",
+)) {
+  throw new Error("SummaryQuantileValue.Value must retain its generated double/positive-infinity wire mapping.");
+}
+
 const bytes = { type: "bytes", base64: "/wCA/g==" };
 const intValue = (value) => ({ type: "int", value: String(value) });
 const doubleValue = (value) => ({ type: "double", value });
@@ -304,6 +313,18 @@ assertInvalid(validateMetricNumber, { as_int: 42 }, "numeric JSON encoding for a
 assertInvalid(validateMetricNumber, { as_double: "nan" }, "non-canonical named metric double");
 assertInvalid(validateMetricNumber, {}, "missing metric value");
 
+const summaryQuantileDouble = defs["OTel.Metrics.SummaryQuantileDouble"];
+const summaryQuantileVariants = summaryQuantileDouble?.anyOf ?? [];
+const summaryQuantileFinite = defs["OTel.Metrics.SummaryQuantileFiniteValue"];
+if (summaryQuantileVariants.length !== 2 ||
+    !summaryQuantileVariants.some((variant) =>
+      variant.$ref === "#/$defs/OTel.Metrics.SummaryQuantileFiniteValue") ||
+    summaryQuantileFinite?.type !== "number" || summaryQuantileFinite.minimum !== 0 ||
+    !summaryQuantileVariants.some((variant) =>
+      JSON.stringify(variant.enum) === JSON.stringify(["Infinity"]))) {
+  throw new Error("Summary quantile values must be non-negative finite doubles or positive infinity.");
+}
+
 const metricCommon = {
   name: "gen_ai.client.token.usage",
   unit: "{token}",
@@ -377,8 +398,8 @@ assertValid(validateMetricPoint, {
 assertValid(validateMetricPoint, {
   ...metricFixtures[4],
   sum: "Infinity",
-  quantile_values: [{ quantile: 0.5, value: "NaN" }],
-}, "summary with non-finite sum and quantile value");
+  quantile_values: [{ quantile: 0.5, value: "Infinity" }],
+}, "summary with non-finite sum and positive-infinite quantile value");
 assertValid(validateMetricPoint, { ...metricCommon, type: "gauge", flags: 1 },
   "gauge carrying NO_RECORDED_VALUE");
 assertValid(validateMetricPoint, {
@@ -400,6 +421,12 @@ assertInvalid(validateMetricPoint, {
   ...metricFixtures[4],
   quantile_values: [{ quantile: -0.1, value: 1 }],
 }, "summary quantile outside the unit interval");
+for (const invalidValue of [-0.1, "NaN", "-Infinity"]) {
+  assertInvalid(validateMetricPoint, {
+    ...metricFixtures[4],
+    quantile_values: [{ quantile: 0.5, value: invalidValue }],
+  }, `summary carrying invalid quantile value ${invalidValue}`);
+}
 
 const validateWorkspacePreferences = validatorFor("Runner.Mcp.RunnerMcpWorkspacePreferences");
 assertValid(
@@ -1336,7 +1363,7 @@ assertInvalid(
 
 console.log(
   `Verified ${attributeFixtures.length} lossless recursive AttributeValue fixtures, ` +
-  "Resource EntityRef constraints, OTLP metric special/no-recorded values, " +
+  "Resource EntityRef constraints, OTLP metric special/no-recorded values, non-negative summary quantiles, " +
   `${expectedOperationDefinitions.size} operation body definitions, ` +
   `${cursorPageDefinitions.size} exact CursorPage responses, ` +
   `${serverConfigurationFixtures.length} sanitized MCP transport configurations, ` +

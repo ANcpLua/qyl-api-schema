@@ -34,8 +34,18 @@ using Qyl.Api.Schema.Emit.TsTypes;
 @@csharpNamespace(Qyl.Api.Contracts.Mcp.Tools, "Qyl.Api.Contracts.Mcp.Tools");
 @@csharpNamespace(Qyl.Api.Contracts.Runner, "Qyl.Api.Contracts.Runner");
 @@csharpNamespace(Qyl.Api.Contracts.Runner.Mcp, "Qyl.Api.Contracts.Runner.Mcp");
-@@csharpPolymorphic(Qyl.Api.Contracts.Runner.Mcp.RunnerMcpContent, "type");
-@@csharpPolymorphic(Qyl.Api.Contracts.Runner.Mcp.RunnerMcpResourceContent);
+@@csharpPolymorphic(
+  Qyl.Api.Contracts.Runner.Mcp.RunnerMcpServerConfiguration,
+  "transport"
+);
+@@csharpPolymorphic(
+  Qyl.Api.Contracts.Runner.Mcp.RunnerMcpTestAssertion,
+  "kind"
+);
+@@csharpPolymorphic(
+  Qyl.Api.Contracts.Runner.Mcp.RunnerMcpEvaluationExportPayload,
+  "format"
+);
 
 @@csharpNamespace(Qyl.Api.Contracts.Common, "Qyl.Api.Contracts.Common");
 @@csharpNamespace(
@@ -78,3 +88,11 @@ using Qyl.Api.Schema.Emit.TsTypes;
 @@tsBrand(Qyl.Api.Contracts.Common.SpanId);
 @@tsBrand(Qyl.Api.Contracts.Common.SessionId);
 @@tsBrand(Qyl.Api.Contracts.Common.UserId);
+@@tsBrand(Qyl.Api.Contracts.Runner.Mcp.RunnerMcpSessionId);
+@@tsBrand(Qyl.Api.Contracts.Runner.Mcp.RunnerMcpWorkspaceId);
+@@tsBrand(Qyl.Api.Contracts.Runner.Mcp.RunnerMcpServerId);
+@@tsBrand(Qyl.Api.Contracts.Runner.Mcp.RunnerMcpExecutionId);
+@@tsBrand(Qyl.Api.Contracts.Runner.Mcp.RunnerMcpTestCaseId);
+@@tsBrand(Qyl.Api.Contracts.Runner.Mcp.RunnerMcpSuiteId);
+@@tsBrand(Qyl.Api.Contracts.Runner.Mcp.RunnerMcpEvaluationRunId);
+@@tsBrand(Qyl.Api.Contracts.Runner.Mcp.RunnerMcpEvaluationExportId);

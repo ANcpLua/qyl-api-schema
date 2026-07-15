@@ -23,17 +23,68 @@ function verifyExactResponse(operationId, status, schemaName) {
   }
 }
 
-const runnerTags = new Set(["Runner resources", "Runner MCP"]);
+const runnerTags = new Set([
+  "Runner session",
+  "Runner resources",
+  "Runner workspaces",
+  "Runner MCP servers",
+  "Runner MCP executions",
+  "Runner MCP test cases",
+  "Runner MCP suites",
+  "Runner MCP evaluations",
+]);
 const expectedRunnerOperations = new Set([
+  "GET /runner/session",
+  "POST /runner/session",
   "GET /runner/resources",
   "GET /runner/resources/stream",
   "GET /runner/resources/{resource}/logs",
   "GET /runner/resources/{resource}/logs/stream",
   "POST /runner/resources/{resource}/restart",
   "POST /runner/resources/{resource}/stop",
-  "GET /runner/mcp/{resource}/tools",
-  "POST /runner/mcp/{resource}/tools/call",
-  "POST /runner/mcp/{resource}/resources/read",
+  "GET /runner/workspaces",
+  "POST /runner/workspaces",
+  "GET /runner/workspaces/{workspaceId}",
+  "PATCH /runner/workspaces/{workspaceId}",
+  "DELETE /runner/workspaces/{workspaceId}",
+  "GET /runner/workspaces/{workspaceId}/preferences",
+  "PUT /runner/workspaces/{workspaceId}/preferences",
+  "GET /runner/workspaces/{workspaceId}/servers",
+  "POST /runner/workspaces/{workspaceId}/servers",
+  "GET /runner/workspaces/{workspaceId}/servers/{serverId}",
+  "PATCH /runner/workspaces/{workspaceId}/servers/{serverId}",
+  "DELETE /runner/workspaces/{workspaceId}/servers/{serverId}",
+  "POST /runner/workspaces/{workspaceId}/servers/{serverId}/connect",
+  "POST /runner/workspaces/{workspaceId}/servers/{serverId}/disconnect",
+  "POST /runner/workspaces/{workspaceId}/servers/{serverId}/reconnect",
+  "GET /runner/workspaces/{workspaceId}/servers/{serverId}/discovery",
+  "POST /runner/workspaces/{workspaceId}/servers/{serverId}/discovery/refresh",
+  "GET /runner/workspaces/{workspaceId}/servers/{serverId}/protocol",
+  "GET /runner/workspaces/{workspaceId}/servers/{serverId}/protocol/stream",
+  "GET /runner/workspaces/{workspaceId}/servers/{serverId}/executions",
+  "POST /runner/workspaces/{workspaceId}/servers/{serverId}/executions",
+  "GET /runner/workspaces/{workspaceId}/servers/{serverId}/executions/stream",
+  "GET /runner/workspaces/{workspaceId}/servers/{serverId}/executions/{executionId}",
+  "POST /runner/workspaces/{workspaceId}/servers/{serverId}/executions/{executionId}/cancel",
+  "GET /runner/workspaces/{workspaceId}/servers/{serverId}/executions/{executionId}/telemetry",
+  "GET /runner/workspaces/{workspaceId}/test-cases",
+  "POST /runner/workspaces/{workspaceId}/test-cases",
+  "GET /runner/workspaces/{workspaceId}/test-cases/{testCaseId}",
+  "PATCH /runner/workspaces/{workspaceId}/test-cases/{testCaseId}",
+  "DELETE /runner/workspaces/{workspaceId}/test-cases/{testCaseId}",
+  "POST /runner/workspaces/{workspaceId}/test-cases/{testCaseId}/run",
+  "GET /runner/workspaces/{workspaceId}/suites",
+  "POST /runner/workspaces/{workspaceId}/suites",
+  "GET /runner/workspaces/{workspaceId}/suites/{suiteId}",
+  "PATCH /runner/workspaces/{workspaceId}/suites/{suiteId}",
+  "DELETE /runner/workspaces/{workspaceId}/suites/{suiteId}",
+  "POST /runner/workspaces/{workspaceId}/suites/{suiteId}/run",
+  "GET /runner/workspaces/{workspaceId}/evaluation-runs",
+  "GET /runner/workspaces/{workspaceId}/evaluation-runs/{evaluationRunId}",
+  "POST /runner/workspaces/{workspaceId}/evaluation-runs/compare",
+  "POST /runner/workspaces/{workspaceId}/evaluation-runs/{evaluationRunId}/export",
+  "GET /runner/workspaces/{workspaceId}/evaluation-runs/{evaluationRunId}/exports/{exportId}",
+  "GET /runner/workspaces/{workspaceId}/evaluation-runs/{evaluationRunId}/exports/{exportId}/content",
 ]);
 const actualRunnerOperations = new Set(
   [...operations].filter(([, operation]) =>
@@ -49,7 +100,34 @@ if (missingRunnerOperations.length > 0 || unexpectedRunnerOperations.length > 0)
   );
 }
 for (const operationId of expectedRunnerOperations) {
+  verifyExactResponse(operationId, "401", "UnauthorizedError");
   verifyExactResponse(operationId, "403", "ForbiddenError");
+}
+
+const runnerCookieAuthName = "RunnerMcpSessionCookieAuth";
+const runnerCookieAuth = openapi.components?.securitySchemes?.[runnerCookieAuthName];
+if (runnerCookieAuth?.type !== "apiKey" || runnerCookieAuth.in !== "cookie" || runnerCookieAuth.name !== "qyl-mcp-session") {
+  throw new Error(`${runnerCookieAuthName} must be the qyl-mcp-session cookie security scheme.`);
+}
+const publicRunnerOperations = new Set(["POST /runner/session"]);
+for (const operationId of expectedRunnerOperations) {
+  const security = operations.get(operationId)?.security;
+  if (publicRunnerOperations.has(operationId)) {
+    if (security !== undefined && security.length !== 0) {
+      throw new Error(`${operationId} must remain an unauthenticated local bootstrap/read surface.`);
+    }
+    continue;
+  }
+  if (JSON.stringify(security) !== JSON.stringify([{ [runnerCookieAuthName]: [] }])) {
+    throw new Error(`${operationId} must require only ${runnerCookieAuthName}.`);
+  }
+}
+
+const bootstrapResponse = operations.get("POST /runner/session")?.responses?.["200"];
+const setCookie = bootstrapResponse?.headers?.["Set-Cookie"];
+if (setCookie?.required !== true || setCookie.schema?.type !== "string" ||
+    !setCookie.description?.includes("HttpOnly") || !setCookie.description?.includes("SameSite")) {
+  throw new Error("POST /runner/session must declare a required HttpOnly/SameSite Set-Cookie response header.");
 }
 
 const capacityLimitedOperations = new Set([
@@ -70,6 +148,11 @@ const validationQueries = new Map([
   ["GET /api/v1/sessions", ["isActive", "startTime", "endTime", "limit", "cursor"]],
   ["GET /api/v1/sessions/stats", ["startTime", "endTime"]],
   ["GET /api/v1/stream/logs", ["minSeverity"]],
+  ["GET /runner/workspaces/{workspaceId}/servers/{serverId}/protocol", ["cursor", "limit"]],
+  ["GET /runner/workspaces/{workspaceId}/servers/{serverId}/executions", ["status", "cursor", "limit"]],
+  ["GET /runner/workspaces/{workspaceId}/test-cases", ["serverId", "toolName", "cursor", "limit"]],
+  ["GET /runner/workspaces/{workspaceId}/suites", ["cursor", "limit"]],
+  ["GET /runner/workspaces/{workspaceId}/evaluation-runs", ["status", "cursor", "limit"]],
 ]);
 for (const [operationId, runtimeValidatedQueries] of validationQueries) {
   const operation = operations.get(operationId);
@@ -88,6 +171,8 @@ for (const [operationId, runtimeValidatedQueries] of validationQueries) {
 const resumableSseOperations = new Set([
   "GET /api/v1/stream/logs",
   "GET /runner/resources/{resource}/logs/stream",
+  "GET /runner/workspaces/{workspaceId}/servers/{serverId}/protocol/stream",
+  "GET /runner/workspaces/{workspaceId}/servers/{serverId}/executions/stream",
 ]);
 for (const operationId of resumableSseOperations) {
   const operation = operations.get(operationId);
@@ -102,7 +187,8 @@ for (const operationId of resumableSseOperations) {
 }
 
 console.log(
-  `Verified ${expectedRunnerOperations.size} runner security responses, ` +
+  `Verified ${expectedRunnerOperations.size} runner route and error inventories, ` +
+  `${expectedRunnerOperations.size - publicRunnerOperations.size} private cookie-auth operations, ` +
   `${capacityLimitedOperations.size} capacity responses, and ` +
   `${validationQueries.size} typed-query validation responses, and ` +
   `${resumableSseOperations.size} resumable SSE headers.`,

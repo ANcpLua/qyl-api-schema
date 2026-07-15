@@ -24,26 +24,26 @@ enum RunnerResourceKind {
   inproc: "inproc",
 }
 
-@doc("Identity reported by a connected MCP server during initialization.")
-model RunnerMcpServerInfo {
-  name: string;
-  version: string;
-}
-
 @doc("Current client-visible state of one runner resource.")
 model RunnerResourceState {
   name: string;
   lifecycle: RunnerResourceLifecycle;
   timestamp: utcDateTime;
   kind?: RunnerResourceKind;
+
   @minValue(1)
   @maxValue(65535)
   allocatedPort?: int32;
+
   endpoint?: url;
   lastError?: string;
-  serverInfo?: RunnerMcpServerInfo;
+
+  @doc("Opaque SDK server-info entity when this resource is an initialized MCP connection.")
+  serverIdentity?: unknown;
+
   @minValue(0)
   toolCount?: int32;
+
   @minValue(0)
   restarts?: int32;
 }

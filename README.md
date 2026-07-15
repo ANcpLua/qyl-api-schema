@@ -69,8 +69,10 @@ Important generated outputs include:
 
 Generated files are not editing surfaces. OpenAPI comes from the official TypeSpec
 emitter; the bundled JSON Schema is a deterministic projection of its component
-schemas so both artifacts preserve the same wire names. Change TypeSpec or the
-owning generator and regenerate.
+schemas and exposes inline route bodies as stable
+`Operations.<operationId>.Request` and
+`Operations.<operationId>.Response.<status>` definitions. Both artifacts preserve
+the same wire names. Change TypeSpec or the owning generator and regenerate.
 
 ## Publish
 

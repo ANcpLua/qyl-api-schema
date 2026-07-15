@@ -17883,7 +17883,7 @@
           },
           "event_name": {
             "type": "string",
-            "description": "Fully qualified category identifying this log record as an event"
+            "description": "Optional event category whose presence identifies this log record as an event; records with the same name are expected to share one body and attribute schema."
           },
           "resource": {
             "allOf": [

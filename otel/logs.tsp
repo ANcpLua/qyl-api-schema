@@ -61,7 +61,7 @@ model LogRecord {
   @encodedName("application/json", "span_id")
   spanId?: SpanId;
 
-  @doc("Fully qualified category identifying this log record as an event")
+  @doc("Optional event category whose presence identifies this log record as an event; records with the same name are expected to share one body and attribute schema.")
   @encodedName("application/json", "event_name")
   eventName?: string;
 

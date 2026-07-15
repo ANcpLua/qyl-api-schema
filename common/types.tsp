@@ -215,24 +215,53 @@ model AttributeBytesValue {
   base64: bytes;
 }
 
-@doc("Recursive OTLP key-value-list projected as a JSON object.")
+@doc("An OTLP signed 64-bit attribute integer encoded without JavaScript precision loss.")
+@encode(string)
+@TypeSpec.OpenAPI.extension("x-csharp-type", "long")
+scalar AttributeInt64 extends int64;
+
+@doc("An OTLP attribute double encoded as a JSON number when finite or a canonical named string when non-finite.")
+union AttributeDouble {
+  finite: float64,
+  nan: "NaN",
+  positiveInfinity: "Infinity",
+  negativeInfinity: "-Infinity",
+}
+
+@doc("Tagged OTLP signed 64-bit integer attribute.")
+model AttributeIntValue {
+  type: "int";
+  value: AttributeInt64;
+}
+
+@doc("Tagged OTLP double attribute.")
+model AttributeDoubleValue {
+  type: "double";
+  value: AttributeDouble;
+}
+
+@doc("Tagged recursive OTLP key-value-list, distinct from other object-shaped attribute variants.")
 model AttributeKeyValueListValue {
-  ...Record<AttributeValue>;
+  type: "kvlist";
+  values: Record<AttributeValue>;
 }
 
 @doc("Lossless JSON projection of an OpenTelemetry AnyValue attribute.")
 union AttributeValue {
+  @doc("Empty AnyValue")
+  emptyValue: null,
+
   @doc("String value")
   stringValue: string,
 
   @doc("Boolean value")
   boolValue: boolean,
 
-  @doc("64-bit integer value")
-  intValue: int64,
+  @doc("Lossless 64-bit integer value")
+  intValue: AttributeIntValue,
 
-  @doc("64-bit floating point value")
-  doubleValue: float64,
+  @doc("Lossless finite or non-finite 64-bit floating point value")
+  doubleValue: AttributeDoubleValue,
 
   @doc("Bytes value projected as an explicit tagged object")
   bytesValue: AttributeBytesValue,
@@ -259,6 +288,30 @@ model Attribute {
 model Attributes {
   @doc("List of key-value attributes")
   items: Attribute[];
+}
+
+@doc("A non-empty Resource attribute key referenced by an OpenTelemetry entity.")
+@minLength(1)
+scalar EntityAttributeKey extends string;
+
+@doc("A reference to an OpenTelemetry entity described by attributes on the containing Resource.")
+model EntityRef {
+  @doc("Schema URL applying to the entity and its referenced Resource attributes, when known.")
+  @encodedName("application/json", "schema_url")
+  schemaUrl?: string;
+
+  @doc("Stable non-empty entity type, such as service or host.")
+  @minLength(1)
+  type: string;
+
+  @doc("Non-empty set of Resource attribute keys that identify the entity.")
+  @encodedName("application/json", "id_keys")
+  @minItems(1)
+  idKeys: EntityAttributeKey[];
+
+  @doc("Resource attribute keys that describe but do not identify the entity.")
+  @encodedName("application/json", "description_keys")
+  descriptionKeys?: EntityAttributeKey[];
 }
 
 // =============================================================================

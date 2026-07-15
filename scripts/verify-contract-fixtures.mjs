@@ -13,6 +13,10 @@ const csharpLogsRuntime = await readFile(
   "generated/contracts/Qyl/Api/Contracts/OTel/Logs.cs",
   "utf8",
 );
+const csharpMetricsRuntime = await readFile(
+  "generated/contracts/Qyl/Api/Contracts/OTel/Metrics.cs",
+  "utf8",
+);
 const defs = schema.$defs ?? {};
 const ajv = new Ajv2020({ allErrors: true, strict: true, validateFormats: false });
 ajv.addKeyword({ keyword: "x-csharp-struct", schemaType: "boolean" });
@@ -165,25 +169,91 @@ for (const marker of [
   }
 }
 
+for (const model of ["GaugeMetricPoint", "SumMetricPoint"]) {
+  const body = new RegExp(
+    `public sealed class ${model} : MetricPoint\\s*\\{(?<body>[\\s\\S]*?)\\n\\}`,
+    "u",
+  ).exec(csharpMetricsRuntime)?.groups?.body;
+  if (!body?.includes("[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]\n    [JsonPropertyName(\"value\")]")) {
+    throw new Error(`${model}.Value must omit null so NO_RECORDED_VALUE has no value field.`);
+  }
+}
+
 const bytes = { type: "bytes", base64: "/wCA/g==" };
+const intValue = (value) => ({ type: "int", value: String(value) });
+const doubleValue = (value) => ({ type: "double", value });
+const kvlistValue = (values) => ({ type: "kvlist", values });
 if (Buffer.from(bytes.base64, "base64").toString("base64") !== bytes.base64) {
   throw new Error("The byte fixture is not canonical base64.");
 }
 
 const validateAttribute = validatorFor("Common.AttributeValue");
 const attributeFixtures = [
+  ["empty AnyValue", null],
   ["tagged bytes", bytes],
-  ["recursive kvlist", { http: { method: "GET", retry: true }, payload: bytes, count: 3 }],
-  ["nested arrays", [["outer", 1], [bytes, [false, 2.5]]]],
-  ["heterogeneous array", ["text", true, 42, 2.5, bytes, { nested: [false, "tail"] }]],
+  ["signed 64-bit integer", intValue("9223372036854775807")],
+  ["finite double", doubleValue(1)],
+  ["non-finite double", doubleValue("-Infinity")],
+  ["recursive kvlist", kvlistValue({
+    http: kvlistValue({ method: "GET", retry: true }),
+    payload: bytes,
+    count: intValue(3),
+    empty: null,
+  })],
+  ["nested arrays", [["outer", intValue(1)], [bytes, [false, doubleValue(2.5), null]]]],
+  ["heterogeneous array", [
+    "text", true, intValue(42), doubleValue(2.5), bytes, null,
+    kvlistValue({ nested: [false, "tail"] }),
+  ]],
 ];
 for (const [label, fixture] of attributeFixtures) assertValid(validateAttribute, fixture, label);
+assertInvalid(validateAttribute, 1, "untagged integer attribute");
+assertInvalid(validateAttribute, 1.5, "untagged double attribute");
+assertInvalid(validateAttribute, { nested: true }, "untagged key-value-list attribute");
+assertInvalid(validateAttribute, { type: "int", value: 1 }, "numeric JSON int64 attribute");
+assertInvalid(validateAttribute, { type: "double", value: "nan" }, "non-canonical named double attribute");
 
 const bytesSchema = defs["Common.AttributeBytesValue"];
 if (bytesSchema?.properties?.type?.enum?.[0] !== "bytes" ||
     bytesSchema?.properties?.base64?.contentEncoding !== "base64") {
   throw new Error("Common.AttributeBytesValue must retain the tagged base64 wire shape.");
 }
+const validateAttributeKvList = validatorFor("Common.AttributeKeyValueListValue");
+assertInvalid(validateAttributeKvList, bytes, "bytes misclassified as a key-value-list");
+assertValid(validateAttributeKvList, kvlistValue({ type: "bytes", base64: "/wCA/g==" }),
+  "key-value-list containing fields that resemble the bytes wrapper");
+
+const validateOtelResource = validatorFor("OTel.Resource.Resource");
+const entityResource = {
+  "service.name": "checkout",
+  attributes: [
+    { key: "service.instance.id", value: "checkout-1" },
+    { key: "service.version", value: "1.2.3" },
+  ],
+  entity_refs: [{
+    schema_url: "https://opentelemetry.io/schemas/1.43.0",
+    type: "service",
+    id_keys: ["service.instance.id"],
+    description_keys: ["service.version"],
+  }],
+};
+assertValid(validateOtelResource, entityResource, "Resource with an entity reference");
+assertValid(validateOtelResource, {
+  "service.name": "checkout",
+  entity_refs: [{ type: "service", id_keys: ["service.instance.id"], description_keys: [] }],
+}, "Resource entity reference with no description keys");
+assertInvalid(validateOtelResource, {
+  "service.name": "checkout",
+  entity_refs: [{ type: "", id_keys: ["service.instance.id"] }],
+}, "Resource entity reference with an empty type");
+assertInvalid(validateOtelResource, {
+  "service.name": "checkout",
+  entity_refs: [{ type: "service", id_keys: [] }],
+}, "Resource entity reference with no identity keys");
+assertInvalid(validateOtelResource, {
+  "service.name": "checkout",
+  entity_refs: [{ type: "service", id_keys: [""] }],
+}, "Resource entity reference with an empty identity key");
 
 const validateLogRecord = validatorFor("OTel.Logs.LogRecord");
 const eventLogRecord = {
@@ -226,8 +296,12 @@ assertAnyOfReferences("OTel.Metrics.MetricPoint", [
 const validateMetricNumber = validatorFor("OTel.Metrics.MetricNumberValue");
 assertValid(validateMetricNumber, { as_int: "42" }, "integer metric value");
 assertValid(validateMetricNumber, { as_double: 2.5 }, "double metric value");
+for (const named of ["NaN", "Infinity", "-Infinity"]) {
+  assertValid(validateMetricNumber, { as_double: named }, `${named} metric value`);
+}
 assertInvalid(validateMetricNumber, { as_int: "42", as_double: 2.5 }, "ambiguous metric value");
 assertInvalid(validateMetricNumber, { as_int: 42 }, "numeric JSON encoding for a 64-bit metric integer");
+assertInvalid(validateMetricNumber, { as_double: "nan" }, "non-canonical named metric double");
 assertInvalid(validateMetricNumber, {}, "missing metric value");
 
 const metricCommon = {
@@ -287,15 +361,45 @@ const metricFixtures = [
   },
 ];
 for (const fixture of metricFixtures) assertValid(validateMetricPoint, fixture, `OTLP ${fixture.type} metric point`);
-assertInvalid(validateMetricPoint, { ...metricCommon, type: "gauge" }, "gauge without a numeric value");
+assertValid(validateMetricPoint, {
+  ...metricFixtures[2],
+  sum: "NaN",
+  min: "-Infinity",
+  max: "Infinity",
+}, "histogram with non-finite summary values");
+assertValid(validateMetricPoint, {
+  ...metricFixtures[3],
+  sum: "Infinity",
+  zero_threshold: "NaN",
+  min: "-Infinity",
+  max: "Infinity",
+}, "exponential histogram with non-finite summary values");
+assertValid(validateMetricPoint, {
+  ...metricFixtures[4],
+  sum: "Infinity",
+  quantile_values: [{ quantile: 0.5, value: "NaN" }],
+}, "summary with non-finite sum and quantile value");
+assertValid(validateMetricPoint, { ...metricCommon, type: "gauge", flags: 1 },
+  "gauge carrying NO_RECORDED_VALUE");
+assertValid(validateMetricPoint, {
+  ...metricCommon,
+  type: "sum",
+  flags: 1,
+  aggregation_temporality: 2,
+  is_monotonic: true,
+}, "sum carrying NO_RECORDED_VALUE");
+assertInvalid(validateMetricPoint, {
+  ...metricFixtures[0],
+  value: { as_int: "1", as_double: 1 },
+}, "gauge with an ambiguous numeric value");
 assertInvalid(validateMetricPoint, { ...metricFixtures[0], type: "counter" }, "unknown metric type");
 assertInvalid(validateMetricPoint, { ...metricFixtures[1], aggregation_temporality: 0 }, "unspecified aggregation temporality");
 assertInvalid(validateMetricPoint, { ...metricFixtures[0], time_unix_nano: "0" }, "zero metric timestamp");
 assertInvalid(validateMetricPoint, { ...metricFixtures[0], time_unix_nano: 2000 }, "numeric JSON encoding for a metric timestamp");
 assertInvalid(validateMetricPoint, {
   ...metricFixtures[4],
-  quantile_values: [{ quantile: 0.5, value: -1 }],
-}, "negative summary quantile value");
+  quantile_values: [{ quantile: -0.1, value: 1 }],
+}, "summary quantile outside the unit interval");
 
 const validateWorkspacePreferences = validatorFor("Runner.Mcp.RunnerMcpWorkspacePreferences");
 assertValid(
@@ -1231,7 +1335,8 @@ assertInvalid(
 );
 
 console.log(
-  `Verified ${attributeFixtures.length} recursive AttributeValue fixtures, ` +
+  `Verified ${attributeFixtures.length} lossless recursive AttributeValue fixtures, ` +
+  "Resource EntityRef constraints, OTLP metric special/no-recorded values, " +
   `${expectedOperationDefinitions.size} operation body definitions, ` +
   `${cursorPageDefinitions.size} exact CursorPage responses, ` +
   `${serverConfigurationFixtures.length} sanitized MCP transport configurations, ` +

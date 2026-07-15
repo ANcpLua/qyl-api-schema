@@ -50,6 +50,11 @@ export function mapType(program: Program, type: Type): string {
       return qualifyModelOrEnum(program, (type as { enum: Type }).enum);
     case "Union":
       if (hasCsharpPolymorphic(program, type)) return qualifyModelOrEnum(program, type);
+      if (isNamedFloatingPointUnion(type)) return "double";
+      if ([...type.variants.values()].some((variant) =>
+        variant.type.kind === "Intrinsic" && (variant.type as { name?: string }).name === "null")) {
+        return "object?";
+      }
       // Preserve homogeneous primitive literal unions as their wire primitive. Structural
       // unions such as LogBody and AttributeValue still require a generated discriminated
       // representation before they can be stronger than object.
@@ -74,6 +79,36 @@ export function mapType(program: Program, type: Type): string {
       reportDiagnostic(program, { code: "unmapped-type", target: type, format: { name: type.kind } });
       return "object";
   }
+}
+
+export function isNamedFloatingPointUnion(type: Type): boolean {
+  if (type.kind !== "Union") return false;
+
+  let hasFiniteDouble = false;
+  const namedValues = new Set<string>();
+  for (const variant of type.variants.values()) {
+    if (variant.type.kind === "Scalar" && isFloat64Scalar(variant.type)) {
+      if (hasFiniteDouble) return false;
+      hasFiniteDouble = true;
+      continue;
+    }
+    if (variant.type.kind === "String") {
+      namedValues.add(variant.type.value);
+      continue;
+    }
+    return false;
+  }
+
+  return hasFiniteDouble &&
+    namedValues.size === 3 &&
+    namedValues.has("NaN") &&
+    namedValues.has("Infinity") &&
+    namedValues.has("-Infinity");
+}
+
+function isFloat64Scalar(scalar: Scalar): boolean {
+  if (scalar.name === "float64") return true;
+  return scalar.baseScalar ? isFloat64Scalar(scalar.baseScalar) : false;
 }
 
 function mapScalar(program: Program, scalar: Scalar): string {

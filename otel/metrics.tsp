@@ -38,6 +38,14 @@ scalar MetricUnixNanos extends uint64;
 @TypeSpec.OpenAPI.extension("x-csharp-type", "ulong")
 scalar MetricStartUnixNanos extends uint64;
 
+@doc("An OTLP double encoded as a JSON number when finite or as a canonical named string when non-finite.")
+union MetricDouble {
+  finite: float64,
+  nan: "NaN",
+  positiveInfinity: "Infinity",
+  negativeInfinity: "-Infinity",
+}
+
 @doc("An integer measurement value from an OTLP number data point or exemplar.")
 model MetricIntegerValue {
   @encodedName("application/json", "as_int")
@@ -47,7 +55,7 @@ model MetricIntegerValue {
 @doc("A floating-point measurement value from an OTLP number data point or exemplar.")
 model MetricDoubleValue {
   @encodedName("application/json", "as_double")
-  asDouble: float64;
+  asDouble: MetricDouble;
 }
 
 @doc("The exactly-one numeric value carried by an OTLP number data point or exemplar.")
@@ -88,8 +96,7 @@ model SummaryQuantileValue {
   @maxValue(1)
   quantile: float64;
 
-  @minValue(0)
-  value: float64;
+  value: MetricDouble;
 }
 
 @doc("Fields shared by every persisted OTLP metric data point.")
@@ -132,14 +139,19 @@ model MetricPointBase {
 @doc("Instantaneous gauge measurement.")
 model GaugeMetricPoint extends MetricPointBase {
   type: "gauge";
-  value: MetricNumberValue;
+
+  @doc("Recorded value, absent when flags contain NO_RECORDED_VALUE (bit 1).")
+  value?: MetricNumberValue;
+
   exemplars?: MetricExemplar[];
 }
 
 @doc("Delta or cumulative sum measurement.")
 model SumMetricPoint extends MetricPointBase {
   type: "sum";
-  value: MetricNumberValue;
+
+  @doc("Recorded value, absent when flags contain NO_RECORDED_VALUE (bit 1).")
+  value?: MetricNumberValue;
 
   @encodedName("application/json", "aggregation_temporality")
   aggregationTemporality: AggregationTemporality;
@@ -154,7 +166,7 @@ model SumMetricPoint extends MetricPointBase {
 model HistogramMetricPoint extends MetricPointBase {
   type: "histogram";
   count: MetricUInt64;
-  sum?: float64;
+  sum?: MetricDouble;
 
   @encodedName("application/json", "bucket_counts")
   bucketCounts: MetricUInt64[];
@@ -162,8 +174,8 @@ model HistogramMetricPoint extends MetricPointBase {
   @encodedName("application/json", "explicit_bounds")
   explicitBounds: float64[];
 
-  min?: float64;
-  max?: float64;
+  min?: MetricDouble;
+  max?: MetricDouble;
 
   @encodedName("application/json", "aggregation_temporality")
   aggregationTemporality: AggregationTemporality;
@@ -175,19 +187,19 @@ model HistogramMetricPoint extends MetricPointBase {
 model ExponentialHistogramMetricPoint extends MetricPointBase {
   type: "exponential_histogram";
   count: MetricUInt64;
-  sum?: float64;
+  sum?: MetricDouble;
   scale: int32;
 
   @encodedName("application/json", "zero_count")
   zeroCount: MetricUInt64;
 
   @encodedName("application/json", "zero_threshold")
-  zeroThreshold: float64;
+  zeroThreshold: MetricDouble;
 
   positive: ExponentialHistogramBuckets;
   negative: ExponentialHistogramBuckets;
-  min?: float64;
-  max?: float64;
+  min?: MetricDouble;
+  max?: MetricDouble;
 
   @encodedName("application/json", "aggregation_temporality")
   aggregationTemporality: AggregationTemporality;
@@ -199,7 +211,7 @@ model ExponentialHistogramMetricPoint extends MetricPointBase {
 model SummaryMetricPoint extends MetricPointBase {
   type: "summary";
   count: MetricUInt64;
-  sum: float64;
+  sum: MetricDouble;
 
   @encodedName("application/json", "quantile_values")
   quantileValues: SummaryQuantileValue[];

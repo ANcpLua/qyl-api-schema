@@ -13721,15 +13721,103 @@
         },
         "description": "Base64 bytes projected by qyl without colliding with an ordinary string attribute."
       },
+      "Common.AttributeDouble": {
+        "anyOf": [
+          {
+            "type": "number",
+            "format": "double"
+          },
+          {
+            "type": "string",
+            "enum": [
+              "NaN",
+              "Infinity",
+              "-Infinity"
+            ]
+          }
+        ],
+        "description": "An OTLP attribute double encoded as a JSON number when finite or a canonical named string when non-finite."
+      },
+      "Common.AttributeDoubleValue": {
+        "type": "object",
+        "required": [
+          "type",
+          "value"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "double"
+            ]
+          },
+          "value": {
+            "$ref": "#/components/schemas/Common.AttributeDouble"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Tagged OTLP double attribute."
+      },
+      "Common.AttributeInt64": {
+        "type": "string",
+        "format": "int64",
+        "description": "An OTLP signed 64-bit attribute integer encoded without JavaScript precision loss.",
+        "x-csharp-type": "long"
+      },
+      "Common.AttributeIntValue": {
+        "type": "object",
+        "required": [
+          "type",
+          "value"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "int"
+            ]
+          },
+          "value": {
+            "$ref": "#/components/schemas/Common.AttributeInt64"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Tagged OTLP signed 64-bit integer attribute."
+      },
       "Common.AttributeKeyValueListValue": {
         "type": "object",
-        "unevaluatedProperties": {
-          "$ref": "#/components/schemas/Common.AttributeValue"
+        "required": [
+          "type",
+          "values"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "kvlist"
+            ]
+          },
+          "values": {
+            "type": "object",
+            "unevaluatedProperties": {
+              "$ref": "#/components/schemas/Common.AttributeValue"
+            }
+          }
         },
-        "description": "Recursive OTLP key-value-list projected as a JSON object."
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Tagged recursive OTLP key-value-list, distinct from other object-shaped attribute variants."
       },
       "Common.AttributeValue": {
         "anyOf": [
+          {
+            "type": "null"
+          },
           {
             "type": "string"
           },
@@ -13737,12 +13825,10 @@
             "type": "boolean"
           },
           {
-            "type": "integer",
-            "format": "int64"
+            "$ref": "#/components/schemas/Common.AttributeIntValue"
           },
           {
-            "type": "number",
-            "format": "double"
+            "$ref": "#/components/schemas/Common.AttributeDoubleValue"
           },
           {
             "$ref": "#/components/schemas/Common.AttributeBytesValue"
@@ -13825,6 +13911,48 @@
         "format": "double",
         "minimum": 0,
         "description": "Duration in seconds"
+      },
+      "Common.EntityAttributeKey": {
+        "type": "string",
+        "minLength": 1,
+        "description": "A non-empty Resource attribute key referenced by an OpenTelemetry entity."
+      },
+      "Common.EntityRef": {
+        "type": "object",
+        "required": [
+          "type",
+          "id_keys"
+        ],
+        "properties": {
+          "schema_url": {
+            "type": "string",
+            "description": "Schema URL applying to the entity and its referenced Resource attributes, when known."
+          },
+          "type": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Stable non-empty entity type, such as service or host."
+          },
+          "id_keys": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Common.EntityAttributeKey"
+            },
+            "minItems": 1,
+            "description": "Non-empty set of Resource attribute keys that identify the entity."
+          },
+          "description_keys": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Common.EntityAttributeKey"
+            },
+            "description": "Resource attribute keys that describe but do not identify the entity."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "A reference to an OpenTelemetry entity described by attributes on the containing Resource."
       },
       "Common.Errors.ApiError": {
         "anyOf": [
@@ -17982,8 +18110,7 @@
             "$ref": "#/components/schemas/OTel.Metrics.MetricUInt64"
           },
           "sum": {
-            "type": "number",
-            "format": "double"
+            "$ref": "#/components/schemas/OTel.Metrics.MetricDouble"
           },
           "scale": {
             "type": "integer",
@@ -17993,8 +18120,7 @@
             "$ref": "#/components/schemas/OTel.Metrics.MetricUInt64"
           },
           "zero_threshold": {
-            "type": "number",
-            "format": "double"
+            "$ref": "#/components/schemas/OTel.Metrics.MetricDouble"
           },
           "positive": {
             "$ref": "#/components/schemas/OTel.Metrics.ExponentialHistogramBuckets"
@@ -18003,12 +18129,10 @@
             "$ref": "#/components/schemas/OTel.Metrics.ExponentialHistogramBuckets"
           },
           "min": {
-            "type": "number",
-            "format": "double"
+            "$ref": "#/components/schemas/OTel.Metrics.MetricDouble"
           },
           "max": {
-            "type": "number",
-            "format": "double"
+            "$ref": "#/components/schemas/OTel.Metrics.MetricDouble"
           },
           "aggregation_temporality": {
             "$ref": "#/components/schemas/OTel.Enums.AggregationTemporality"
@@ -18033,8 +18157,7 @@
       "OTel.Metrics.GaugeMetricPoint": {
         "type": "object",
         "required": [
-          "type",
-          "value"
+          "type"
         ],
         "properties": {
           "type": {
@@ -18044,7 +18167,12 @@
             ]
           },
           "value": {
-            "$ref": "#/components/schemas/OTel.Metrics.MetricNumberValue"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OTel.Metrics.MetricNumberValue"
+              }
+            ],
+            "description": "Recorded value, absent when flags contain NO_RECORDED_VALUE (bit 1)."
           },
           "exemplars": {
             "type": "array",
@@ -18083,8 +18211,7 @@
             "$ref": "#/components/schemas/OTel.Metrics.MetricUInt64"
           },
           "sum": {
-            "type": "number",
-            "format": "double"
+            "$ref": "#/components/schemas/OTel.Metrics.MetricDouble"
           },
           "bucket_counts": {
             "type": "array",
@@ -18100,12 +18227,10 @@
             }
           },
           "min": {
-            "type": "number",
-            "format": "double"
+            "$ref": "#/components/schemas/OTel.Metrics.MetricDouble"
           },
           "max": {
-            "type": "number",
-            "format": "double"
+            "$ref": "#/components/schemas/OTel.Metrics.MetricDouble"
           },
           "aggregation_temporality": {
             "$ref": "#/components/schemas/OTel.Enums.AggregationTemporality"
@@ -18127,6 +18252,23 @@
         ],
         "description": "Explicit-bucket histogram measurement."
       },
+      "OTel.Metrics.MetricDouble": {
+        "anyOf": [
+          {
+            "type": "number",
+            "format": "double"
+          },
+          {
+            "type": "string",
+            "enum": [
+              "NaN",
+              "Infinity",
+              "-Infinity"
+            ]
+          }
+        ],
+        "description": "An OTLP double encoded as a JSON number when finite or as a canonical named string when non-finite."
+      },
       "OTel.Metrics.MetricDoubleValue": {
         "type": "object",
         "required": [
@@ -18134,8 +18276,7 @@
         ],
         "properties": {
           "as_double": {
-            "type": "number",
-            "format": "double"
+            "$ref": "#/components/schemas/OTel.Metrics.MetricDouble"
           }
         },
         "unevaluatedProperties": {
@@ -18316,7 +18457,6 @@
         "type": "object",
         "required": [
           "type",
-          "value",
           "aggregation_temporality",
           "is_monotonic"
         ],
@@ -18328,7 +18468,12 @@
             ]
           },
           "value": {
-            "$ref": "#/components/schemas/OTel.Metrics.MetricNumberValue"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OTel.Metrics.MetricNumberValue"
+              }
+            ],
+            "description": "Recorded value, absent when flags contain NO_RECORDED_VALUE (bit 1)."
           },
           "aggregation_temporality": {
             "$ref": "#/components/schemas/OTel.Enums.AggregationTemporality"
@@ -18372,8 +18517,7 @@
             "$ref": "#/components/schemas/OTel.Metrics.MetricUInt64"
           },
           "sum": {
-            "type": "number",
-            "format": "double"
+            "$ref": "#/components/schemas/OTel.Metrics.MetricDouble"
           },
           "quantile_values": {
             "type": "array",
@@ -18406,9 +18550,7 @@
             "maximum": 1
           },
           "value": {
-            "type": "number",
-            "format": "double",
-            "minimum": 0
+            "$ref": "#/components/schemas/OTel.Metrics.MetricDouble"
           }
         },
         "unevaluatedProperties": {
@@ -19192,6 +19334,13 @@
               }
             ],
             "description": "Dropped attributes count"
+          },
+          "entity_refs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Common.EntityRef"
+            },
+            "description": "Entities participating in this Resource, keyed by attributes on the Resource."
           }
         },
         "unevaluatedProperties": {

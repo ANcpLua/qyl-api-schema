@@ -163,6 +163,10 @@ model Resource {
   @doc("Dropped attributes count")
   @encodedName("application/json", "dropped_attributes_count")
   droppedAttributesCount?: Count;
+
+  @doc("Entities participating in this Resource, keyed by attributes on the Resource.")
+  @encodedName("application/json", "entity_refs")
+  entityRefs?: EntityRef[];
 }
 
 // =============================================================================

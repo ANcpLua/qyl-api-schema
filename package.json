@@ -58,7 +58,6 @@
     "models/runner.tsp",
     "models/mcp-tools.tsp",
     "models/session.tsp",
-    "models/cost-etl-audit.tsp",
     "otel/enums.tsp",
     "otel/logs.tsp",
     "otel/metrics.tsp",

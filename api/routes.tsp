@@ -10,7 +10,6 @@ import "../otel/metrics.tsp";
 import "../otel/profiles.tsp";
 import "../models/session.tsp";
 import "../models/health.tsp";
-import "../models/cost-etl-audit.tsp";
 
 using TypeSpec.Http;
 using TypeSpec.OpenAPI;
@@ -25,7 +24,6 @@ using Qyl.Api.Contracts.OTel.Enums;
 using Qyl.Api.Contracts.OTel.Profiles;
 using Qyl.Api.Contracts.Domains.Observe.Session;
 using Qyl.Api.Contracts.Health;
-using Qyl.Api.Contracts.Cost;
 
 @service(#{ title: "qyl API" })
 namespace Qyl.Api.Contracts;
@@ -246,57 +244,6 @@ interface SessionsApi {
     @query startTime?: utcDateTime,
     @query endTime?: utcDateTime,
   ): SessionStats | ValidationError | UnauthorizedError | InternalServerError;
-}
-
-// -----------------------------------------------------------------------------
-// GenAI cost and ETL audit
-// -----------------------------------------------------------------------------
-
-@route("/api/v1/cost/etl-audit")
-@tag("GenAI cost")
-@useAuth(QylApiKeyHeaderAuth)
-interface GenAiEtlAuditApi {
-  @get
-  report(
-    ...ProjectScopeHeader,
-
-    @doc("Optional audit-period start. Omitted dates select the previous 30 completed UTC days; an explicit range may not exceed 180 days.")
-    @query
-    startTime?: utcDateTime,
-
-    @doc("Optional audit-period end. Omitted dates select the previous 30 completed UTC days; an explicit range may not exceed 180 days.")
-    @query
-    endTime?: utcDateTime,
-
-    @query
-    @minValue(1)
-    @maxValue(100)
-    limit?: int32 = 25,
-  ):
-    | GenAiEtlAuditReport
-    | ValidationError
-    | UnauthorizedError
-    | InternalServerError;
-
-  @post
-  @route("/evaluate")
-  evaluate(
-    ...ProjectScopeHeader,
-
-    @doc("Optional audit-period start. Omitted dates select the previous 30 completed UTC days; an explicit range may not exceed 180 days.")
-    @query
-    startTime?: utcDateTime,
-
-    @doc("Optional audit-period end. Omitted dates select the previous 30 completed UTC days; an explicit range may not exceed 180 days.")
-    @query
-    endTime?: utcDateTime,
-
-    @body request: GenAiEtlAuditEvaluationRequest,
-  ):
-    | GenAiEtlAuditEvaluationResponse
-    | ValidationError
-    | UnauthorizedError
-    | InternalServerError;
 }
 
 // -----------------------------------------------------------------------------

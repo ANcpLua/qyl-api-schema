@@ -239,10 +239,6 @@ for (const operationId of capacityLimitedOperations) {
 const validationQueries = new Map([
   ["GET /api/v1/traces", ["limit", "cursor"]],
   ["GET /api/v1/logs", ["severityMin", "startTime", "endTime", "limit"]],
-  ["GET /api/v1/metrics", ["name", "type", "serviceName", "startTime", "endTime", "limit", "cursor"]],
-  ["GET /api/v1/profiles", ["limit"]],
-  ["GET /api/v1/profiles/by-trace/{traceId}", ["limit"]],
-  ["GET /api/v1/profiles/by-span/{spanId}", ["limit"]],
   ["GET /api/v1/sessions", ["isActive", "startTime", "endTime", "limit", "cursor"]],
   ["GET /api/v1/sessions/stats", ["startTime", "endTime"]],
   ["GET /api/v1/stream/logs", ["minSeverity"]],

@@ -11,6 +11,10 @@ This TypeSpec repository is the sole owner of Qyl's client-visible product contr
 It emits the `@ancplua/qyl-api-schema` TypeSpec package, OpenAPI/JSON Schema,
 `Qyl.Api.Contracts`, and generated TypeScript contract types.
 
+Qyl's stored and queryable telemetry surface is traces and logs. Metrics have no
+product DTOs or query routes because the collector accepts and discards them only
+at its OTLP boundary. Profiles are not supported.
+
 There is one owner for each boundary:
 
 - **Qyl product API:** every client-visible request, response, stream event, and

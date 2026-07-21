@@ -17,10 +17,6 @@ const csharpLogsRuntime = await readFile(
   "generated/contracts/Qyl/Api/Contracts/OTel/Logs.cs",
   "utf8",
 );
-const csharpMetricsRuntime = await readFile(
-  "generated/contracts/Qyl/Api/Contracts/OTel/Metrics.cs",
-  "utf8",
-);
 const defs = schema.$defs ?? {};
 const ajv = new Ajv2020({ allErrors: true, strict: true, validateFormats: false });
 ajv.addKeyword({ keyword: "x-csharp-struct", schemaType: "boolean" });
@@ -49,13 +45,6 @@ function assertReferences(definition, expected) {
   const actual = (defs[definition]?.oneOf ?? []).map((variant) => variant.$ref);
   if (JSON.stringify(actual) !== JSON.stringify(expected)) {
     throw new Error(`${definition} oneOf variants drifted: ${JSON.stringify(actual)}.`);
-  }
-}
-
-function assertAnyOfReferences(definition, expected) {
-  const actual = (defs[definition]?.anyOf ?? []).map((variant) => variant.$ref);
-  if (JSON.stringify(actual) !== JSON.stringify(expected)) {
-    throw new Error(`${definition} anyOf variants drifted: ${JSON.stringify(actual)}.`);
   }
 }
 
@@ -135,7 +124,6 @@ for (const [definition, fixture] of opaqueMcpOperationFixtures) {
 
 const cursorPageDefinitions = new Map([
   ["Operations.LogsApi_list.Response.200", "#/$defs/OTel.Logs.LogRecord"],
-  ["Operations.MetricsApi_list.Response.200", "#/$defs/OTel.Metrics.MetricPoint"],
   ["Operations.SessionsApi_list.Response.200", "#/$defs/Domains.Observe.Session.SessionEntity"],
   ["Operations.SessionsApi_getTraces.Response.200", "#/$defs/OTel.Traces.Trace"],
   ["Operations.TracesApi_list.Response.200", "#/$defs/OTel.Traces.Trace"],
@@ -199,25 +187,6 @@ for (const marker of [
   if (!csharpRuntime.includes(marker)) {
     throw new Error(`C# evaluation export payload lost generated polymorphism: ${marker}.`);
   }
-}
-
-for (const model of ["GaugeMetricPoint", "SumMetricPoint"]) {
-  const body = new RegExp(
-    `public sealed class ${model} : MetricPoint\\s*\\{(?<body>[\\s\\S]*?)\\n\\}`,
-    "u",
-  ).exec(csharpMetricsRuntime)?.groups?.body;
-  if (!body?.includes("[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]\n    [JsonPropertyName(\"value\")]")) {
-    throw new Error(`${model}.Value must omit null so NO_RECORDED_VALUE has no value field.`);
-  }
-}
-
-const summaryQuantileBody = /public sealed class SummaryQuantileValue\s*\{(?<body>[\s\S]*?)\n\}/u
-  .exec(csharpMetricsRuntime)?.groups?.body;
-if (!summaryQuantileBody?.includes(
-  "[JsonNumberHandling(JsonNumberHandling.AllowNamedFloatingPointLiterals)]\n" +
-  "    [JsonPropertyName(\"value\")]\n    public required double Value",
-)) {
-  throw new Error("SummaryQuantileValue.Value must retain its generated double/positive-infinity wire mapping.");
 }
 
 const bytes = { type: "bytes", base64: "/wCA/g==" };
@@ -320,144 +289,6 @@ if (!tsRuntime.includes('"event_name"?: string;') ||
     !csharpLogsRuntime.includes('[JsonPropertyName("event_name")]') ||
     !csharpLogsRuntime.includes("public string? EventName { get; init; }")) {
   throw new Error("OTel LogRecord event_name must be generated for both TypeScript and C# consumers.");
-}
-
-assertAnyOfReferences("OTel.Metrics.MetricNumberValue", [
-  "#/$defs/OTel.Metrics.MetricIntegerValue",
-  "#/$defs/OTel.Metrics.MetricDoubleValue",
-]);
-assertAnyOfReferences("OTel.Metrics.MetricPoint", [
-  "#/$defs/OTel.Metrics.GaugeMetricPoint",
-  "#/$defs/OTel.Metrics.SumMetricPoint",
-  "#/$defs/OTel.Metrics.HistogramMetricPoint",
-  "#/$defs/OTel.Metrics.ExponentialHistogramMetricPoint",
-  "#/$defs/OTel.Metrics.SummaryMetricPoint",
-]);
-
-const validateMetricNumber = validatorFor("OTel.Metrics.MetricNumberValue");
-assertValid(validateMetricNumber, { as_int: "42" }, "integer metric value");
-assertValid(validateMetricNumber, { as_double: 2.5 }, "double metric value");
-for (const named of ["NaN", "Infinity", "-Infinity"]) {
-  assertValid(validateMetricNumber, { as_double: named }, `${named} metric value`);
-}
-assertInvalid(validateMetricNumber, { as_int: "42", as_double: 2.5 }, "ambiguous metric value");
-assertInvalid(validateMetricNumber, { as_int: 42 }, "numeric JSON encoding for a 64-bit metric integer");
-assertInvalid(validateMetricNumber, { as_double: "nan" }, "non-canonical named metric double");
-assertInvalid(validateMetricNumber, {}, "missing metric value");
-
-const summaryQuantileDouble = defs["OTel.Metrics.SummaryQuantileDouble"];
-const summaryQuantileVariants = summaryQuantileDouble?.anyOf ?? [];
-const summaryQuantileFinite = defs["OTel.Metrics.SummaryQuantileFiniteValue"];
-if (summaryQuantileVariants.length !== 2 ||
-    !summaryQuantileVariants.some((variant) =>
-      variant.$ref === "#/$defs/OTel.Metrics.SummaryQuantileFiniteValue") ||
-    summaryQuantileFinite?.type !== "number" || summaryQuantileFinite.minimum !== 0 ||
-    !summaryQuantileVariants.some((variant) =>
-      JSON.stringify(variant.enum) === JSON.stringify(["Infinity"]))) {
-  throw new Error("Summary quantile values must be non-negative finite doubles or positive infinity.");
-}
-
-const metricCommon = {
-  name: "gen_ai.client.token.usage",
-  unit: "{token}",
-  start_time_unix_nano: "1000",
-  time_unix_nano: "2000",
-  flags: 0,
-  resource: { "service.name": "checkout" },
-  instrumentation_scope: { name: "OpenTelemetry.Instrumentation.GenAI", version: "1.0.0" },
-  attributes: [
-    { key: "gen_ai.provider.name", value: "openai" },
-    { key: "gen_ai.request.model", value: "gpt-4.1" },
-    { key: "gen_ai.token.type", value: "input" },
-  ],
-};
-const validateMetricPoint = validatorFor("OTel.Metrics.MetricPoint");
-const metricFixtures = [
-  { ...metricCommon, type: "gauge", value: { as_double: 1.5 } },
-  {
-    ...metricCommon,
-    type: "sum",
-    value: { as_int: "3" },
-    aggregation_temporality: 2,
-    is_monotonic: true,
-  },
-  {
-    ...metricCommon,
-    type: "histogram",
-    count: "2",
-    sum: 180,
-    bucket_counts: ["0", "1", "1"],
-    explicit_bounds: [64, 256],
-    min: 50,
-    max: 130,
-    aggregation_temporality: 1,
-    exemplars: [{ time_unix_nano: "1500", value: { as_int: "130" }, trace_id: "0af7651916cd43dd8448eb211c80319c", span_id: "b7ad6b7169203331" }],
-  },
-  {
-    ...metricCommon,
-    type: "exponential_histogram",
-    count: "2",
-    sum: 3.5,
-    scale: 3,
-    zero_count: "0",
-    zero_threshold: 0,
-    positive: { offset: 0, bucket_counts: ["1", "1"] },
-    negative: { offset: 0, bucket_counts: [] },
-    aggregation_temporality: 2,
-  },
-  {
-    ...metricCommon,
-    type: "summary",
-    count: "2",
-    sum: 3.5,
-    quantile_values: [{ quantile: 0.5, value: 1.5 }, { quantile: 1, value: 2 }],
-  },
-];
-for (const fixture of metricFixtures) assertValid(validateMetricPoint, fixture, `OTLP ${fixture.type} metric point`);
-assertValid(validateMetricPoint, {
-  ...metricFixtures[2],
-  sum: "NaN",
-  min: "-Infinity",
-  max: "Infinity",
-}, "histogram with non-finite summary values");
-assertValid(validateMetricPoint, {
-  ...metricFixtures[3],
-  sum: "Infinity",
-  zero_threshold: "NaN",
-  min: "-Infinity",
-  max: "Infinity",
-}, "exponential histogram with non-finite summary values");
-assertValid(validateMetricPoint, {
-  ...metricFixtures[4],
-  sum: "Infinity",
-  quantile_values: [{ quantile: 0.5, value: "Infinity" }],
-}, "summary with non-finite sum and positive-infinite quantile value");
-assertValid(validateMetricPoint, { ...metricCommon, type: "gauge", flags: 1 },
-  "gauge carrying NO_RECORDED_VALUE");
-assertValid(validateMetricPoint, {
-  ...metricCommon,
-  type: "sum",
-  flags: 1,
-  aggregation_temporality: 2,
-  is_monotonic: true,
-}, "sum carrying NO_RECORDED_VALUE");
-assertInvalid(validateMetricPoint, {
-  ...metricFixtures[0],
-  value: { as_int: "1", as_double: 1 },
-}, "gauge with an ambiguous numeric value");
-assertInvalid(validateMetricPoint, { ...metricFixtures[0], type: "counter" }, "unknown metric type");
-assertInvalid(validateMetricPoint, { ...metricFixtures[1], aggregation_temporality: 0 }, "unspecified aggregation temporality");
-assertInvalid(validateMetricPoint, { ...metricFixtures[0], time_unix_nano: "0" }, "zero metric timestamp");
-assertInvalid(validateMetricPoint, { ...metricFixtures[0], time_unix_nano: 2000 }, "numeric JSON encoding for a metric timestamp");
-assertInvalid(validateMetricPoint, {
-  ...metricFixtures[4],
-  quantile_values: [{ quantile: -0.1, value: 1 }],
-}, "summary quantile outside the unit interval");
-for (const invalidValue of [-0.1, "NaN", "-Infinity"]) {
-  assertInvalid(validateMetricPoint, {
-    ...metricFixtures[4],
-    quantile_values: [{ quantile: 0.5, value: invalidValue }],
-  }, `summary carrying invalid quantile value ${invalidValue}`);
 }
 
 const validateWorkspacePreferences = validatorFor("Runner.Mcp.RunnerMcpWorkspacePreferences");
@@ -740,17 +571,20 @@ if (JSON.stringify(discoveryItems) !== "{}" || opaqueProperties.some((property) 
 const telemetryResponse = defs["Runner.Mcp.RunnerMcpExecutionTelemetryResponse"];
 if (telemetryResponse?.properties?.traces?.items?.$ref !== "#/$defs/OTel.Traces.Trace" ||
     telemetryResponse?.properties?.logs?.items?.$ref !== "#/$defs/OTel.Logs.LogRecord" ||
-    telemetryResponse?.properties?.metrics?.items?.$ref !== "#/$defs/OTel.Metrics.MetricPoint" ||
+    "metrics" in (telemetryResponse?.properties ?? {}) ||
     JSON.stringify(telemetryResponse?.properties?.selfExportSuppressed?.enum) !== JSON.stringify([true]) ||
     telemetryResponse?.properties?.signals?.$ref !== "#/$defs/Runner.Mcp.RunnerMcpTelemetrySignalSummary") {
-  throw new Error("Execution telemetry must use Qyl Trace/LogRecord/MetricPoint contracts, expose per-signal availability, and suppress self-export.");
+  throw new Error("Execution telemetry must use Qyl Trace/LogRecord contracts, expose per-signal availability, and suppress self-export.");
 }
 const telemetrySignals = defs["Runner.Mcp.RunnerMcpTelemetrySignalSummary"];
-for (const signal of ["traces", "logs", "metrics", "exceptions", "toolCallEvents"]) {
+for (const signal of ["traces", "logs", "exceptions", "toolCallEvents"]) {
   if (telemetrySignals?.properties?.[signal]?.$ref !==
       "#/$defs/Runner.Mcp.RunnerMcpTelemetrySignalAvailability") {
     throw new Error(`Execution telemetry must expose ${signal} availability independently.`);
   }
+}
+if ("metrics" in (telemetrySignals?.properties ?? {})) {
+  throw new Error("Execution telemetry must not expose discarded metrics.");
 }
 
 const evaluationRun = defs["Runner.Mcp.RunnerMcpEvaluationRun"];
@@ -802,4 +636,27 @@ for (const removedDefinition of [
   "Cost.ProviderBillingSource",
 ]) {
   if (removedDefinition in defs) throw new Error(`${removedDefinition} must not survive the direct cutover.`);
+}
+
+const removedSignalDefinitions = Object.keys(defs).filter((definition) =>
+  definition.startsWith("OTel.Metrics.") || definition.startsWith("OTel.Profiles.")
+);
+for (const definition of [
+  "OTel.Enums.MetricType",
+  "OTel.Enums.AggregationTemporality",
+  "OTel.Enums.DataPointFlags",
+  "OTel.Enums.InstrumentKind",
+  "OTel.Enums.OriginalPayloadFormat",
+  "OTel.Enums.ProfileFrameType",
+]) {
+  if (definition in defs) removedSignalDefinitions.push(definition);
+}
+const removedSignalPaths = Object.keys(openapi.paths ?? {}).filter((path) =>
+  path === "/api/v1/metrics" || path.startsWith("/api/v1/profiles")
+);
+if (removedSignalDefinitions.length > 0 || removedSignalPaths.length > 0) {
+  throw new Error(
+    `Removed signal contract survived. Definitions: ${removedSignalDefinitions.join(", ") || "none"}. ` +
+    `Paths: ${removedSignalPaths.join(", ") || "none"}.`,
+  );
 }

@@ -3,14 +3,12 @@ import "@typespec/openapi3";
 
 import "../common/types.tsp";
 import "../otel/logs.tsp";
-import "../otel/metrics.tsp";
 import "../otel/span.tsp";
 
 using TypeSpec.Http;
 using TypeSpec.OpenAPI;
 using Qyl.Api.Contracts.Common;
 using Qyl.Api.Contracts.OTel.Logs;
-using Qyl.Api.Contracts.OTel.Metrics;
 using Qyl.Api.Contracts.OTel.Traces;
 
 namespace Qyl.Api.Contracts.Runner.Mcp;
@@ -578,7 +576,6 @@ model RunnerMcpTelemetrySignalAvailability {
 model RunnerMcpTelemetrySignalSummary {
   traces: RunnerMcpTelemetrySignalAvailability;
   logs: RunnerMcpTelemetrySignalAvailability;
-  metrics: RunnerMcpTelemetrySignalAvailability;
   exceptions: RunnerMcpTelemetrySignalAvailability;
   toolCallEvents: RunnerMcpTelemetrySignalAvailability;
 }
@@ -589,7 +586,6 @@ model RunnerMcpExecutionTelemetryResponse {
   correlation: RunnerMcpTelemetryCorrelation;
   traces: Trace[];
   logs: LogRecord[];
-  metrics: MetricPoint[];
   queriedAt: utcDateTime;
 
   @doc("Confirms that workbench telemetry querying is excluded from workbench export instrumentation.")

@@ -6,8 +6,6 @@ import "../common/errors.tsp";
 import "../common/pagination.tsp";
 import "../otel/span.tsp";
 import "../otel/logs.tsp";
-import "../otel/metrics.tsp";
-import "../otel/profiles.tsp";
 import "../models/session.tsp";
 import "../models/health.tsp";
 
@@ -19,9 +17,7 @@ using Qyl.Api.Contracts.Common.Errors;
 using Qyl.Api.Contracts.Common.Pagination;
 using Qyl.Api.Contracts.OTel.Traces;
 using Qyl.Api.Contracts.OTel.Logs;
-using Qyl.Api.Contracts.OTel.Metrics;
 using Qyl.Api.Contracts.OTel.Enums;
-using Qyl.Api.Contracts.OTel.Profiles;
 using Qyl.Api.Contracts.Domains.Observe.Session;
 using Qyl.Api.Contracts.Health;
 
@@ -106,92 +102,6 @@ interface LogsApi {
     | ValidationError
     | UnauthorizedError
     | InternalServerError;
-}
-
-// -----------------------------------------------------------------------------
-// Metrics
-// -----------------------------------------------------------------------------
-
-@route("/api/v1/metrics")
-@tag("Metrics")
-@useAuth(QylApiKeyHeaderAuth)
-interface MetricsApi {
-  @doc("List persisted OTLP metric data points without re-aggregating producer values.")
-  @get
-  list(
-    ...ProjectScopeHeader,
-    @query name?: string,
-    @query type?: MetricType,
-    @query serviceName?: string,
-    @query startTime?: utcDateTime,
-    @query endTime?: utcDateTime,
-
-    @query
-    @minValue(1)
-    @maxValue(1000)
-    limit?: int32 = 100,
-
-    @query cursor?: string,
-  ):
-    | CursorPage<MetricPoint>
-    | ValidationError
-    | UnauthorizedError
-    | InternalServerError;
-}
-
-// -----------------------------------------------------------------------------
-// Profiles (OpenTelemetry development signal)
-// -----------------------------------------------------------------------------
-
-@route("/api/v1/profiles")
-@tag("Profiles")
-@useAuth(QylApiKeyHeaderAuth)
-interface ProfilesApi {
-  @get
-  list(
-    ...ProjectScopeHeader,
-    @query sessionId?: SessionId,
-    @query traceId?: TraceId,
-    @query serviceName?: string,
-    @query sampleType?: string,
-
-    @query
-    @minValue(1)
-    @maxValue(1000)
-    limit?: int32 = 100,
-  ): Profile[] | ValidationError | UnauthorizedError | InternalServerError;
-
-  @get
-  @route("/{profileId}")
-  get(...ProjectScopeHeader, @path profileId: string):
-    | Profile
-    | NotFoundError
-    | UnauthorizedError
-    | InternalServerError;
-
-  @get
-  @route("/by-trace/{traceId}")
-  getByTrace(
-    ...ProjectScopeHeader,
-    @path traceId: TraceId,
-
-    @query
-    @minValue(1)
-    @maxValue(1000)
-    limit?: int32 = 100,
-  ): Profile[] | ValidationError | UnauthorizedError | InternalServerError;
-
-  @get
-  @route("/by-span/{spanId}")
-  getBySpan(
-    ...ProjectScopeHeader,
-    @path spanId: SpanId,
-
-    @query
-    @minValue(1)
-    @maxValue(1000)
-    limit?: int32 = 100,
-  ): Profile[] | ValidationError | UnauthorizedError | InternalServerError;
 }
 
 // -----------------------------------------------------------------------------

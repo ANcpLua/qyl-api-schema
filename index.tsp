@@ -16,8 +16,6 @@ import "./otel/enums.tsp";
 import "./otel/resource.tsp";
 import "./otel/span.tsp";
 import "./otel/logs.tsp";
-import "./otel/metrics.tsp";
-import "./otel/profiles.tsp";
 
 import "./models/session.tsp";
 import "./models/health.tsp";

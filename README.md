@@ -4,6 +4,10 @@ The TypeSpec source of truth for Qyl's client-visible product API. This reposito
 emits the public schema and contract artifacts; it does not implement the server,
 storage engine, or OTLP receiver.
 
+Qyl stores and exposes traces and logs. Metrics are accepted and discarded only by
+the collector's OTLP wire-compatibility handlers, so this product contract exposes
+no metric DTOs or routes. Profiles are not supported.
+
 ## Contract pipeline
 
 ```text

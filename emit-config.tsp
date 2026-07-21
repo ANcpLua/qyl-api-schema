@@ -45,16 +45,6 @@ using Qyl.Api.Schema.Emit.TsTypes;
 @@csharpNamespace(Qyl.Api.Contracts.OTel.Enums, "Qyl.Api.Contracts.OTel.Enums");
 @@csharpNamespace(Qyl.Api.Contracts.OTel.Logs, "Qyl.Api.Contracts.OTel.Logs");
 @@csharpNamespace(
-  Qyl.Api.Contracts.OTel.Metrics,
-  "Qyl.Api.Contracts.OTel.Metrics"
-);
-@@csharpPolymorphic(Qyl.Api.Contracts.OTel.Metrics.MetricPoint, "type");
-@@csharpPolymorphic(Qyl.Api.Contracts.OTel.Metrics.MetricNumberValue);
-@@csharpNamespace(
-  Qyl.Api.Contracts.OTel.Profiles,
-  "Qyl.Api.Contracts.OTel.Profiles"
-);
-@@csharpNamespace(
   Qyl.Api.Contracts.OTel.Resource,
   "Qyl.Api.Contracts.OTel.Resource"
 );

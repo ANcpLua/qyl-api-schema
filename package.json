@@ -93,7 +93,7 @@
   },
   "peerDependencies": {
     "@typespec/compiler": "^1.13.0 || >=1.13.0-dev.0",
-    "@typespec/events": "^0.83.0",
+    "@typespec/events": "^0.83.0 || ^0.84.0",
     "@typespec/http": "^1.13.0",
     "@typespec/openapi": "^1.13.0",
     "@typespec/openapi3": "^1.13.0",
@@ -124,7 +124,7 @@
     "@ancplua/typespec-emit-ts-types": "file:./emitters/ts-types",
     "@types/node": "25.9.5",
     "@typespec/compiler": "1.14.0",
-    "@typespec/events": "0.83.0",
+    "@typespec/events": "0.84.0",
     "@typespec/http": "1.13.0",
     "@typespec/openapi": "1.13.0",
     "@typespec/openapi3": "1.13.0",

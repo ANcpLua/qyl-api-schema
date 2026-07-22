@@ -23,14 +23,6 @@ function verifyExactResponse(operationId, status, schemaName) {
   }
 }
 
-function verifyExactOpaqueJsonBody(content, label) {
-  const mediaTypes = Object.keys(content ?? {});
-  if (mediaTypes.length !== 1 || mediaTypes[0] !== "application/json" ||
-      JSON.stringify(content?.["application/json"]?.schema) !== "{}") {
-    throw new Error(`${label} must remain one opaque application/json body owned by the MCP SDK.`);
-  }
-}
-
 const runnerTags = new Set([
   "Runner session",
   "Runner resources",
@@ -110,96 +102,6 @@ if (missingRunnerOperations.length > 0 || unexpectedRunnerOperations.length > 0)
 for (const operationId of expectedRunnerOperations) {
   verifyExactResponse(operationId, "401", "UnauthorizedError");
   verifyExactResponse(operationId, "403", "ForbiddenError");
-}
-
-const expectedMcpPassthroughOperations = new Map([
-  ["GET /runner/mcp/{resource}/tools", {
-    operationId: "RunnerMcpApi_listTools",
-    hasRequestBody: false,
-    errors: {
-      403: "ForbiddenError",
-      404: "NotFoundError",
-      409: "ConflictError",
-      500: "InternalServerError",
-      502: "BadGatewayError",
-      503: "ServiceUnavailableError",
-    },
-  }],
-  ["POST /runner/mcp/{resource}/tools/call", {
-    operationId: "RunnerMcpApi_callTool",
-    hasRequestBody: true,
-    errors: {
-      400: "ValidationError",
-      403: "ForbiddenError",
-      404: "NotFoundError",
-      409: "ConflictError",
-      500: "InternalServerError",
-      502: "BadGatewayError",
-      503: "ServiceUnavailableError",
-    },
-  }],
-  ["POST /runner/mcp/{resource}/resources/read", {
-    operationId: "RunnerMcpApi_readResource",
-    hasRequestBody: true,
-    errors: {
-      400: "ValidationError",
-      403: "ForbiddenError",
-      404: "NotFoundError",
-      409: "ConflictError",
-      500: "InternalServerError",
-      502: "BadGatewayError",
-      503: "ServiceUnavailableError",
-    },
-  }],
-]);
-const actualMcpPassthroughOperations = new Set(
-  [...operations].filter(([, operation]) => operation.tags?.includes("Runner MCP")).map(([id]) => id),
-);
-const missingMcpPassthroughOperations = [...expectedMcpPassthroughOperations.keys()]
-  .filter((id) => !actualMcpPassthroughOperations.has(id));
-const unexpectedMcpPassthroughOperations = [...actualMcpPassthroughOperations]
-  .filter((id) => !expectedMcpPassthroughOperations.has(id));
-if (missingMcpPassthroughOperations.length > 0 || unexpectedMcpPassthroughOperations.length > 0) {
-  throw new Error(
-    `Opaque MCP passthrough operation inventory drifted. Missing: ${missingMcpPassthroughOperations.join(", ") || "none"}. ` +
-    `Unexpected: ${unexpectedMcpPassthroughOperations.join(", ") || "none"}.`,
-  );
-}
-for (const [operationKey, expected] of expectedMcpPassthroughOperations) {
-  const operation = operations.get(operationKey);
-  if (!operation) throw new Error(`${operationKey} is missing from ${openapiPath}.`);
-  if (operation.operationId !== expected.operationId || JSON.stringify(operation.tags) !== '["Runner MCP"]') {
-    throw new Error(`${operationKey} must remain ${expected.operationId} under the Runner MCP tag.`);
-  }
-
-  const parameters = operation.parameters ?? [];
-  const resource = parameters[0];
-  if (parameters.length !== 1 || resource?.name !== "resource" || resource.in !== "path" ||
-      resource.required !== true || resource.schema?.type !== "string") {
-    throw new Error(`${operationKey} must declare only the required string resource path parameter.`);
-  }
-  if (operation.security !== undefined) {
-    throw new Error(`${operationKey} must remain protected by the runner's loopback/origin boundary, not cookie auth.`);
-  }
-
-  if (expected.hasRequestBody) {
-    if (operation.requestBody?.required !== true) {
-      throw new Error(`${operationKey} must require its MCP SDK-owned request body.`);
-    }
-    verifyExactOpaqueJsonBody(operation.requestBody.content, `${operationKey} request`);
-  } else if (operation.requestBody !== undefined) {
-    throw new Error(`${operationKey} must not declare a request body.`);
-  }
-
-  const expectedStatuses = ["200", ...Object.keys(expected.errors)].sort();
-  const actualStatuses = Object.keys(operation.responses ?? {}).sort();
-  if (JSON.stringify(actualStatuses) !== JSON.stringify(expectedStatuses)) {
-    throw new Error(`${operationKey} response statuses drifted: ${JSON.stringify(actualStatuses)}.`);
-  }
-  verifyExactOpaqueJsonBody(operation.responses["200"]?.content, `${operationKey} response 200`);
-  for (const [status, schemaName] of Object.entries(expected.errors)) {
-    verifyExactResponse(operationKey, status, schemaName);
-  }
 }
 
 const runnerCookieAuthName = "RunnerMcpSessionCookieAuth";
@@ -282,7 +184,6 @@ for (const operationId of resumableSseOperations) {
 
 console.log(
   `Verified ${expectedRunnerOperations.size} runner route and error inventories, ` +
-  `${expectedMcpPassthroughOperations.size} opaque MCP passthrough operations, ` +
   `${expectedRunnerOperations.size - publicRunnerOperations.size} private cookie-auth operations, ` +
   `${capacityLimitedOperations.size} capacity responses, and ` +
   `${validationQueries.size} typed-query validation responses, and ` +

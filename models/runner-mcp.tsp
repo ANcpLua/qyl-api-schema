@@ -154,8 +154,6 @@ model RunnerMcpWorkspacePreferencesUpdateRequest {
 enum RunnerMcpTransportKind {
   stdio: "stdio",
   streamableHttp: "streamable_http",
-  sse: "sse",
-  inproc: "inproc",
   builtin: "builtin",
 }
 
@@ -211,21 +209,6 @@ model RunnerMcpStreamableHttpServerConfiguration {
   headers?: RunnerMcpHeaderSecretReference[];
 }
 
-@doc("Sanitized legacy MCP SSE transport configuration.")
-model RunnerMcpSseServerConfiguration {
-  transport: "sse";
-  endpoint: url;
-  headers?: RunnerMcpHeaderSecretReference[];
-}
-
-@doc("Sanitized in-process MCP server configuration.")
-model RunnerMcpInProcessServerConfiguration {
-  transport: "inproc";
-
-  @minLength(1)
-  implementation: string;
-}
-
 @doc("Sanitized built-in MCP server configuration.")
 model RunnerMcpBuiltinServerConfiguration {
   transport: "builtin";
@@ -239,8 +222,6 @@ model RunnerMcpBuiltinServerConfiguration {
 union RunnerMcpServerConfiguration {
   stdio: RunnerMcpStdioServerConfiguration,
   streamableHttp: RunnerMcpStreamableHttpServerConfiguration,
-  sse: RunnerMcpSseServerConfiguration,
-  inproc: RunnerMcpInProcessServerConfiguration,
   builtin: RunnerMcpBuiltinServerConfiguration,
 }
 

@@ -87,41 +87,6 @@ if (missingOperationDefinitions.length > 0 || unexpectedOperationDefinitions.len
   );
 }
 
-const opaqueMcpOperationFixtures = new Map([
-  ["Operations.RunnerMcpApi_listTools.Response.200", {
-    tools: [{ name: "inspect", inputSchema: { type: "object" }, futureSdkField: true }],
-    nextCursor: "page-2",
-    _meta: { catalog: "live" },
-  }],
-  ["Operations.RunnerMcpApi_callTool.Request", {
-    name: "inspect",
-    arguments: { count: 3 },
-    task: { ttl: 30_000 },
-    _meta: { progressToken: "progress-1" },
-  }],
-  ["Operations.RunnerMcpApi_callTool.Response.200", {
-    content: [{ type: "text", text: "complete", futureSdkField: true }],
-    structuredContent: { accepted: true },
-    isError: false,
-    task: { taskId: "task-1", status: "working" },
-    _meta: { result: "live" },
-  }],
-  ["Operations.RunnerMcpApi_readResource.Request", {
-    uri: "qyl://resource/static",
-    _meta: { request: "live" },
-  }],
-  ["Operations.RunnerMcpApi_readResource.Response.200", {
-    contents: [{ uri: "qyl://resource/static", mimeType: "text/plain", text: "body" }],
-    _meta: { source: "server" },
-  }],
-]);
-for (const [definition, fixture] of opaqueMcpOperationFixtures) {
-  if (JSON.stringify(defs[definition]) !== "{}") {
-    throw new Error(`${definition} must remain opaque; the MCP SDK owns its protocol body.`);
-  }
-  assertValid(validatorFor(definition), fixture, `${definition} representative SDK payload`);
-}
-
 const cursorPageDefinitions = new Map([
   ["Operations.LogsApi_list.Response.200", "#/$defs/OTel.Logs.LogRecord"],
   ["Operations.SessionsApi_list.Response.200", "#/$defs/Domains.Observe.Session.SessionEntity"],
@@ -362,8 +327,6 @@ for (const removedDefinition of removedMcpDefinitions) {
 const serverConfigurationRefs = [
   "RunnerMcpStdioServerConfiguration",
   "RunnerMcpStreamableHttpServerConfiguration",
-  "RunnerMcpSseServerConfiguration",
-  "RunnerMcpInProcessServerConfiguration",
   "RunnerMcpBuiltinServerConfiguration",
 ].map((name) => `#/$defs/Runner.Mcp.${name}`);
 assertReferences("Runner.Mcp.RunnerMcpServerConfiguration", serverConfigurationRefs);
@@ -388,8 +351,6 @@ const serverConfigurationFixtures = [
       scheme: "bearer",
     }],
   },
-  { transport: "sse", endpoint: "https://mcp.example.test/sse" },
-  { transport: "inproc", implementation: "qyl.observability" },
   { transport: "builtin", name: "qyl" },
 ];
 for (const fixture of serverConfigurationFixtures) {

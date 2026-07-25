@@ -9,7 +9,7 @@
 
 import type { ModelProperty } from "@typespec/compiler";
 import { createRule, paramMessage, resolveEncodedName } from "@typespec/compiler";
-import { isCookieParam, isHeader, isStatusCode } from "@typespec/http";
+import { getHeaderFieldName, isCookieParam, isHeader, isStatusCode } from "@typespec/http";
 import { PRODUCT_NAMESPACE, SNAKE_CASE, isInNamespace, snakeCase } from "../policy.js";
 
 export const wireNameSnakeCaseRule = createRule({
@@ -38,18 +38,19 @@ export const wireNameSnakeCaseRule = createRule({
         // decorator that never affects anything.
         if (!property.model?.name) return;
 
-        // Headers, status codes, and cookies keep their own naming and never
-        // have a JSON representation. Query and path properties are NOT skipped:
-        // a reusable parameter model (StreamParams, SpanQueryFilters, …) is also
-        // emitted as a standalone schema, where the JSON name is what ships, so
-        // it must agree with the parameter name that http-param-snake-case sets.
+        // A header's wire name is its HTTP field name, which follows HTTP's own
+        // conventions (`X-Trace-Id`, `Last-Event-ID`) and is deliberately not
+        // snake_case. Status codes and cookies likewise never reach the body.
+        // Query and path properties are NOT skipped: a reusable parameter model
+        // (StreamParams, SpanQueryFilters, …) is also emitted as a standalone
+        // schema, where the JSON name is what ships, so it must agree with the
+        // parameter name that http-param-snake-case sets.
         const program = context.program;
-        if (
-          isHeader(program, property) ||
-          isStatusCode(program, property) ||
-          isCookieParam(program, property)
-        ) {
-          return;
+        if (isStatusCode(program, property) || isCookieParam(program, property)) return;
+        if (isHeader(program, property)) {
+          // Resolved rather than assumed, so the skip is a decision about a
+          // known name instead of a hole in the rule's coverage.
+          if (getHeaderFieldName(program, property) !== undefined) return;
         }
 
         const wire = resolveEncodedName(program, property, "application/json");

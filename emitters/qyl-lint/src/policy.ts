@@ -40,16 +40,17 @@ export function snakeCase(name: string): string {
 export interface IdentityBinding {
   /** Scalar declared in `Qyl.Api.Contracts.Common`. */
   readonly scalar: string;
-  /** The property name a single value of this identity always uses. */
+  /** The property name a single value of this identity uses when it is the subject. */
   readonly singular: string;
-  /** The property name a collection of this identity always uses. */
+  /** The property name a collection of this identity uses when it is the subject. */
   readonly plural: string;
   /**
-   * Additional singular property names allowed for this scalar, each with the
-   * relationship that justifies it. An identity may only be spelled more than
-   * one way when the extra spelling names a *different edge* to the same thing.
+   * Names reserved for this identity: a property called one of these must be
+   * typed as the scalar. This is an exact list, never an `endsWith("Id")` test —
+   * the contract has ~25 other `*Id` properties (WorkbenchServerId,
+   * WorkbenchExecutionId, …) that are their own types and must not be captured.
    */
-  readonly alternates: Readonly<Record<string, string>>;
+  readonly reserved: readonly string[];
 }
 
 export const IDENTITIES: readonly IdentityBinding[] = [
@@ -57,27 +58,25 @@ export const IDENTITIES: readonly IdentityBinding[] = [
     scalar: "TraceId",
     singular: "traceId",
     plural: "traceIds",
-    alternates: {
-      selectedTraceId: "the selection edge into a returned trace list, not the trace of the response",
-    },
+    reserved: ["traceId", "traceIds"],
   },
   {
     scalar: "SpanId",
     singular: "spanId",
     plural: "spanIds",
-    alternates: { parentSpanId: "the parent edge of a span, not the span itself" },
+    reserved: ["spanId", "spanIds", "parentSpanId"],
   },
   {
     scalar: "SessionId",
     singular: "sessionId",
     plural: "sessionIds",
-    alternates: { previousSessionId: "the continuity edge to the preceding session" },
+    reserved: ["sessionId", "sessionIds", "previousSessionId"],
   },
   {
     scalar: "UserId",
     singular: "userId",
     plural: "userIds",
-    alternates: {},
+    reserved: ["userId", "userIds"],
   },
 ];
 
@@ -89,10 +88,8 @@ export interface ReservedName {
 
 const RESERVED_NAMES = new Map<string, ReservedName>();
 for (const identity of IDENTITIES) {
-  RESERVED_NAMES.set(identity.singular, { identity, array: false });
-  RESERVED_NAMES.set(identity.plural, { identity, array: true });
-  for (const alternate of Object.keys(identity.alternates)) {
-    RESERVED_NAMES.set(alternate, { identity, array: false });
+  for (const name of identity.reserved) {
+    RESERVED_NAMES.set(name, { identity, array: name === identity.plural });
   }
 }
 
@@ -104,9 +101,30 @@ export function reservedNameFor(propertyName: string): ReservedName | undefined 
   return RESERVED_NAMES.get(propertyName);
 }
 
-/** Every property name this identity is allowed to be spelled with. */
-export function allowedNamesFor(identity: IdentityBinding, array: boolean): string[] {
-  return array ? [identity.plural] : [identity.singular, ...Object.keys(identity.alternates)];
+/**
+ * Whether a property carrying this identity may be spelled `name`.
+ *
+ * The subject of the property is the bare token (`traceId`, `trace_ids`); any
+ * other spelling must *end with* the scalar, which is what makes it read as a
+ * qualified edge to the same thing — `parentSpanId`, `previousSessionId`,
+ * `selectedTraceId`. A suffix rule states that relationship structurally, so a
+ * new edge does not need a curated exception, while `id` or `ref` still fails.
+ */
+export function isAllowedIdentityName(
+  identity: IdentityBinding,
+  array: boolean,
+  name: string,
+): boolean {
+  return array
+    ? name === identity.plural || name.endsWith(`${identity.scalar}s`)
+    : name === identity.singular || name.endsWith(identity.scalar);
+}
+
+/** How the allowed spelling reads in a diagnostic. */
+export function describeAllowedNames(identity: IdentityBinding, array: boolean): string {
+  return array
+    ? `'${identity.plural}' or a qualified name ending in '${identity.scalar}s'`
+    : `'${identity.singular}' or a qualified name ending in '${identity.scalar}'`;
 }
 
 // =============================================================================

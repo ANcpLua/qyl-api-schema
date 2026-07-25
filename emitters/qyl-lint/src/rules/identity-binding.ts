@@ -4,26 +4,35 @@
 // scalar to the name it is spelled with. `SessionId` reached clients as
 // `session.id`, `session_id`, and `sessionId`; `traceId` was declared as a bare
 // `string` in errors.tsp and pagination.tsp, losing the 32-hex-character
-// validation it has everywhere else. Both directions are checked here:
+// validation it has everywhere else. Three things are checked:
 //
-//   type -> name  a property carrying a shared identity scalar uses that
-//                 identity's property name (or a declared alternate that names
-//                 a genuinely different edge, such as `parentSpanId`)
-//   name -> type  a property using an identity's reserved name is typed as that
-//                 scalar and never as a bare `string`
+//   type -> name  a property carrying a shared identity scalar is the bare token
+//                 (`traceId`) or a qualified edge ending in the scalar
+//                 (`parentSpanId`, `previousSessionId`, `selectedTraceId`)
+//   name -> type  a property using one of an identity's *exactly listed*
+//                 reserved names is typed as that scalar, never a bare `string`
+//   name -> key   an identity's wire key is exactly snake(name); unlike an
+//                 ordinary property it may not be renamed on the wire
 //
-// Together with wire-name-snake-case these make "same value, different key"
-// unrepresentable rather than merely discouraged: the name follows from the
-// type, and the wire key follows from the name.
+// Header properties are deliberately not skipped: `ProblemDetails.traceId` is
+// both a header and an identity, and it was one of the bare-`string` defects.
 
 import type { Model, ModelProperty } from "@typespec/compiler";
-import { createRule, getTypeName, isArrayModelType, paramMessage, resolveEncodedName } from "@typespec/compiler";
-import { isStatusCode } from "@typespec/http";
+import {
+  createRule,
+  getTypeName,
+  isArrayModelType,
+  isKey,
+  paramMessage,
+  resolveEncodedName,
+} from "@typespec/compiler";
+import { isCookieParam, isHeader, isStatusCode } from "@typespec/http";
 import {
   COMMON_NAMESPACE,
   PRODUCT_NAMESPACE,
-  allowedNamesFor,
+  describeAllowedNames,
   identityOfProperty,
+  isAllowedIdentityName,
   isInNamespace,
   reservedNameFor,
   snakeCase,
@@ -35,11 +44,10 @@ export const identityBindingRule = createRule({
   description:
     "A qyl identity has one scalar, one property name, and one wire key everywhere it appears.",
   messages: {
-    name: paramMessage`Property '${"property"}' carries the shared identity '${"scalar"}' but is not named ${"allowed"}. One identity is spelled one way across the whole contract, so a generic correlation helper is possible and grep finds every use.`,
-    arity: paramMessage`Property '${"property"}' is a collection of '${"scalar"}' and must be named '${"expected"}'.`,
+    name: paramMessage`Property '${"property"}' carries the shared identity '${"scalar"}' but is named neither ${"allowed"}. One identity is spelled one way across the whole contract, so a generic correlation helper is possible and grep finds every use.`,
     type: paramMessage`Property '${"property"}' uses the name reserved for the '${"scalar"}' identity but is typed '${"actual"}'. Type it as '${"canonical"}' so it keeps that scalar's pattern and length validation instead of accepting any string.`,
     elementType: paramMessage`Property '${"property"}' uses the name reserved for the '${"scalar"}' identity but its elements are typed '${"actual"}'. Type it as '${"canonical"}[]'.`,
-    rename: paramMessage`Identity property '${"property"}' is renamed on the wire to '${"wire"}'. An identity's wire key always follows from its name: use '${"expected"}'.`,
+    rename: paramMessage`Identity property '${"property"}' is renamed on the wire to '${"wire"}'. An ordinary property may be renamed; an identity may not, because a second spelling is exactly the defect this contract removed. Use '${"expected"}'.`,
   },
   create(context) {
     const seen = new Set<unknown>();
@@ -54,35 +62,48 @@ export const identityBindingRule = createRule({
         const carried = identityOfProperty(property);
         const reserved = reservedNameFor(property.name);
 
-        // type -> name
         if (carried) {
-          const allowed = allowedNamesFor(carried.identity, carried.array);
-          if (!allowed.includes(property.name)) {
+          // type -> name. A resource's own key may be the bare `id` of its
+          // model, which is the ordinary REST idiom and unambiguous in context.
+          if (
+            !isKey(context.program, property) &&
+            !isAllowedIdentityName(carried.identity, carried.array, property.name)
+          ) {
             context.reportDiagnostic({
-              messageId: carried.array ? "arity" : "name",
+              messageId: "name",
               target: property,
               format: {
                 property: property.name,
                 scalar: carried.identity.scalar,
-                expected: carried.identity.plural,
-                allowed: allowed.map((name) => `'${name}'`).join(" or "),
+                allowed: describeAllowedNames(carried.identity, carried.array),
               },
             });
           }
 
-          // An identity never carries a wire alias: its key is snake(name).
-          const wire = resolveEncodedName(context.program, property, "application/json");
-          const expected = snakeCase(property.name);
-          if (wire !== expected && wire !== property.name) {
-            context.reportDiagnostic({
-              messageId: "rename",
-              target: property,
-              format: { property: property.name, wire, expected },
-            });
+          // name -> key, checked only where a JSON key actually exists. A header
+          // carries its HTTP field name, and a parameter declared inline on an
+          // operation lives in an anonymous model and is named by @query/@path —
+          // http-param-snake-case owns those. Asserting a JSON key for either
+          // would be asserting something the wire never carries.
+          const hasJsonKey =
+            Boolean(property.model?.name) &&
+            !isHeader(context.program, property) &&
+            !isCookieParam(context.program, property);
+          if (hasJsonKey) {
+            const wire = resolveEncodedName(context.program, property, "application/json");
+            const expected = snakeCase(property.name);
+            if (wire !== expected) {
+              context.reportDiagnostic({
+                messageId: "rename",
+                target: property,
+                format: { property: property.name, wire, expected },
+              });
+            }
           }
         }
 
-        // name -> type
+        // name -> type. Checked for headers too: ProblemDetails.traceId is a
+        // header whose value is still a TraceId and must be typed as one.
         if (reserved && !carried) {
           const isArray = property.type.kind === "Model" && isArrayModelType(property.type as Model);
           const actual = isArray

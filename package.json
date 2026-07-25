@@ -93,7 +93,8 @@
     "lint": "npm run build:emitters && tsp compile main.tsp --no-emit --warn-as-error",
     "lint:public": "npm run build:emitters && tsp compile index.tsp --no-emit --warn-as-error",
     "verify:routes": "node scripts/verify-route-contracts.mjs",
-    "verify:contracts": "node scripts/verify-contract-fixtures.mjs"
+    "verify:contracts": "node scripts/verify-contract-fixtures.mjs",
+    "verify:lint-rules": "npm run build:emitters && node scripts/verify-lint-rules.mjs"
   },
   "peerDependencies": {
     "@typespec/compiler": "^1.13.0 || >=1.13.0-dev.0",

@@ -86,11 +86,22 @@ than an error.
 `tspconfig.yaml` and is never imported by a `.tsp` file, which keeps the published
 entry point free of build-only dependencies while `npm run lint` and
 `npm run lint:public` still check the exact source that ships. Its `src/policy.ts`
-is the single declaration of the convention and of the identity table; a genuinely
-different edge to the same identity (`parentSpanId`, `previousSessionId`,
-`selectedTraceId`) is added there with its rationale, never worked around locally.
-Two identity scalars that read alike must state their relationship in a doc comment
-that names the fully qualified type they are not — see `WorkbenchSessionId`.
+is the single declaration of the convention and of the identity table.
+
+The two identity directions are asymmetric on purpose. A name is reserved for an
+identity by an *exact* list, never an `endsWith("Id")` test — the contract has some
+twenty-five other `*Id` properties (`WorkbenchServerId`, `WorkbenchExecutionId`, …)
+that are their own types and must not be captured. In the other direction, a
+property that *carries* an identity is the bare token (`traceId`) or any name ending
+in the scalar (`parentSpanId`, `previousSessionId`, `selectedTraceId`), so a new
+qualified edge reads correctly without a curated exception while `id` or `ref` still
+fails. A resource's own `@key` is exempt from that name check.
+
+`npm run verify:lint-rules` compiles `emitters/qyl-lint/test/violations.tsp`, a
+fixture that must be rejected, and fails unless every declared rule produces at
+least one diagnostic. A linter whose rules match nothing passes exactly like a clean
+tree; this is what keeps the guarantee from going quietly vacuous. Add a case there
+for any rule you add.
 
 ## Versioning
 

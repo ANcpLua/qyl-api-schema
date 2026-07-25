@@ -280,6 +280,16 @@ sealed class Build : NukeBuild
                 .SetProcessWorkingDirectory(DomainSpecRoot));
         });
 
+    Target VerifyLintRules => _ => _
+        .Description("Assert the qyl contract invariants actually reject a negative fixture; a rule that matches nothing passes like a clean tree.")
+        .DependsOn(RestoreTypeSpecDeps)
+        .Executes(() =>
+        {
+            NpmRun(s => s
+                .SetCommand("verify:lint-rules")
+                .SetProcessWorkingDirectory(DomainSpecRoot));
+        });
+
     Target PackApiPackage => _ => _
         .Description("Run `npm pack` to validate package.json#files and produce the tarball.")
         .DependsOn(
@@ -360,6 +370,7 @@ sealed class Build : NukeBuild
             VerifyGeneratedArtifactsCurrent,
             VerifyRouteContracts,
             VerifyContractFixtures,
+            VerifyLintRules,
             EmitAll,
             VerifyEmitDeterministic,
             PackApiPackage,

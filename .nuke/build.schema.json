@@ -38,6 +38,7 @@
         "VerifyEmitDeterministic",
         "VerifyGeneratedArtifactsCurrent",
         "VerifyKeysLockstep",
+        "VerifyLintRules",
         "VerifyRouteContracts"
       ]
     },

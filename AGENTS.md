@@ -70,9 +70,16 @@ boundary, which this repository does not own.
 
 Names are written explicitly with `@encodedName("application/json", …)` rather than
 derived by an emitter policy, so `index.tsp` compiled by any consumer produces the
-same wire names as the artifacts published beside it. A rename is allowed only when
-the wire name genuinely differs from the property name (`scopeName` → `name`); it
-may never be a casing fix.
+same wire names as the artifacts published beside it. Writing a name is not the same
+as choosing one: the wire name must equal `snake_case(propertyName)` unless the pair
+is registered in `WIRE_NAME_EXCEPTIONS`, so casing is derived and never a per-property
+judgement call. The registry holds only the five cases where the wire name genuinely
+differs from the property name — `InstrumentationScope.scopeName` → `name`,
+`scopeVersion` → `version`, `scopeAttributes` → `attributes` (OTLP names those fields
+bare because the object already *is* the scope), `ProblemDetails.problemType` → `type`
+(RFC 7807 fixes the member name and `type` is reserved in TypeSpec), and
+`SessionStats.sessionsWithGenAi` → `sessions_with_genai` (`genai` is one semconv
+token). An exception may never be a casing fix.
 
 An identity has one scalar, one property name, and one wire key everywhere it
 appears — `TraceId`/`traceId`/`trace_id`, `SessionId`/`sessionId`/`session_id`. A
@@ -91,11 +98,14 @@ is the single declaration of the convention and of the identity table.
 The two identity directions are asymmetric on purpose. A name is reserved for an
 identity by an *exact* list, never an `endsWith("Id")` test — the contract has some
 twenty-five other `*Id` properties (`WorkbenchServerId`, `WorkbenchExecutionId`, …)
-that are their own types and must not be captured. In the other direction, a
-property that *carries* an identity is the bare token (`traceId`) or any name ending
-in the scalar (`parentSpanId`, `previousSessionId`, `selectedTraceId`), so a new
-qualified edge reads correctly without a curated exception while `id` or `ref` still
-fails. A resource's own `@key` is exempt from that name check.
+that are their own types and must not be captured. The other direction is closed the
+same way: a property that *carries* an identity is spelled with the bare token
+(`traceId`), its plural (`traceIds`), or one of the qualified edges registered in the
+identity's `edges` table with the relationship it expresses — `parentSpanId`,
+`previousSessionId`, `selectedTraceId`. A suffix test would have been shorter, but it
+silently admits `candidateTraceId`, `rootTraceId`, and every future coinage, which is
+exactly how one identity acquires a second spelling; a new edge is a deliberate
+one-line entry instead. A resource's own `@key` is exempt from that name check.
 
 `npm run verify:lint-rules` compiles `emitters/qyl-lint/test/violations.tsp`, a
 fixture that must be rejected, and fails unless every declared rule produces at

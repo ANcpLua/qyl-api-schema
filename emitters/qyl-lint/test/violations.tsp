@@ -49,6 +49,12 @@ model UntypedIdentities {
   // identity-binding (name -> key): an identity renamed on the wire.
   @encodedName("application/json", "correlation_trace")
   parentSpanId?: SpanId;
+
+  // identity-binding (type -> name): an unregistered qualified edge. A suffix
+  // rule would have admitted this silently, which is how one identity acquires
+  // a second spelling; only names in the edge registry are legal.
+  @encodedName("application/json", "candidate_trace_id")
+  candidateTraceId?: TraceId;
 }
 
 @doc("A scalar that reads like a shared identity but declares no relationship.")

@@ -10,7 +10,7 @@
 import type { ModelProperty } from "@typespec/compiler";
 import { createRule, paramMessage, resolveEncodedName } from "@typespec/compiler";
 import { getHeaderFieldName, isCookieParam, isHeader, isStatusCode } from "@typespec/http";
-import { PRODUCT_NAMESPACE, SNAKE_CASE, isInNamespace, snakeCase } from "../policy.js";
+import { PRODUCT_NAMESPACE, SNAKE_CASE, expectedWireName, isInNamespace } from "../policy.js";
 
 export const wireNameSnakeCaseRule = createRule({
   name: "wire-name-snake-case",
@@ -54,10 +54,12 @@ export const wireNameSnakeCaseRule = createRule({
         }
 
         const wire = resolveEncodedName(program, property, "application/json");
-        if (SNAKE_CASE.test(wire)) return;
+        const expected = expectedWireName(property.model.name, property.name);
+        if (wire === expected) return;
 
-        const expected = snakeCase(property.name);
-        const messageId = wire.includes(".") ? "dotted" : wire === property.name ? "camel" : "default";
+        const messageId = wire.includes(".")
+          ? "dotted"
+          : wire === property.name && !SNAKE_CASE.test(wire) ? "camel" : "default";
         context.reportDiagnostic({
           messageId,
           target: property,

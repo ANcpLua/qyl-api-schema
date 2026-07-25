@@ -31,6 +31,39 @@ export function snakeCase(name: string): string {
 }
 
 // =============================================================================
+// Wire-name derivation
+// =============================================================================
+// A wire name is `snakeCase(propertyName)` unless it appears below. Deriving it
+// is what makes casing a non-decision: there is no per-property judgement call
+// to get wrong, and a reviewer never has to ask whether a given spelling was
+// intended. The exceptions are the cases where the wire name genuinely differs
+// from the property name — never a casing fix, which the derivation already
+// covers.
+
+/** `Model.property` -> the wire name it ships, with the reason it differs. */
+export interface WireNameException {
+  readonly wire: string;
+  readonly reason: string;
+}
+
+export const WIRE_NAME_EXCEPTIONS: Readonly<Record<string, WireNameException>> = {
+  // The TypeSpec names are prefixed only to stay unique inside the model; on the
+  // wire the object already *is* the scope, so OTLP names the fields bare.
+  "InstrumentationScope.scopeName": { wire: "name", reason: "OTLP InstrumentationScope.name" },
+  "InstrumentationScope.scopeVersion": { wire: "version", reason: "OTLP InstrumentationScope.version" },
+  "InstrumentationScope.scopeAttributes": { wire: "attributes", reason: "OTLP InstrumentationScope.attributes" },
+  // RFC 7807 fixes this member name; `type` is reserved in TypeSpec.
+  "ProblemDetails.problemType": { wire: "type", reason: "RFC 7807 problem-details member" },
+  // GenAI is one token in semantic conventions, so it does not split.
+  "SessionStats.sessionsWithGenAi": { wire: "sessions_with_genai", reason: "'genai' is a single semconv token" },
+};
+
+/** The wire name a property must ship: derived, or the registered exception. */
+export function expectedWireName(modelName: string, propertyName: string): string {
+  return WIRE_NAME_EXCEPTIONS[`${modelName}.${propertyName}`]?.wire ?? snakeCase(propertyName);
+}
+
+// =============================================================================
 // Identity model
 // =============================================================================
 // A qyl identity is a scalar plus the property name it is always spelled with.
@@ -51,6 +84,17 @@ export interface IdentityBinding {
    * WorkbenchExecutionId, …) that are their own types and must not be captured.
    */
   readonly reserved: readonly string[];
+  /**
+   * Qualified names that carry this identity while naming a *relationship* to it
+   * rather than the subject itself — `parentSpanId`, `previousSessionId`. Each
+   * one is registered here with the relationship it expresses.
+   *
+   * This is a closed list on purpose. A suffix test (`endsWith("TraceId")`)
+   * would silently admit `candidateTraceId`, `rootTraceId`, and every future
+   * coinage — which is how three spellings of one identity appeared in the first
+   * place. A new edge is a deliberate one-line entry, not an emergent property.
+   */
+  readonly edges: Readonly<Record<string, string>>;
 }
 
 export const IDENTITIES: readonly IdentityBinding[] = [
@@ -59,24 +103,31 @@ export const IDENTITIES: readonly IdentityBinding[] = [
     singular: "traceId",
     plural: "traceIds",
     reserved: ["traceId", "traceIds"],
+    // A UI selection pointing at one of the traces already in the response.
+    edges: { selectedTraceId: "the trace the client has focused, within a listed set" },
   },
   {
     scalar: "SpanId",
     singular: "spanId",
     plural: "spanIds",
     reserved: ["spanId", "spanIds", "parentSpanId"],
+    // The OTLP parent link; absent on a root span.
+    edges: { parentSpanId: "the span this span is a child of" },
   },
   {
     scalar: "SessionId",
     singular: "sessionId",
     plural: "sessionIds",
     reserved: ["sessionId", "sessionIds", "previousSessionId"],
+    // Session continuity across a reconnect.
+    edges: { previousSessionId: "the session this one continues from" },
   },
   {
     scalar: "UserId",
     singular: "userId",
     plural: "userIds",
     reserved: ["userId", "userIds"],
+    edges: {},
   },
 ];
 
@@ -104,27 +155,25 @@ export function reservedNameFor(propertyName: string): ReservedName | undefined 
 /**
  * Whether a property carrying this identity may be spelled `name`.
  *
- * The subject of the property is the bare token (`traceId`, `trace_ids`); any
- * other spelling must *end with* the scalar, which is what makes it read as a
- * qualified edge to the same thing — `parentSpanId`, `previousSessionId`,
- * `selectedTraceId`. A suffix rule states that relationship structurally, so a
- * new edge does not need a curated exception, while `id` or `ref` still fails.
+ * Exactly three spellings are legal: the bare token (`traceId`), its plural
+ * (`traceIds`), or a registered edge (`parentSpanId`). Nothing is inferred.
  */
 export function isAllowedIdentityName(
   identity: IdentityBinding,
   array: boolean,
   name: string,
 ): boolean {
-  return array
-    ? name === identity.plural || name.endsWith(`${identity.scalar}s`)
-    : name === identity.singular || name.endsWith(identity.scalar);
+  if (name === (array ? identity.plural : identity.singular)) return true;
+  return Object.hasOwn(identity.edges, name);
 }
 
 /** How the allowed spelling reads in a diagnostic. */
 export function describeAllowedNames(identity: IdentityBinding, array: boolean): string {
-  return array
-    ? `'${identity.plural}' or a qualified name ending in '${identity.scalar}s'`
-    : `'${identity.singular}' or a qualified name ending in '${identity.scalar}'`;
+  const subject = `'${array ? identity.plural : identity.singular}'`;
+  const edges = Object.keys(identity.edges);
+  return edges.length === 0
+    ? subject
+    : `${subject} or a registered edge (${edges.map((edge) => `'${edge}'`).join(", ")})`;
 }
 
 // =============================================================================

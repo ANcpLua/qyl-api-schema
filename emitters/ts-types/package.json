@@ -24,7 +24,7 @@
   "devDependencies": {
     "@types/node": "24.13.3",
     "@typespec/compiler": "1.14.0",
-    "@typespec/http": "1.13.0",
+    "@typespec/http": "1.14.0",
     "typescript": "7.0.2"
   }
 }

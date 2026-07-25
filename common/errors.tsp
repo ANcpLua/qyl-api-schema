@@ -5,6 +5,7 @@
 // =============================================================================
 
 import "@typespec/http";
+import "./types.tsp";
 
 using TypeSpec.Http;
 
@@ -39,7 +40,7 @@ model ProblemDetails {
   @doc("Trace ID for correlation")
   @encodedName("application/json", "trace_id")
   @header("X-Trace-Id")
-  traceId?: string;
+  traceId?: TraceId;
 
   @doc("Request ID for support")
   @encodedName("application/json", "request_id")

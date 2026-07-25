@@ -1,16 +1,14 @@
 {
-  "name": "@ancplua/typespec-emit-csharp",
+  "name": "@ancplua/typespec-qyl-lint",
   "version": "0.1.0",
-  "description": "ANcpLua TypeSpec emitter for C# DTOs, enums, and explicit polymorphic unions",
+  "description": "ANcpLua TypeSpec linter enforcing the qyl wire-naming and identity invariants",
   "type": "module",
   "engines": {
     "node": ">=22"
   },
   "main": "dist/index.js",
-  "tspMain": "lib/main.tsp",
   "exports": {
     ".": {
-      "typespec": "./lib/main.tsp",
       "default": "./dist/index.js"
     }
   },

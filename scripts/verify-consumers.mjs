@@ -69,17 +69,17 @@ export async function verifyConsumers({ version, npmSpec, npmInstallArgs = [], n
     }
     await writeFile(
       join(npmDir, "smoke.mjs"),
-      `import { HealthStatusValues, ProblemDetailsMediaType, RunnerMcpEvaluationExportFormatValues, RunnerMcpExecutionStatusValues, RunnerMcpTransportKindValues, RunnerResourceKindValues, RunnerResourceLifecycleValues } from ${JSON.stringify(`${npmPackage}/types`)};\n` +
+      `import { HealthStatusValues, ProblemDetailsMediaType, WorkbenchEvaluationExportFormatValues, WorkbenchExecutionStatusValues, WorkbenchTransportKindValues, RunnerResourceKindValues, RunnerResourceLifecycleValues } from ${JSON.stringify(`${npmPackage}/types`)};\n` +
         `import openapi from ${JSON.stringify(`${npmPackage}/openapi`)} with { type: "json" };\n` +
         `import schema from ${JSON.stringify(`${npmPackage}/json-schema`)} with { type: "json" };\n` +
-        `const serverConfigRefs = (schema.$defs["Runner.Mcp.RunnerMcpServerConfiguration"]?.oneOf ?? []).map((variant) => variant.$ref);\n` +
-        `const exactServerConfigurationUnion = JSON.stringify(serverConfigRefs) === JSON.stringify(["RunnerMcpStdioServerConfiguration", "RunnerMcpStreamableHttpServerConfiguration", "RunnerMcpBuiltinServerConfiguration"].map((name) => "#/$defs/Runner.Mcp." + name));\n` +
-        `const assertionRefs = (schema.$defs["Runner.Mcp.RunnerMcpTestAssertion"]?.oneOf ?? []).map((variant) => variant.$ref);\n` +
-        `const exactAssertionUnion = JSON.stringify(assertionRefs) === JSON.stringify(["RunnerMcpStatusAssertion", "RunnerMcpExactAssertion", "RunnerMcpPartialAssertion", "RunnerMcpSchemaAssertion", "RunnerMcpPatternAssertion", "RunnerMcpLatencyAssertion"].map((name) => "#/$defs/Runner.Mcp." + name));\n` +
-        `const exportRefs = (schema.$defs["Runner.Mcp.RunnerMcpEvaluationExportPayload"]?.oneOf ?? []).map((variant) => variant.$ref);\n` +
-        `const exactExportUnion = JSON.stringify(exportRefs) === JSON.stringify(["RunnerMcpEvaluationJsonExportPayload", "RunnerMcpEvaluationReportExportPayload"].map((name) => "#/$defs/Runner.Mcp." + name));\n` +
-        `const executionRequest = schema.$defs["Runner.Mcp.RunnerMcpExecutionRequest"];\n` +
-        `const opaqueSdkBoundaries = !schema.$defs["Runner.Mcp.RunnerMcpContent"] && !schema.$defs["Runner.Mcp.RunnerMcpTool"] && !executionRequest?.properties?.arguments?.$ref && !schema.$defs["Runner.Mcp.RunnerMcpExecutionRecord"]?.properties?.result?.$ref;\n` +
+        `const serverConfigRefs = (schema.$defs["Workbench.WorkbenchServerConfiguration"]?.oneOf ?? []).map((variant) => variant.$ref);\n` +
+        `const exactServerConfigurationUnion = JSON.stringify(serverConfigRefs) === JSON.stringify(["WorkbenchStdioServerConfiguration", "WorkbenchStreamableHttpServerConfiguration", "WorkbenchBuiltinServerConfiguration"].map((name) => "#/$defs/Workbench." + name));\n` +
+        `const assertionRefs = (schema.$defs["Workbench.WorkbenchTestAssertion"]?.oneOf ?? []).map((variant) => variant.$ref);\n` +
+        `const exactAssertionUnion = JSON.stringify(assertionRefs) === JSON.stringify(["WorkbenchStatusAssertion", "WorkbenchExactAssertion", "WorkbenchPartialAssertion", "WorkbenchSchemaAssertion", "WorkbenchPatternAssertion", "WorkbenchLatencyAssertion"].map((name) => "#/$defs/Workbench." + name));\n` +
+        `const exportRefs = (schema.$defs["Workbench.WorkbenchEvaluationExportPayload"]?.oneOf ?? []).map((variant) => variant.$ref);\n` +
+        `const exactExportUnion = JSON.stringify(exportRefs) === JSON.stringify(["WorkbenchEvaluationJsonExportPayload", "WorkbenchEvaluationReportExportPayload"].map((name) => "#/$defs/Workbench." + name));\n` +
+        `const executionRequest = schema.$defs["Workbench.WorkbenchExecutionRequest"];\n` +
+        `const opaqueSdkBoundaries = !schema.$defs["Workbench.WorkbenchContent"] && !schema.$defs["Workbench.WorkbenchTool"] && !executionRequest?.properties?.arguments?.$ref && !schema.$defs["Workbench.WorkbenchExecutionRecord"]?.properties?.result?.$ref;\n` +
         `const attributeVariants = schema.$defs["Common.AttributeValue"]?.anyOf ?? [];\n` +
         `const attributeDouble = schema.$defs["Common.AttributeDouble"];\n` +
         `const losslessAttributeValue = attributeVariants.length === 8 && attributeVariants.some((variant) => variant.type === "null") && attributeVariants.some((variant) => variant.$ref === "#/$defs/Common.AttributeIntValue") && attributeVariants.some((variant) => variant.$ref === "#/$defs/Common.AttributeDoubleValue") && attributeVariants.some((variant) => variant.$ref === "#/$defs/Common.AttributeBytesValue") && attributeVariants.some((variant) => variant.type === "array" && variant.items?.$ref === "#/$defs/Common.AttributeValue") && attributeVariants.some((variant) => variant.$ref === "#/$defs/Common.AttributeKeyValueListValue") && schema.$defs["Common.AttributeInt64"]?.type === "string" && JSON.stringify(attributeDouble?.anyOf?.[1]?.enum) === JSON.stringify(["NaN", "Infinity", "-Infinity"]) && schema.$defs["Common.AttributeBytesValue"]?.properties?.base64?.contentEncoding === "base64" && schema.$defs["Common.AttributeKeyValueListValue"]?.properties?.values?.unevaluatedProperties?.$ref === "#/$defs/Common.AttributeValue";\n` +
@@ -91,31 +91,31 @@ export async function verifyConsumers({ version, npmSpec, npmInstallArgs = [], n
         `const operations = Object.values(openapi.paths).flatMap((path) => Object.values(path));\n` +
         `const errorResponses = operations.flatMap((operation) => Object.values(operation.responses ?? {})).filter((response) => Object.values(response.content ?? {}).some((media) => media.schema?.$ref?.startsWith("#/components/schemas/Common.Errors.")));\n` +
         `const errorsOwnProblemJson = errorResponses.length > 0 && errorResponses.every((response) => Object.keys(response.content ?? {}).length === 1 && response.content[ProblemDetailsMediaType]);\n` +
-        `const workbenchOperations = Object.entries(openapi.paths).filter(([path]) => path.startsWith("/runner/")).flatMap(([path, pathItem]) => Object.entries(pathItem).map(([method, operation]) => ({ path, method, operation })));\n` +
-        `const privateWorkbenchOperations = workbenchOperations.filter(({ path, method }) => !(path === "/runner/session" && method === "post"));\n` +
-        `const workbenchCookieAuth = workbenchOperations.length === 51 && privateWorkbenchOperations.length === 50 && openapi.components?.securitySchemes?.RunnerMcpSessionCookieAuth?.name === "qyl-mcp-session" && privateWorkbenchOperations.every(({ operation }) => operation.security?.some((entry) => "RunnerMcpSessionCookieAuth" in entry));\n` +
-        `const typedBootstrapCookie = openapi.paths["/runner/session"]?.post?.responses?.["200"]?.headers?.["Set-Cookie"]?.required === true;\n` +
+        `const workbenchOperations = Object.entries(openapi.paths).filter(([path]) => path.startsWith("/workbench/")).flatMap(([path, pathItem]) => Object.entries(pathItem).map(([method, operation]) => ({ path, method, operation })));\n` +
+        `const privateWorkbenchOperations = workbenchOperations.filter(({ path, method }) => !(path === "/workbench/session" && method === "post"));\n` +
+        `const workbenchCookieAuth = workbenchOperations.length === 45 && privateWorkbenchOperations.length === 44 && openapi.components?.securitySchemes?.WorkbenchSessionCookieAuth?.name === "qyl-workbench-session" && privateWorkbenchOperations.every(({ operation }) => operation.security?.some((entry) => "WorkbenchSessionCookieAuth" in entry));\n` +
+        `const typedBootstrapCookie = openapi.paths["/workbench/session"]?.post?.responses?.["200"]?.headers?.["Set-Cookie"]?.required === true;\n` +
         `const logStreamCapacityResponseDeclared = (() => { const content = openapi.paths["/api/v1/stream/logs"]?.get?.responses?.["503"]?.content ?? {}; return Object.keys(content).length === 1 && content[ProblemDetailsMediaType]?.schema?.$ref === "#/components/schemas/Common.Errors.ServiceUnavailableError"; })();\n` +
         `const typedQueryPaths = ["/api/v1/traces", "/api/v1/logs", "/api/v1/sessions", "/api/v1/sessions/stats", "/api/v1/stream/logs"];\n` +
         `const typedQueryValidationResponsesDeclared = typedQueryPaths.every((path) => { const content = openapi.paths[path]?.get?.responses?.["400"]?.content ?? {}; return Object.keys(content).length === 1 && content[ProblemDetailsMediaType]?.schema?.$ref === "#/components/schemas/Common.Errors.ValidationError"; });\n` +
         `const removedSignalEnums = new Set(["OTel.Enums.MetricType", "OTel.Enums.AggregationTemporality", "OTel.Enums.DataPointFlags", "OTel.Enums.InstrumentKind", "OTel.Enums.OriginalPayloadFormat", "OTel.Enums.ProfileFrameType"]);\n` +
-        `const telemetryResponse = schema.$defs["Runner.Mcp.RunnerMcpExecutionTelemetryResponse"];\n` +
-        `const telemetrySignals = schema.$defs["Runner.Mcp.RunnerMcpTelemetrySignalSummary"];\n` +
+        `const telemetryResponse = schema.$defs["Workbench.WorkbenchExecutionTelemetryResponse"];\n` +
+        `const telemetrySignals = schema.$defs["Workbench.WorkbenchTelemetrySignalSummary"];\n` +
         `const signalSurfaceAbsent = Object.keys(schema.$defs).every((name) => !name.startsWith("OTel.Metrics.") && !name.startsWith("OTel.Profiles.") && !removedSignalEnums.has(name)) && Object.keys(openapi.paths).every((path) => path !== "/api/v1/metrics" && !path.startsWith("/api/v1/profiles")) && !("metrics" in (telemetryResponse?.properties ?? {})) && !("metrics" in (telemetrySignals?.properties ?? {}));\n` +
         `const costSurfaceAbsent = Object.keys(schema.$defs).every((name) => !name.startsWith("Cost.")) && Object.keys(openapi.paths).every((path) => !path.startsWith("/api/v1/cost"));\n` +
-        `if (ProblemDetailsMediaType !== "application/problem+json" || !errorsOwnProblemJson || !workbenchCookieAuth || !typedBootstrapCookie || !logStreamCapacityResponseDeclared || !typedQueryValidationResponsesDeclared || !signalSurfaceAbsent || !eventLogContract || !losslessAttributeValue || !exactEntityRef || !exactServerConfigurationUnion || !exactAssertionUnion || !exactExportUnion || !opaqueSdkBoundaries || !costSurfaceAbsent || HealthStatusValues.healthy !== "healthy" || RunnerResourceLifecycleValues.ready !== "ready" || RunnerResourceKindValues.stdio !== "stdio" || RunnerMcpExecutionStatusValues.timedOut !== "timed_out" || RunnerMcpEvaluationExportFormatValues.report !== "report" || !schema.$defs["Mcp.Tools.FetchTelemetryInput"]) process.exit(1);\n`,
+        `if (ProblemDetailsMediaType !== "application/problem+json" || !errorsOwnProblemJson || !workbenchCookieAuth || !typedBootstrapCookie || !logStreamCapacityResponseDeclared || !typedQueryValidationResponsesDeclared || !signalSurfaceAbsent || !eventLogContract || !losslessAttributeValue || !exactEntityRef || !exactServerConfigurationUnion || !exactAssertionUnion || !exactExportUnion || !opaqueSdkBoundaries || !costSurfaceAbsent || HealthStatusValues.healthy !== "healthy" || RunnerResourceLifecycleValues.ready !== "ready" || RunnerResourceKindValues.stdio !== "stdio" || WorkbenchExecutionStatusValues.timedOut !== "timed_out" || WorkbenchEvaluationExportFormatValues.report !== "report" || !schema.$defs["Mcp.Tools.FetchTelemetryInput"]) process.exit(1);\n`,
     );
     run("node", ["smoke.mjs"], npmDir);
     await writeFile(
       join(npmDir, "smoke.ts"),
       `import type { Attribute, AttributeValue, EntityRef, LogRecord, Resource } from ${JSON.stringify(`${npmPackage}/types`)};\n` +
-        `const eventLog: LogRecord = { time_unix_nano: 2, observed_time_unix_nano: 3, severity_number: 9, body: { string_value: "evaluation completed" }, event_name: "gen_ai.evaluation.result", resource: { "service.name": "evaluator" } };\n` +
+        `const eventLog: LogRecord = { time_unix_nano: 2, observed_time_unix_nano: 3, severity_number: 9, body: { string_value: "evaluation completed" }, event_name: "gen_ai.evaluation.result", resource: { "service_name": "evaluator" } };\n` +
         `const emptyAttribute: Attribute = { key: "empty", value: null };\n` +
         `const intAttribute: Attribute = { key: "int", value: { type: "int", value: "9223372036854775807" } };\n` +
         `const doubleAttribute: Attribute = { key: "double", value: { type: "double", value: "Infinity" } };\n` +
         `const kvlistAttribute: Attribute = { key: "kvlist", value: { type: "kvlist", values: { empty: null, nested: [intAttribute.value, doubleAttribute.value] } } };\n` +
         `const entityRef: EntityRef = { schema_url: "https://opentelemetry.io/schemas/1.43.0", type: "service", id_keys: ["service.instance.id"], description_keys: ["service.version"] };\n` +
-        `const resource: Resource = { "service.name": "orders", attributes: [emptyAttribute, intAttribute, doubleAttribute, kvlistAttribute], entity_refs: [entityRef] };\n` +
+        `const resource: Resource = { "service_name": "orders", attributes: [emptyAttribute, intAttribute, doubleAttribute, kvlistAttribute], entity_refs: [entityRef] };\n` +
         `// @ts-expect-error Attribute integers require the tagged lossless representation.\n` +
         `const invalidAttribute: AttributeValue = 1;\n` +
         `void [eventLog, emptyAttribute, intAttribute, doubleAttribute, kvlistAttribute, entityRef, resource, invalidAttribute];\n`,
@@ -170,7 +170,7 @@ export async function verifyConsumers({ version, npmSpec, npmInstallArgs = [], n
     );
     await writeFile(
       join(dotnetDir, "Program.cs"),
-      `using System.Text.Json;\nusing ModelContextProtocol;\nusing ModelContextProtocol.Protocol;\nusing Qyl.Api.Contracts.Common.Errors;\nusing System.Linq;\nusing Qyl.Api.Contracts.Health;\nusing Qyl.Api.Contracts.Mcp.Tools;\nusing Qyl.Api.Contracts.OTel.Enums;\nusing Qyl.Api.Contracts.OTel.Logs;\nusing Qyl.Api.Contracts.Runner;\nusing Qyl.Api.Contracts.Runner.Mcp;\n#pragma warning disable MCPEXP001\n` +
+      `using System.Text.Json;\nusing ModelContextProtocol;\nusing ModelContextProtocol.Protocol;\nusing Qyl.Api.Contracts.Common.Errors;\nusing System.Linq;\nusing Qyl.Api.Contracts.Health;\nusing Qyl.Api.Contracts.Mcp.Tools;\nusing Qyl.Api.Contracts.OTel.Enums;\nusing Qyl.Api.Contracts.OTel.Logs;\nusing Qyl.Api.Contracts.Runner;\nusing Qyl.Api.Contracts.Workbench;\n#pragma warning disable MCPEXP001\n` +
         `using Qyl.Api.Contracts.Common;\nusing OTelAttribute = Qyl.Api.Contracts.Common.Attribute;\nusing OTelResource = Qyl.Api.Contracts.OTel.Resource.Resource;\n` +
         `var health = JsonSerializer.Serialize(HealthStatus.Healthy);\n` +
         `var lifecycle = JsonSerializer.Serialize(RunnerResourceLifecycle.Ready);\n` +
@@ -186,23 +186,23 @@ export async function verifyConsumers({ version, npmSpec, npmInstallArgs = [], n
         `var resourceWire = JsonSerializer.Serialize(resource);\n` +
         `var resourceRoundTrip = JsonSerializer.Deserialize<OTelResource>(resourceWire);\n` +
         `var state = new RunnerResourceState { Name = "demo", Lifecycle = RunnerResourceLifecycle.Ready, Timestamp = DateTimeOffset.UnixEpoch, Kind = RunnerResourceKind.Stdio };\n` +
-        `RunnerMcpServerConfiguration serverConfiguration = new RunnerMcpStdioServerConfiguration { Command = "node", Arguments = ["server.mjs"], Environment = [new RunnerMcpEnvironmentSecretReference { Name = "API_TOKEN", Secret = new RunnerMcpSecretReference { Source = "environment", EnvironmentVariable = "QYL_MCP_API_TOKEN" } }] };\n` +
-        `RunnerMcpTestAssertion assertion = new RunnerMcpStatusAssertion { Id = "status", Expected = [RunnerMcpExecutionStatus.Succeeded] };\n` +
-        `RunnerMcpEvaluationExportPayload exportPayload = new RunnerMcpEvaluationReportExportPayload { Markdown = "# Evaluation", ExportedAt = DateTimeOffset.UnixEpoch };\n` +
+        `WorkbenchServerConfiguration serverConfiguration = new WorkbenchStdioServerConfiguration { Command = "node", Arguments = ["server.mjs"], Environment = [new WorkbenchEnvironmentSecretReference { Name = "API_TOKEN", Secret = new WorkbenchSecretReference { Source = "environment", EnvironmentVariable = "QYL_MCP_API_TOKEN" } }] };\n` +
+        `WorkbenchTestAssertion assertion = new WorkbenchStatusAssertion { Id = "status", Expected = [WorkbenchExecutionStatus.Succeeded] };\n` +
+        `WorkbenchEvaluationExportPayload exportPayload = new WorkbenchEvaluationReportExportPayload { Markdown = "# Evaluation", ExportedAt = DateTimeOffset.UnixEpoch };\n` +
         `var sdkRequest = new CallToolRequestParams { Name = "inspect", Arguments = new Dictionary<string, JsonElement> { ["trace_id"] = JsonSerializer.Deserialize<JsonElement>("\\\"abc\\\"") } };\n` +
-        `var executionRequest = new RunnerMcpExecutionRequest { ToolName = sdkRequest.Name, Arguments = sdkRequest.Arguments, TimeoutMs = 30000, IdempotencyKey = "smoke-key" };\n` +
+        `var executionRequest = new WorkbenchExecutionRequest { ToolName = sdkRequest.Name, Arguments = sdkRequest.Arguments, TimeoutMs = 30000, IdempotencyKey = "smoke-key" };\n` +
         `var toolInput = new FetchTelemetryInput { View = FetchTelemetryView.Traces };\n` +
         `var serverConfigurationWire = JsonSerializer.Serialize(serverConfiguration);\n` +
-        `var serverConfigurationRoundTrip = JsonSerializer.Deserialize<RunnerMcpServerConfiguration>(serverConfigurationWire);\n` +
+        `var serverConfigurationRoundTrip = JsonSerializer.Deserialize<WorkbenchServerConfiguration>(serverConfigurationWire);\n` +
         `var assertionWire = JsonSerializer.Serialize(assertion);\n` +
-        `var assertionRoundTrip = JsonSerializer.Deserialize<RunnerMcpTestAssertion>(assertionWire);\n` +
+        `var assertionRoundTrip = JsonSerializer.Deserialize<WorkbenchTestAssertion>(assertionWire);\n` +
         `var exportPayloadWire = JsonSerializer.Serialize(exportPayload);\n` +
-        `var exportPayloadRoundTrip = JsonSerializer.Deserialize<RunnerMcpEvaluationExportPayload>(exportPayloadWire);\n` +
+        `var exportPayloadRoundTrip = JsonSerializer.Deserialize<WorkbenchEvaluationExportPayload>(exportPayloadWire);\n` +
         `var executionRequestWire = JsonSerializer.Serialize(executionRequest);\n` +
         `var otlpFidelityValid = resourceRoundTrip is not null && resourceRoundTrip.Attributes is { Count: 4 } && resourceRoundTrip.Attributes[0].Value is null && resourceRoundTrip.EntityRefs?[0] is { Type: "service", IdKeys.Count: 1 } && resourceWire.Contains("\\\"type\\\":\\\"int\\\",\\\"value\\\":\\\"9223372036854775807\\\"") && resourceWire.Contains("\\\"type\\\":\\\"double\\\",\\\"value\\\":\\\"Infinity\\\"") && resourceWire.Contains("\\\"type\\\":\\\"kvlist\\\"");\n` +
         `var contractTypes = typeof(FetchTelemetryInput).Assembly.GetTypes();\n` +
         `var removedSignalContractsAbsent = !contractTypes.Any(type => type.Namespace?.StartsWith("Qyl.Api.Contracts.OTel.Metrics") == true || type.Namespace?.StartsWith("Qyl.Api.Contracts.OTel.Profiles") == true || type.Name is "MetricType" or "AggregationTemporality" or "DataPointFlags" or "InstrumentKind" or "OriginalPayloadFormat" or "ProfileFrameType");\n` +
-        `if (ProblemDetailsMediaType.Value != "application/problem+json" || !eventLogWire.Contains("\\\"event_name\\\":\\\"gen_ai.evaluation.result\\\"") || !otlpFidelityValid || !removedSignalContractsAbsent || typeof(FetchTelemetryInput).Namespace != "Qyl.Api.Contracts.Mcp.Tools" || contractTypes.Any(type => type.Namespace is not null && type.Namespace.StartsWith("Qyl.Api.Contracts.Cost")) || health != "\\\"healthy\\\"" || lifecycle != "\\\"ready\\\"" || kind != "\\\"stdio\\\"" || state.Kind != RunnerResourceKind.Stdio || toolInput.View != FetchTelemetryView.Traces || serverConfigurationRoundTrip is not RunnerMcpStdioServerConfiguration || assertionRoundTrip is not RunnerMcpStatusAssertion || exportPayloadRoundTrip is not RunnerMcpEvaluationReportExportPayload || !serverConfigurationWire.Contains("\\\"transport\\\":\\\"stdio\\\"") || !serverConfigurationWire.Contains("\\\"environmentVariable\\\":\\\"QYL_MCP_API_TOKEN\\\"") || !assertionWire.Contains("\\\"kind\\\":\\\"status\\\"") || !exportPayloadWire.Contains("\\\"format\\\":\\\"report\\\"") || executionRequest.ToolName != "inspect" || executionRequest.TimeoutMs != 30000 || !executionRequestWire.Contains("\\\"trace_id\\\":\\\"abc\\\"")) return 1;\nreturn 0;\n`,
+        `if (ProblemDetailsMediaType.Value != "application/problem+json" || !eventLogWire.Contains("\\\"event_name\\\":\\\"gen_ai.evaluation.result\\\"") || !otlpFidelityValid || !removedSignalContractsAbsent || typeof(FetchTelemetryInput).Namespace != "Qyl.Api.Contracts.Mcp.Tools" || contractTypes.Any(type => type.Namespace is not null && type.Namespace.StartsWith("Qyl.Api.Contracts.Cost")) || health != "\\\"healthy\\\"" || lifecycle != "\\\"ready\\\"" || kind != "\\\"stdio\\\"" || state.Kind != RunnerResourceKind.Stdio || toolInput.View != FetchTelemetryView.Traces || serverConfigurationRoundTrip is not WorkbenchStdioServerConfiguration || assertionRoundTrip is not WorkbenchStatusAssertion || exportPayloadRoundTrip is not WorkbenchEvaluationReportExportPayload || !serverConfigurationWire.Contains("\\\"transport\\\":\\\"stdio\\\"") || !serverConfigurationWire.Contains("\\\"environment_variable\\\":\\\"QYL_MCP_API_TOKEN\\\"") || !assertionWire.Contains("\\\"kind\\\":\\\"status\\\"") || !exportPayloadWire.Contains("\\\"format\\\":\\\"report\\\"") || executionRequest.ToolName != "inspect" || executionRequest.TimeoutMs != 30000 || !executionRequestWire.Contains("\\\"trace_id\\\":\\\"abc\\\"")) return 1;\nreturn 0;\n`,
     );
     run(
       "dotnet",

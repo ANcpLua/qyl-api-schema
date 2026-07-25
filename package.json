@@ -19,6 +19,9 @@
     "openapi"
   ],
   "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
   "tspMain": "index.tsp",
   "exports": {
     ".": {
@@ -50,12 +53,13 @@
     "api/routes.tsp",
     "api/runner.tsp",
     "api/streaming.tsp",
+    "api/workbench.tsp",
     "common/errors.tsp",
     "common/pagination.tsp",
     "common/types.tsp",
     "models/health.tsp",
-    "models/runner-mcp.tsp",
     "models/runner.tsp",
+    "models/workbench.tsp",
     "models/mcp-tools.tsp",
     "models/session.tsp",
     "otel/enums.tsp",
@@ -78,7 +82,7 @@
   },
   "scripts": {
     "clean:generated": "node scripts/clean-generated.mjs",
-    "build:emitters": "tsc -p emitters/csharp && tsc -p emitters/ts-types",
+    "build:emitters": "tsc -p emitters/csharp && tsc -p emitters/ts-types && tsc -p emitters/qyl-lint",
     "build:ts-runtime": "tsc -p tsconfig.contracts.json",
     "build:json-schema": "node scripts/openapi-to-json-schema.mjs",
     "prepare": "npm run build:emitters",
@@ -87,7 +91,7 @@
     "watch": "tsp compile main.tsp --watch",
     "format": "tsp format **/*.tsp",
     "lint": "npm run build:emitters && tsp compile main.tsp --no-emit --warn-as-error",
-    "lint:public": "tsp compile index.tsp --no-emit --warn-as-error",
+    "lint:public": "npm run build:emitters && tsp compile index.tsp --no-emit --warn-as-error",
     "verify:routes": "node scripts/verify-route-contracts.mjs",
     "verify:contracts": "node scripts/verify-contract-fixtures.mjs"
   },
@@ -122,7 +126,8 @@
   "devDependencies": {
     "@ancplua/typespec-emit-csharp": "file:./emitters/csharp",
     "@ancplua/typespec-emit-ts-types": "file:./emitters/ts-types",
-    "@types/node": "25.9.5",
+    "@ancplua/typespec-qyl-lint": "file:./emitters/qyl-lint",
+    "@types/node": "24.13.3",
     "@typespec/compiler": "1.14.0",
     "@typespec/events": "0.83.0",
     "@typespec/http": "1.13.0",

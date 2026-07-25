@@ -56,6 +56,9 @@ is the published TypeSpec entry point and contains only the client-facing contra
 
 ## Develop
 
+Development and CI use Node.js 24 LTS. Published npm artifacts support maintained
+Node.js releases from 22 onward.
+
 ```bash
 npm ci
 npm run lint

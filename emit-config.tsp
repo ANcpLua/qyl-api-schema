@@ -12,17 +12,17 @@ using Qyl.Api.Schema.Emit.TsTypes;
 @@csharpNamespace(Qyl.Api.Contracts.Health, "Qyl.Api.Contracts.Health");
 @@csharpNamespace(Qyl.Api.Contracts.Mcp.Tools, "Qyl.Api.Contracts.Mcp.Tools");
 @@csharpNamespace(Qyl.Api.Contracts.Runner, "Qyl.Api.Contracts.Runner");
-@@csharpNamespace(Qyl.Api.Contracts.Runner.Mcp, "Qyl.Api.Contracts.Runner.Mcp");
+@@csharpNamespace(Qyl.Api.Contracts.Workbench, "Qyl.Api.Contracts.Workbench");
 @@csharpPolymorphic(
-  Qyl.Api.Contracts.Runner.Mcp.RunnerMcpServerConfiguration,
+  Qyl.Api.Contracts.Workbench.WorkbenchServerConfiguration,
   "transport"
 );
 @@csharpPolymorphic(
-  Qyl.Api.Contracts.Runner.Mcp.RunnerMcpTestAssertion,
+  Qyl.Api.Contracts.Workbench.WorkbenchTestAssertion,
   "kind"
 );
 @@csharpPolymorphic(
-  Qyl.Api.Contracts.Runner.Mcp.RunnerMcpEvaluationExportPayload,
+  Qyl.Api.Contracts.Workbench.WorkbenchEvaluationExportPayload,
   "format"
 );
 
@@ -57,11 +57,11 @@ using Qyl.Api.Schema.Emit.TsTypes;
 @@tsBrand(Qyl.Api.Contracts.Common.SpanId);
 @@tsBrand(Qyl.Api.Contracts.Common.SessionId);
 @@tsBrand(Qyl.Api.Contracts.Common.UserId);
-@@tsBrand(Qyl.Api.Contracts.Runner.Mcp.RunnerMcpSessionId);
-@@tsBrand(Qyl.Api.Contracts.Runner.Mcp.RunnerMcpWorkspaceId);
-@@tsBrand(Qyl.Api.Contracts.Runner.Mcp.RunnerMcpServerId);
-@@tsBrand(Qyl.Api.Contracts.Runner.Mcp.RunnerMcpExecutionId);
-@@tsBrand(Qyl.Api.Contracts.Runner.Mcp.RunnerMcpTestCaseId);
-@@tsBrand(Qyl.Api.Contracts.Runner.Mcp.RunnerMcpSuiteId);
-@@tsBrand(Qyl.Api.Contracts.Runner.Mcp.RunnerMcpEvaluationRunId);
-@@tsBrand(Qyl.Api.Contracts.Runner.Mcp.RunnerMcpEvaluationExportId);
+@@tsBrand(Qyl.Api.Contracts.Workbench.WorkbenchSessionId);
+@@tsBrand(Qyl.Api.Contracts.Workbench.WorkbenchWorkspaceId);
+@@tsBrand(Qyl.Api.Contracts.Workbench.WorkbenchServerId);
+@@tsBrand(Qyl.Api.Contracts.Workbench.WorkbenchExecutionId);
+@@tsBrand(Qyl.Api.Contracts.Workbench.WorkbenchTestCaseId);
+@@tsBrand(Qyl.Api.Contracts.Workbench.WorkbenchSuiteId);
+@@tsBrand(Qyl.Api.Contracts.Workbench.WorkbenchEvaluationRunId);
+@@tsBrand(Qyl.Api.Contracts.Workbench.WorkbenchEvaluationExportId);

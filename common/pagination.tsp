@@ -74,7 +74,7 @@ model OffsetPaginationParams {
   page?: int32 = 1;
 
   @doc("Items per page (1-1000)")
-  @query
+  @query("page_size")
   @pageSize
   @minValue(1)
   @maxValue(1000)
@@ -119,12 +119,12 @@ model OffsetPage<T> {
 @doc("Time-range based query parameters")
 model TimeRangeParams {
   @doc("Start of time range (inclusive)")
-  @query
+  @query("start_time")
   @encodedName("application/json", "start_time")
   startTime?: utcDateTime;
 
   @doc("End of time range (exclusive)")
-  @query
+  @query("end_time")
   @encodedName("application/json", "end_time")
   endTime?: utcDateTime;
 
@@ -173,17 +173,17 @@ model StreamParams {
   since?: utcDateTime;
 
   @doc("Filter by trace ID")
-  @query
+  @query("trace_id")
   @encodedName("application/json", "trace_id")
-  traceId?: string;
+  traceId?: TraceId;
 
   @doc("Filter by service name")
-  @query
+  @query("service_name")
   @encodedName("application/json", "service_name")
   serviceName?: string;
 
   @doc("Maximum events per second (rate limiting)")
-  @query
+  @query("max_events_per_second")
   @encodedName("application/json", "max_events_per_second")
   @minValue(1)
   @maxValue(1000)
@@ -244,7 +244,7 @@ model AggregationParams {
   bucket?: TimeBucket = TimeBucket.auto;
 
   @doc("Group by these dimensions")
-  @query
+  @query("group_by")
   @encodedName("application/json", "group_by")
   groupBy?: string[];
 

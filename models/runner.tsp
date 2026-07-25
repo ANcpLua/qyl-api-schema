@@ -33,15 +33,19 @@ model RunnerResourceState {
 
   @minValue(1)
   @maxValue(65535)
+  @encodedName("application/json", "allocated_port")
   allocatedPort?: int32;
 
   endpoint?: url;
+  @encodedName("application/json", "last_error")
   lastError?: string;
 
   @doc("Opaque SDK server-info entity when this resource is an initialized MCP connection.")
+  @encodedName("application/json", "server_identity")
   serverIdentity?: unknown;
 
   @minValue(0)
+  @encodedName("application/json", "tool_count")
   toolCount?: int32;
 
   @minValue(0)

@@ -6,7 +6,7 @@ const schema = JSON.parse(await readFile(schemaPath, "utf8"));
 const openapi = JSON.parse(await readFile("generated/openapi/qyl.openapi.json", "utf8"));
 const tsRuntime = await readFile("generated/ts-runtime/api.d.ts", "utf8");
 const csharpRuntime = await readFile(
-  "generated/contracts/Qyl/Api/Contracts/Runner/Mcp.cs",
+  "generated/contracts/Qyl/Api/Contracts/Workbench.cs",
   "utf8",
 );
 const csharpRunnerRuntime = await readFile(
@@ -120,23 +120,23 @@ for (const [definition, itemReference] of cursorPageDefinitions) {
   assertInvalid(validatePage, { items: [], has_more: false, total: 0 }, `${definition} with an undeclared field`);
 }
 
-if (!/export interface RunnerMcpSessionBootstrapResponse extends RunnerMcpWorkbenchSession\s*\{\s*\}/u.test(tsRuntime)) {
+if (!/export interface WorkbenchSessionBootstrapResponse extends WorkbenchSession\s*\{\s*\}/u.test(tsRuntime)) {
   throw new Error("TypeScript session bootstrap DTO must have the exact session body shape without a nested session property.");
 }
-const csharpBootstrap = /public sealed class RunnerMcpSessionBootstrapResponse\s*\{(?<body>[\s\S]*?)\n\}/u.exec(csharpRuntime)?.groups?.body;
+const csharpBootstrap = /public sealed class WorkbenchSessionBootstrapResponse\s*\{(?<body>[\s\S]*?)\n\}/u.exec(csharpRuntime)?.groups?.body;
 if (!csharpBootstrap?.includes('[JsonPropertyName("id")]') ||
     csharpBootstrap.includes('[JsonPropertyName("session")]')) {
   throw new Error("C# session bootstrap DTO must have the exact session body shape without a nested Session property.");
 }
 for (const id of [
-  "RunnerMcpSessionId",
-  "RunnerMcpWorkspaceId",
-  "RunnerMcpServerId",
-  "RunnerMcpExecutionId",
-  "RunnerMcpTestCaseId",
-  "RunnerMcpSuiteId",
-  "RunnerMcpEvaluationRunId",
-  "RunnerMcpEvaluationExportId",
+  "WorkbenchSessionId",
+  "WorkbenchWorkspaceId",
+  "WorkbenchServerId",
+  "WorkbenchExecutionId",
+  "WorkbenchTestCaseId",
+  "WorkbenchSuiteId",
+  "WorkbenchEvaluationRunId",
+  "WorkbenchEvaluationExportId",
 ]) {
   if (!tsRuntime.includes(`readonly __brand: "${id}"`)) {
     throw new Error(`${id} must remain a branded TypeScript identifier.`);
@@ -144,10 +144,10 @@ for (const id of [
 }
 for (const marker of [
   '[JsonPolymorphic(TypeDiscriminatorPropertyName = "format")]',
-  '[JsonDerivedType(typeof(RunnerMcpEvaluationJsonExportPayload), "json")]',
-  '[JsonDerivedType(typeof(RunnerMcpEvaluationReportExportPayload), "report")]',
-  "public interface RunnerMcpEvaluationExportPayload",
-  "public required Qyl.Api.Contracts.Runner.Mcp.RunnerMcpEvaluationExportPayload Payload",
+  '[JsonDerivedType(typeof(WorkbenchEvaluationJsonExportPayload), "json")]',
+  '[JsonDerivedType(typeof(WorkbenchEvaluationReportExportPayload), "report")]',
+  "public interface WorkbenchEvaluationExportPayload",
+  "public required Qyl.Api.Contracts.Workbench.WorkbenchEvaluationExportPayload Payload",
 ]) {
   if (!csharpRuntime.includes(marker)) {
     throw new Error(`C# evaluation export payload lost generated polymorphism: ${marker}.`);
@@ -200,7 +200,7 @@ assertValid(validateAttributeKvList, kvlistValue({ type: "bytes", base64: "/wCA/
 
 const validateOtelResource = validatorFor("OTel.Resource.Resource");
 const entityResource = {
-  "service.name": "checkout",
+  "service_name": "checkout",
   attributes: [
     { key: "service.instance.id", value: "checkout-1" },
     { key: "service.version", value: "1.2.3" },
@@ -214,19 +214,19 @@ const entityResource = {
 };
 assertValid(validateOtelResource, entityResource, "Resource with an entity reference");
 assertValid(validateOtelResource, {
-  "service.name": "checkout",
+  "service_name": "checkout",
   entity_refs: [{ type: "service", id_keys: ["service.instance.id"], description_keys: [] }],
 }, "Resource entity reference with no description keys");
 assertInvalid(validateOtelResource, {
-  "service.name": "checkout",
+  "service_name": "checkout",
   entity_refs: [{ type: "", id_keys: ["service.instance.id"] }],
 }, "Resource entity reference with an empty type");
 assertInvalid(validateOtelResource, {
-  "service.name": "checkout",
+  "service_name": "checkout",
   entity_refs: [{ type: "service", id_keys: [] }],
 }, "Resource entity reference with no identity keys");
 assertInvalid(validateOtelResource, {
-  "service.name": "checkout",
+  "service_name": "checkout",
   entity_refs: [{ type: "service", id_keys: [""] }],
 }, "Resource entity reference with an empty identity key");
 
@@ -237,7 +237,7 @@ const eventLogRecord = {
   severity_number: 9,
   body: { string_value: "evaluation completed" },
   event_name: "gen_ai.evaluation.result",
-  resource: { "service.name": "evaluator" },
+  resource: { "service_name": "evaluator" },
 };
 assertValid(validateLogRecord, eventLogRecord, "OTLP event log record");
 assertValid(
@@ -256,61 +256,61 @@ if (!tsRuntime.includes('"event_name"?: string;') ||
   throw new Error("OTel LogRecord event_name must be generated for both TypeScript and C# consumers.");
 }
 
-const validateWorkspacePreferences = validatorFor("Runner.Mcp.RunnerMcpWorkspacePreferences");
+const validateWorkspacePreferences = validatorFor("Workbench.WorkbenchWorkspacePreferences");
 assertValid(
   validateWorkspacePreferences,
   {
-    workspaceId: "workspace-001",
-    selectedServerId: "server-001",
-    selectedToolName: "inspect_trace",
-    inputMode: "form",
-    activePanel: "execution",
-    compactMode: true,
-    updatedAt: "2026-07-15T10:00:00Z",
+    workspace_id: "workspace-001",
+    selected_server_id: "server-001",
+    selected_tool_name: "inspect_trace",
+    input_mode: "form",
+    active_panel: "execution",
+    compact_mode: true,
+    updated_at: "2026-07-15T10:00:00Z",
   },
   "workspace-scoped saved UI preferences",
 );
 const validateWorkspacePreferencesUpdate = validatorFor(
-  "Runner.Mcp.RunnerMcpWorkspacePreferencesUpdateRequest",
+  "Workbench.WorkbenchWorkspacePreferencesUpdateRequest",
 );
 assertValid(
   validateWorkspacePreferencesUpdate,
-  { inputMode: "json", compactMode: false },
+  { input_mode: "json", compact_mode: false },
   "workspace preference update",
 );
 assertInvalid(
   validateWorkspacePreferencesUpdate,
-  { inputMode: "json", authToken: "plaintext" },
+  { input_mode: "json", auth_token: "plaintext" },
   "workspace preference update containing an undeclared credential",
 );
 
 const removedMcpDefinitions = [
-  "Runner.RunnerMcpServerInfo",
-  "Runner.Mcp.RunnerMcpIcon",
-  "Runner.Mcp.RunnerMcpToolTaskSupport",
-  "Runner.Mcp.RunnerMcpToolExecution",
-  "Runner.Mcp.RunnerMcpTool",
-  "Runner.Mcp.RunnerMcpToolsResponse",
-  "Runner.Mcp.RunnerMcpToolCallRequest",
-  "Runner.Mcp.RunnerMcpTaskMetadata",
-  "Runner.Mcp.RunnerMcpContentMetadata",
-  "Runner.Mcp.RunnerMcpTextContent",
-  "Runner.Mcp.RunnerMcpImageContent",
-  "Runner.Mcp.RunnerMcpAudioContent",
-  "Runner.Mcp.RunnerMcpEmbeddedResourceContent",
-  "Runner.Mcp.RunnerMcpResourceLinkContent",
-  "Runner.Mcp.RunnerMcpToolUseContent",
-  "Runner.Mcp.RunnerMcpToolResultContent",
-  "Runner.Mcp.RunnerMcpContent",
-  "Runner.Mcp.RunnerMcpTaskStatus",
-  "Runner.Mcp.RunnerMcpTask",
-  "Runner.Mcp.RunnerMcpToolCallResponse",
-  "Runner.Mcp.RunnerMcpResourceReadRequest",
-  "Runner.Mcp.RunnerMcpResourceContentMetadata",
-  "Runner.Mcp.RunnerMcpTextResourceContent",
-  "Runner.Mcp.RunnerMcpBlobResourceContent",
-  "Runner.Mcp.RunnerMcpResourceContent",
-  "Runner.Mcp.RunnerMcpResourceReadResponse",
+  "Workbench.WorkbenchServerInfo",
+  "Workbench.WorkbenchIcon",
+  "Workbench.WorkbenchToolTaskSupport",
+  "Workbench.WorkbenchToolExecution",
+  "Workbench.WorkbenchTool",
+  "Workbench.WorkbenchToolsResponse",
+  "Workbench.WorkbenchToolCallRequest",
+  "Workbench.WorkbenchTaskMetadata",
+  "Workbench.WorkbenchContentMetadata",
+  "Workbench.WorkbenchTextContent",
+  "Workbench.WorkbenchImageContent",
+  "Workbench.WorkbenchAudioContent",
+  "Workbench.WorkbenchEmbeddedResourceContent",
+  "Workbench.WorkbenchResourceLinkContent",
+  "Workbench.WorkbenchToolUseContent",
+  "Workbench.WorkbenchToolResultContent",
+  "Workbench.WorkbenchContent",
+  "Workbench.WorkbenchTaskStatus",
+  "Workbench.WorkbenchTask",
+  "Workbench.WorkbenchToolCallResponse",
+  "Workbench.WorkbenchResourceReadRequest",
+  "Workbench.WorkbenchResourceContentMetadata",
+  "Workbench.WorkbenchTextResourceContent",
+  "Workbench.WorkbenchBlobResourceContent",
+  "Workbench.WorkbenchResourceContent",
+  "Workbench.WorkbenchResourceReadResponse",
 ];
 for (const removedDefinition of removedMcpDefinitions) {
   if (removedDefinition in defs) {
@@ -325,13 +325,13 @@ for (const removedDefinition of removedMcpDefinitions) {
 }
 
 const serverConfigurationRefs = [
-  "RunnerMcpStdioServerConfiguration",
-  "RunnerMcpStreamableHttpServerConfiguration",
-  "RunnerMcpBuiltinServerConfiguration",
-].map((name) => `#/$defs/Runner.Mcp.${name}`);
-assertReferences("Runner.Mcp.RunnerMcpServerConfiguration", serverConfigurationRefs);
+  "WorkbenchStdioServerConfiguration",
+  "WorkbenchStreamableHttpServerConfiguration",
+  "WorkbenchBuiltinServerConfiguration",
+].map((name) => `#/$defs/Workbench.${name}`);
+assertReferences("Workbench.WorkbenchServerConfiguration", serverConfigurationRefs);
 
-const validateServerConfiguration = validatorFor("Runner.Mcp.RunnerMcpServerConfiguration");
+const validateServerConfiguration = validatorFor("Workbench.WorkbenchServerConfiguration");
 const serverConfigurationFixtures = [
   {
     transport: "stdio",
@@ -339,7 +339,7 @@ const serverConfigurationFixtures = [
     arguments: ["-y", "@example/mcp-server"],
     environment: [{
       name: "SERVICE_TOKEN",
-      secret: { source: "environment", environmentVariable: "MCP_SERVICE_TOKEN" },
+      secret: { source: "environment", environment_variable: "MCP_SERVICE_TOKEN" },
     }],
   },
   {
@@ -347,7 +347,7 @@ const serverConfigurationFixtures = [
     endpoint: "https://mcp.example.test/mcp",
     headers: [{
       name: "Authorization",
-      secret: { source: "environment", environmentVariable: "REMOTE_MCP_AUTH" },
+      secret: { source: "environment", environment_variable: "REMOTE_MCP_AUTH" },
       scheme: "bearer",
     }],
   },
@@ -372,26 +372,26 @@ assertInvalid(
     command: "server",
     environment: [{
       name: "TOKEN",
-      secret: { source: "keychain", environmentVariable: "TOKEN" },
+      secret: { source: "keychain", environment_variable: "TOKEN" },
     }],
   },
   "server configuration with an unimplemented secret store",
 );
 
-const secretReference = defs["Runner.Mcp.RunnerMcpSecretReference"];
+const secretReference = defs["Workbench.WorkbenchSecretReference"];
 if (JSON.stringify(secretReference?.properties?.source?.enum) !== JSON.stringify(["environment"]) ||
-    !secretReference?.required?.includes("environmentVariable") ||
+    !secretReference?.required?.includes("environment_variable") ||
     ["value", "store", "reference"].some((name) => name in (secretReference?.properties ?? {}))) {
-  throw new Error("RunnerMcpSecretReference must expose only an environment variable reference, never a value or speculative store.");
+  throw new Error("WorkbenchSecretReference must expose only an environment variable reference, never a value or speculative store.");
 }
 
-const validateExecutionRequest = validatorFor("Runner.Mcp.RunnerMcpExecutionRequest");
+const validateExecutionRequest = validatorFor("Workbench.WorkbenchExecutionRequest");
 const executionRequest = {
-  toolName: "inspect_trace",
+  tool_name: "inspect_trace",
   arguments: { traceId: "abc", nested: [true, 7] },
-  timeoutMs: 30000,
+  timeout_ms: 30000,
   confirmation: { acknowledged: true, acknowledgement: "This call may mutate external state." },
-  idempotencyKey: "execution-001",
+  idempotency_key: "execution-001",
 };
 assertValid(validateExecutionRequest, executionRequest, "asynchronous execution request");
 assertInvalid(
@@ -403,38 +403,38 @@ assertInvalid(
   validateExecutionRequest,
   {
     ...executionRequest,
-    confirmation: { ...executionRequest.confirmation, confirmedAt: "2026-07-15T10:00:00Z" },
+    confirmation: { ...executionRequest.confirmation, confirmed_at: "2026-07-15T10:00:00Z" },
   },
   "client-controlled confirmation timestamp",
 );
 
-const validateExecutionCancel = validatorFor("Runner.Mcp.RunnerMcpExecutionCancelRequest");
+const validateExecutionCancel = validatorFor("Workbench.WorkbenchExecutionCancelRequest");
 assertValid(
   validateExecutionCancel,
-  { reason: "No longer needed", idempotencyKey: "cancel-001" },
+  { reason: "No longer needed", idempotency_key: "cancel-001" },
   "idempotent asynchronous execution cancellation",
 );
 assertInvalid(validateExecutionCancel, { reason: "No longer needed" }, "cancellation without idempotency key");
 
-const validateExecutionRecord = validatorFor("Runner.Mcp.RunnerMcpExecutionRecord");
+const validateExecutionRecord = validatorFor("Workbench.WorkbenchExecutionRecord");
 const executionRecord = {
   id: "execution-001",
-  workspaceId: "workspace-001",
-  serverId: "server-001",
+  workspace_id: "workspace-001",
+  server_id: "server-001",
   request: executionRequest,
   effect: "consequential",
   confirmation: {
     acknowledged: true,
     acknowledgement: "This call may mutate external state.",
-    confirmedAt: "2026-07-15T10:00:00Z",
+    confirmed_at: "2026-07-15T10:00:00Z",
   },
   status: "succeeded",
-  createdAt: "2026-07-15T09:59:59Z",
-  startedAt: "2026-07-15T10:00:00Z",
-  completedAt: "2026-07-15T10:00:01Z",
-  durationMs: 1000,
-  attemptCount: 1,
-  retryCount: 0,
+  created_at: "2026-07-15T09:59:59Z",
+  started_at: "2026-07-15T10:00:00Z",
+  completed_at: "2026-07-15T10:00:01Z",
+  duration_ms: 1000,
+  attempt_count: 1,
+  retry_count: 0,
   result: {
     content: [{ type: "text", text: "opaque SDK result" }],
     structuredContent: { ok: true },
@@ -442,7 +442,7 @@ const executionRecord = {
 };
 assertValid(validateExecutionRecord, executionRecord, "server-derived execution record with opaque SDK result");
 
-const validateDiscovery = validatorFor("Runner.Mcp.RunnerMcpDiscoveryCollection");
+const validateDiscovery = validatorFor("Workbench.WorkbenchDiscoveryCollection");
 assertValid(
   validateDiscovery,
   {
@@ -450,78 +450,78 @@ assertValid(
     count: 1,
     complete: true,
     cursor: "page-1",
-    nextCursor: "page-2",
-    discoveredAt: "2026-07-15T10:00:00Z",
+    next_cursor: "page-2",
+    discovered_at: "2026-07-15T10:00:00Z",
   },
   "opaque SDK discovery collection",
 );
 
-const validateProtocolEvent = validatorFor("Runner.Mcp.RunnerMcpProtocolEvent");
+const validateProtocolEvent = validatorFor("Workbench.WorkbenchProtocolEvent");
 const protocolEvent = {
   id: "event-001",
-  serverId: "server-001",
+  server_id: "server-001",
   direction: "client_to_server",
   kind: "request",
   method: "tools/call",
-  requestId: 7,
+  request_id: 7,
   timestamp: "2026-07-15T10:00:00Z",
   payload: { jsonrpc: "2.0", params: { opaque: true } },
-  redactionApplied: true,
-  executionId: "execution-001",
+  redaction_applied: true,
+  execution_id: "execution-001",
 };
 assertValid(validateProtocolEvent, protocolEvent, "redacted opaque protocol event");
 assertInvalid(
   validateProtocolEvent,
-  { ...protocolEvent, redactionApplied: false },
+  { ...protocolEvent, redaction_applied: false },
   "protocol event without completed redaction",
 );
 
 const assertionRefs = [
-  "RunnerMcpStatusAssertion",
-  "RunnerMcpExactAssertion",
-  "RunnerMcpPartialAssertion",
-  "RunnerMcpSchemaAssertion",
-  "RunnerMcpPatternAssertion",
-  "RunnerMcpLatencyAssertion",
-].map((name) => `#/$defs/Runner.Mcp.${name}`);
-assertReferences("Runner.Mcp.RunnerMcpTestAssertion", assertionRefs);
-const validateAssertion = validatorFor("Runner.Mcp.RunnerMcpTestAssertion");
+  "WorkbenchStatusAssertion",
+  "WorkbenchExactAssertion",
+  "WorkbenchPartialAssertion",
+  "WorkbenchSchemaAssertion",
+  "WorkbenchPatternAssertion",
+  "WorkbenchLatencyAssertion",
+].map((name) => `#/$defs/Workbench.${name}`);
+assertReferences("Workbench.WorkbenchTestAssertion", assertionRefs);
+const validateAssertion = validatorFor("Workbench.WorkbenchTestAssertion");
 const assertionFixtures = [
   { id: "status", kind: "status", expected: ["succeeded"] },
   { id: "exact", kind: "exact", path: "/structuredContent/ok", expected: true },
   { id: "partial", kind: "partial", expected: { structuredContent: { ok: true } } },
   { id: "schema", kind: "schema", schema: { type: "object", required: ["content"] } },
   { id: "pattern", kind: "pattern", path: "/content/0/text", pattern: "^opaque", flags: "i" },
-  { id: "latency", kind: "latency", maxDurationMs: 2500 },
+  { id: "latency", kind: "latency", max_duration_ms: 2500 },
 ];
 for (const fixture of assertionFixtures) {
   assertValid(validateAssertion, fixture, `${fixture.kind} test assertion`);
 }
 
-const validateExportRequest = validatorFor("Runner.Mcp.RunnerMcpEvaluationExportRequest");
+const validateExportRequest = validatorFor("Workbench.WorkbenchEvaluationExportRequest");
 assertValid(
   validateExportRequest,
-  { format: "json", includeProtocolEvents: true, includeTelemetry: true, idempotencyKey: "export-001" },
+  { format: "json", include_protocol_events: true, include_telemetry: true, idempotency_key: "export-001" },
   "idempotent evaluation export request",
 );
 assertInvalid(validateExportRequest, { format: "report" }, "evaluation export request without idempotency key");
 
 const exportPayloadRefs = [
-  "RunnerMcpEvaluationJsonExportPayload",
-  "RunnerMcpEvaluationReportExportPayload",
-].map((name) => `#/$defs/Runner.Mcp.${name}`);
-assertReferences("Runner.Mcp.RunnerMcpEvaluationExportPayload", exportPayloadRefs);
-const exportMetadata = defs["Runner.Mcp.RunnerMcpEvaluationExport"];
-if ("downloadUrl" in (exportMetadata?.properties ?? {})) {
+  "WorkbenchEvaluationJsonExportPayload",
+  "WorkbenchEvaluationReportExportPayload",
+].map((name) => `#/$defs/Workbench.${name}`);
+assertReferences("Workbench.WorkbenchEvaluationExportPayload", exportPayloadRefs);
+const exportMetadata = defs["Workbench.WorkbenchEvaluationExport"];
+if ("download_url" in (exportMetadata?.properties ?? {})) {
   throw new Error("Evaluation exports must use the TypeSpec-owned content route, not an orphan downloadUrl.");
 }
 
-const discoveryItems = defs["Runner.Mcp.RunnerMcpDiscoveryCollection"]?.properties?.items?.items;
+const discoveryItems = defs["Workbench.WorkbenchDiscoveryCollection"]?.properties?.items?.items;
 const opaqueProperties = [
-  defs["Runner.Mcp.RunnerMcpInitializationSnapshot"]?.properties?.result,
-  defs["Runner.Mcp.RunnerMcpExecutionRequest"]?.properties?.arguments,
-  defs["Runner.Mcp.RunnerMcpExecutionRecord"]?.properties?.result,
-  defs["Runner.Mcp.RunnerMcpProtocolEvent"]?.properties?.payload,
+  defs["Workbench.WorkbenchInitializationSnapshot"]?.properties?.result,
+  defs["Workbench.WorkbenchExecutionRequest"]?.properties?.arguments,
+  defs["Workbench.WorkbenchExecutionRecord"]?.properties?.result,
+  defs["Workbench.WorkbenchProtocolEvent"]?.properties?.payload,
 ];
 if (JSON.stringify(discoveryItems) !== "{}" || opaqueProperties.some((property) =>
   !property || ["type", "$ref", "oneOf", "allOf", "properties"].some((keyword) => keyword in property)
@@ -529,18 +529,18 @@ if (JSON.stringify(discoveryItems) !== "{}" || opaqueProperties.some((property) 
   throw new Error("SDK MCP entities, messages, and results must remain opaque unknown payloads.");
 }
 
-const telemetryResponse = defs["Runner.Mcp.RunnerMcpExecutionTelemetryResponse"];
+const telemetryResponse = defs["Workbench.WorkbenchExecutionTelemetryResponse"];
 if (telemetryResponse?.properties?.traces?.items?.$ref !== "#/$defs/OTel.Traces.Trace" ||
     telemetryResponse?.properties?.logs?.items?.$ref !== "#/$defs/OTel.Logs.LogRecord" ||
     "metrics" in (telemetryResponse?.properties ?? {}) ||
-    JSON.stringify(telemetryResponse?.properties?.selfExportSuppressed?.enum) !== JSON.stringify([true]) ||
-    telemetryResponse?.properties?.signals?.$ref !== "#/$defs/Runner.Mcp.RunnerMcpTelemetrySignalSummary") {
+    JSON.stringify(telemetryResponse?.properties?.self_export_suppressed?.enum) !== JSON.stringify([true]) ||
+    telemetryResponse?.properties?.signals?.$ref !== "#/$defs/Workbench.WorkbenchTelemetrySignalSummary") {
   throw new Error("Execution telemetry must use Qyl Trace/LogRecord contracts, expose per-signal availability, and suppress self-export.");
 }
-const telemetrySignals = defs["Runner.Mcp.RunnerMcpTelemetrySignalSummary"];
-for (const signal of ["traces", "logs", "exceptions", "toolCallEvents"]) {
+const telemetrySignals = defs["Workbench.WorkbenchTelemetrySignalSummary"];
+for (const signal of ["traces", "logs", "exceptions", "tool_call_events"]) {
   if (telemetrySignals?.properties?.[signal]?.$ref !==
-      "#/$defs/Runner.Mcp.RunnerMcpTelemetrySignalAvailability") {
+      "#/$defs/Workbench.WorkbenchTelemetrySignalAvailability") {
     throw new Error(`Execution telemetry must expose ${signal} availability independently.`);
   }
 }
@@ -548,13 +548,13 @@ if ("metrics" in (telemetrySignals?.properties ?? {})) {
   throw new Error("Execution telemetry must not expose discarded metrics.");
 }
 
-const evaluationRun = defs["Runner.Mcp.RunnerMcpEvaluationRun"];
-const evaluationResult = defs["Runner.Mcp.RunnerMcpEvaluationTestResult"];
-if (evaluationRun?.properties?.testCases?.items?.$ref !==
-      "#/$defs/Runner.Mcp.RunnerMcpEvaluationTestCaseSnapshot" ||
-    evaluationResult?.properties?.testCase?.$ref !==
-      "#/$defs/Runner.Mcp.RunnerMcpEvaluationTestCaseSnapshot" ||
-    "testCaseIds" in (evaluationRun?.properties ?? {})) {
+const evaluationRun = defs["Workbench.WorkbenchEvaluationRun"];
+const evaluationResult = defs["Workbench.WorkbenchEvaluationTestResult"];
+if (evaluationRun?.properties?.test_cases?.items?.$ref !==
+      "#/$defs/Workbench.WorkbenchEvaluationTestCaseSnapshot" ||
+    evaluationResult?.properties?.test_case?.$ref !==
+      "#/$defs/Workbench.WorkbenchEvaluationTestCaseSnapshot" ||
+    "test_case_ids" in (evaluationRun?.properties ?? {})) {
   throw new Error("Evaluation history must retain immutable complete test-case definition snapshots.");
 }
 
@@ -569,9 +569,9 @@ const expectedErrorCategories = [
   "cancelled",
   "internal",
 ];
-const actualErrorCategories = defs["Runner.Mcp.RunnerMcpErrorCategory"]?.enum ?? [];
+const actualErrorCategories = defs["Workbench.WorkbenchErrorCategory"]?.enum ?? [];
 if (JSON.stringify(actualErrorCategories) !== JSON.stringify(expectedErrorCategories)) {
-  throw new Error(`RunnerMcpErrorCategory drifted: ${JSON.stringify(actualErrorCategories)}.`);
+  throw new Error(`WorkbenchErrorCategory drifted: ${JSON.stringify(actualErrorCategories)}.`);
 }
 
 for (const removedDefinition of [

@@ -43,8 +43,8 @@ interface StreamingApi {
   streamLogs(
     ...Qyl.Api.Contracts.ProjectScopeHeader,
     @header("Last-Event-ID") lastEventId?: string,
-    @query serviceName?: string,
-    @query @minValue(1) @maxValue(24) minSeverity?: int32,
+    @query("service_name") serviceName?: string,
+    @query("min_severity") @minValue(1) @maxValue(24) minSeverity?: int32,
     @query query?: string,
   ): SSEStream<LogEvents> | ValidationError | UnauthorizedError | ServiceUnavailableError | InternalServerError;
 }

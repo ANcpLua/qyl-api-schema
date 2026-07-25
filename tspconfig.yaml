@@ -27,3 +27,4 @@ options:
 linter:
   extends:
     - "@typespec/http/all"
+    - "@ancplua/typespec-qyl-lint/all"

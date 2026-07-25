@@ -19,12 +19,12 @@ namespace Qyl.Api.Contracts.Domains.Observe.Session;
 @doc("Session span/event attributes")
 model SessionAttributes {
   @doc("Session ID")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Session.Id)
-  id: SessionId;
+  @encodedName("application/json", "session_id")
+  sessionId: SessionId;
 
   @doc("Previous session ID (for session continuity)")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Session.PreviousId)
-  previousId?: SessionId;
+  @encodedName("application/json", "previous_session_id")
+  previousSessionId?: SessionId;
 }
 
 // =============================================================================
@@ -34,18 +34,18 @@ model SessionAttributes {
 @doc("Session lifecycle event")
 model SessionEvent {
   @doc("Event name")
-  @encodedName("application/json", "event.name")
+  @encodedName("application/json", "event_name")
   eventName: SessionEventName;
 
   @doc("Session ID")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Session.Id)
+  @encodedName("application/json", "session_id")
   sessionId: SessionId;
 
   @doc("Event timestamp")
   timestamp: utcDateTime;
 
   @doc("Event domain")
-  @encodedName("application/json", "event.domain")
+  @encodedName("application/json", "event_domain")
   eventDomain: "session";
 }
 
@@ -67,11 +67,11 @@ enum SessionEventName {
 model SessionEntity {
   @doc("Session ID")
   @key
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Session.Id)
+  @encodedName("application/json", "session_id")
   sessionId: SessionId;
 
   @doc("User ID (if authenticated)")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.User.Id)
+  @encodedName("application/json", "user_id")
   userId?: UserId;
 
   @doc("Session start time")

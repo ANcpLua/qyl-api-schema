@@ -57,16 +57,16 @@ interface TracesApi {
     | InternalServerError;
 
   @get
-  @route("/{traceId}")
-  get(...ProjectScopeHeader, @path traceId: TraceId):
+  @route("/{trace_id}")
+  get(...ProjectScopeHeader, @path("trace_id") traceId: TraceId):
     | Trace
     | NotFoundError
     | UnauthorizedError
     | InternalServerError;
 
   @get
-  @route("/{traceId}/spans")
-  getSpans(...ProjectScopeHeader, @path traceId: TraceId):
+  @route("/{trace_id}/spans")
+  getSpans(...ProjectScopeHeader, @path("trace_id") traceId: TraceId):
     | CursorPage<Span>
     | NotFoundError
     | UnauthorizedError
@@ -84,13 +84,13 @@ interface LogsApi {
   @get
   list(
     ...ProjectScopeHeader,
-    @query sessionId?: SessionId,
-    @query serviceName?: string,
+    @query("session_id") sessionId?: SessionId,
+    @query("service_name") serviceName?: string,
     @query level?: string,
-    @query severityMin?: SeverityNumber,
-    @query traceId?: TraceId,
-    @query startTime?: utcDateTime,
-    @query endTime?: utcDateTime,
+    @query("severity_min") severityMin?: SeverityNumber,
+    @query("trace_id") traceId?: TraceId,
+    @query("start_time") startTime?: utcDateTime,
+    @query("end_time") endTime?: utcDateTime,
     @query query?: string,
 
     @query
@@ -115,9 +115,9 @@ interface SessionsApi {
   @get
   list(
     ...ProjectScopeHeader,
-    @query isActive?: boolean,
-    @query startTime?: utcDateTime,
-    @query endTime?: utcDateTime,
+    @query("is_active") isActive?: boolean,
+    @query("start_time") startTime?: utcDateTime,
+    @query("end_time") endTime?: utcDateTime,
 
     @query
     @minValue(1)
@@ -132,16 +132,16 @@ interface SessionsApi {
     | InternalServerError;
 
   @get
-  @route("/{sessionId}")
-  get(...ProjectScopeHeader, @path sessionId: SessionId):
+  @route("/{session_id}")
+  get(...ProjectScopeHeader, @path("session_id") sessionId: SessionId):
     | SessionEntity
     | NotFoundError
     | UnauthorizedError
     | InternalServerError;
 
   @get
-  @route("/{sessionId}/traces")
-  getTraces(...ProjectScopeHeader, @path sessionId: SessionId):
+  @route("/{session_id}/traces")
+  getTraces(...ProjectScopeHeader, @path("session_id") sessionId: SessionId):
     | CursorPage<Trace>
     | NotFoundError
     | UnauthorizedError
@@ -151,8 +151,8 @@ interface SessionsApi {
   @route("/stats")
   getStats(
     ...ProjectScopeHeader,
-    @query startTime?: utcDateTime,
-    @query endTime?: utcDateTime,
+    @query("start_time") startTime?: utcDateTime,
+    @query("end_time") endTime?: utcDateTime,
   ): SessionStats | ValidationError | UnauthorizedError | InternalServerError;
 }
 

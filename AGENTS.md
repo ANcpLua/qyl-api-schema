@@ -60,6 +60,38 @@ The package and namespace identities are:
 - Never hand-edit generated output. Change TypeSpec, an emitter, or an upstream
   generated input and regenerate deterministically.
 
+## Wire naming
+
+The product contract has exactly one wire-naming convention: **snake_case for every
+JSON body property and for every query and path parameter.** There is no
+camelCase-passthrough population and no dotted key anywhere in a product DTO —
+dotted semantic-convention keys are attribute *values* at the OTLP ingestion
+boundary, which this repository does not own.
+
+Names are written explicitly with `@encodedName("application/json", …)` rather than
+derived by an emitter policy, so `index.tsp` compiled by any consumer produces the
+same wire names as the artifacts published beside it. A rename is allowed only when
+the wire name genuinely differs from the property name (`scopeName` → `name`); it
+may never be a casing fix.
+
+An identity has one scalar, one property name, and one wire key everywhere it
+appears — `TraceId`/`traceId`/`trace_id`, `SessionId`/`sessionId`/`session_id`. A
+field carrying an identity is typed as its scalar and never as a bare `string`, so
+it keeps that scalar's pattern and length validation. A second spelling of the same
+identity is the defect this convention exists to prevent: values pass between
+routes and MCP tool arguments, and a mismatched key yields an empty result rather
+than an error.
+
+`@ancplua/typespec-qyl-lint` enforces all of the above. It is loaded by name from
+`tspconfig.yaml` and is never imported by a `.tsp` file, which keeps the published
+entry point free of build-only dependencies while `npm run lint` and
+`npm run lint:public` still check the exact source that ships. Its `src/policy.ts`
+is the single declaration of the convention and of the identity table; a genuinely
+different edge to the same identity (`parentSpanId`, `previousSessionId`,
+`selectedTraceId`) is added there with its rationale, never worked around locally.
+Two identity scalars that read alike must state their relationship in a doc comment
+that names the fully qualified type they are not — see `WorkbenchSessionId`.
+
 ## Versioning
 
 Published npm and NuGet versions are derived from the release tag by CI; committed

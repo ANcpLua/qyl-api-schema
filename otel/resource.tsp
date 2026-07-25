@@ -18,143 +18,143 @@ namespace Qyl.Api.Contracts.OTel.Resource;
 @doc("Resource describes the entity producing telemetry")
 model Resource {
   @doc("Service name (required)")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Service.Name)
+  @encodedName("application/json", "service_name")
   serviceName: string;
 
   @doc("Service namespace for grouping")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Service.Namespace)
+  @encodedName("application/json", "service_namespace")
   serviceNamespace?: string;
 
   @doc("Service instance ID (unique per instance)")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Service.InstanceId)
+  @encodedName("application/json", "service_instance_id")
   serviceInstanceId?: string;
 
   @doc("Service version")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Service.Version)
+  @encodedName("application/json", "service_version")
   serviceVersion?: SemVer;
 
   @doc("Telemetry SDK name")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Telemetry.SdkName)
+  @encodedName("application/json", "telemetry_sdk_name")
   telemetrySdkName?: string;
 
   @doc("Telemetry SDK language")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Telemetry.SdkLanguage)
+  @encodedName("application/json", "telemetry_sdk_language")
   telemetrySdkLanguage?: Enums.TelemetrySdkLanguage;
 
   @doc("Telemetry SDK version")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Telemetry.SdkVersion)
+  @encodedName("application/json", "telemetry_sdk_version")
   telemetrySdkVersion?: SemVer;
 
-  @doc("Auto-instrumentation agent name")
-  @encodedName("application/json", "telemetry.auto.version")
-  telemetryAutoVersion?: SemVer;
+  @doc("Telemetry distribution version")
+  @encodedName("application/json", "telemetry_distro_version")
+  telemetryDistroVersion?: SemVer;
 
   @doc("Deployment environment (e.g., production, staging)")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Deployment.EnvironmentName)
+  @encodedName("application/json", "deployment_environment")
   deploymentEnvironment?: string;
 
   @doc("Cloud provider")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Cloud.Provider)
+  @encodedName("application/json", "cloud_provider")
   cloudProvider?: CloudProvider;
 
   @doc("Cloud region")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Cloud.Region)
+  @encodedName("application/json", "cloud_region")
   cloudRegion?: string;
 
   @doc("Cloud availability zone")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Cloud.AvailabilityZone)
+  @encodedName("application/json", "cloud_availability_zone")
   cloudAvailabilityZone?: string;
 
   @doc("Cloud account ID")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Cloud.AccountId)
+  @encodedName("application/json", "cloud_account_id")
   cloudAccountId?: string;
 
   @doc("Cloud platform (e.g., aws_ecs, gcp_cloud_run)")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Cloud.Platform)
+  @encodedName("application/json", "cloud_platform")
   cloudPlatform?: string;
 
   @doc("Host name")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Host.Name)
+  @encodedName("application/json", "host_name")
   hostName?: string;
 
   @doc("Host ID")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Host.Id)
+  @encodedName("application/json", "host_id")
   hostId?: string;
 
   @doc("Host type (e.g., n1-standard-1)")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Host.Type)
+  @encodedName("application/json", "host_type")
   hostType?: string;
 
   @doc("Host architecture (e.g., amd64, arm64)")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Host.Arch)
+  @encodedName("application/json", "host_arch")
   hostArch?: HostArch;
 
   @doc("Operating system type")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Os.Type)
+  @encodedName("application/json", "os_type")
   osType?: OsType;
 
   @doc("Operating system description")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Os.Description)
+  @encodedName("application/json", "os_description")
   osDescription?: string;
 
   @doc("Operating system version")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Os.Version)
+  @encodedName("application/json", "os_version")
   osVersion?: string;
 
   @doc("Process ID")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Process.Pid)
+  @encodedName("application/json", "process_pid")
   processPid?: int64;
 
   @doc("Process executable name")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Process.ExecutableName)
+  @encodedName("application/json", "process_executable_name")
   processExecutableName?: string;
 
   @doc("Process command line")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Process.CommandLine)
+  @encodedName("application/json", "process_command_line")
   processCommandLine?: string;
 
   @doc("Process runtime name")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Process.RuntimeName)
+  @encodedName("application/json", "process_runtime_name")
   processRuntimeName?: string;
 
   @doc("Process runtime version")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Process.RuntimeVersion)
+  @encodedName("application/json", "process_runtime_version")
   processRuntimeVersion?: string;
 
   @doc("Container ID")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Container.Id)
+  @encodedName("application/json", "container_id")
   containerId?: string;
 
   @doc("Container name")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Container.Name)
+  @encodedName("application/json", "container_name")
   containerName?: string;
 
   @doc("Container image name")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.Container.ImageName)
+  @encodedName("application/json", "container_image_name")
   containerImageName?: string;
 
-  @doc("Container image tag")
-  @encodedName("application/json", "container.image.tag")
-  containerImageTag?: string;
+  @doc("Container image tags")
+  @encodedName("application/json", "container_image_tags")
+  containerImageTags?: string[];
 
   @doc("Kubernetes cluster name")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.K8s.ClusterName)
+  @encodedName("application/json", "k8s_cluster_name")
   k8sClusterName?: string;
 
   @doc("Kubernetes namespace")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.K8s.NamespaceName)
+  @encodedName("application/json", "k8s_namespace_name")
   k8sNamespaceName?: string;
 
   @doc("Kubernetes pod name")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.K8s.PodName)
+  @encodedName("application/json", "k8s_pod_name")
   k8sPodName?: string;
 
   @doc("Kubernetes pod UID")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.K8s.PodUid)
+  @encodedName("application/json", "k8s_pod_uid")
   k8sPodUid?: string;
 
   @doc("Kubernetes deployment name")
-  @encodedName("application/json", ANcpLua.OpenTelemetry.SemanticConventions.Keys.K8s.DeploymentName)
+  @encodedName("application/json", "k8s_deployment_name")
   k8sDeploymentName?: string;
 
   @doc("Additional resource attributes")

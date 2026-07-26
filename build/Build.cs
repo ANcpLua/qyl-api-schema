@@ -193,33 +193,6 @@ sealed class Build : NukeBuild
         Directory.CreateDirectory(path);
     }
 
-    Target BuildCSharpEmit => _ => _
-        .Description("dotnet build the emitted C# project under Artifacts/emit/csharp (no-op when no csproj is emitted).")
-        .DependsOn(EmitCSharp)
-        .Executes(() =>
-        {
-            var csharpOut = EmitOutputDir / "csharp";
-            if (!Directory.Exists(csharpOut))
-            {
-                Log.Warning("BuildCSharpEmit: '{Dir}' does not exist — skipping.", csharpOut);
-                return;
-            }
-
-            var projects = Directory.GetFiles(csharpOut, "*.csproj", SearchOption.AllDirectories);
-            if (projects.Length == 0)
-            {
-                Log.Warning("BuildCSharpEmit: no *.csproj under '{Dir}' — skipping.", csharpOut);
-                return;
-            }
-
-            foreach (var csproj in projects)
-            {
-                DotNetBuild(s => s
-                    .SetProjectFile(csproj)
-                    .SetConfiguration("Release"));
-            }
-        });
-
     // Compare regenerated tracked output without requiring a clean checkout.
     Target VerifyGeneratedArtifactsCurrent => _ => _
         .Description("Regenerate tracked OpenAPI output into scratch and fail on drift or unexpected untracked generated files.")
@@ -287,6 +260,19 @@ sealed class Build : NukeBuild
         {
             NpmRun(s => s
                 .SetCommand("verify:lint-rules")
+                .SetProcessWorkingDirectory(DomainSpecRoot));
+        });
+
+    // CompileDomainSpec covers index.tsp, the published subset. main.tsp additionally
+    // pulls in emit-config.tsp and anything not re-exported, so a warning there passed
+    // this gate and failed only in publish.yml, which lints both surfaces.
+    Target LintFullSurface => _ => _
+        .Description("Compile the full TypeSpec surface (main.tsp) with --warn-as-error via `npm run lint`.")
+        .DependsOn(RestoreTypeSpecDeps)
+        .Executes(() =>
+        {
+            NpmRun(s => s
+                .SetCommand("lint")
                 .SetProcessWorkingDirectory(DomainSpecRoot));
         });
 
@@ -361,12 +347,51 @@ sealed class Build : NukeBuild
                 .SetVersion(NugetPackageVersion()));
         });
 
+    // npm pack's filename rule: "@scope/name" -> "scope-name-<version>.tgz".
+    AbsolutePath NpmTarball()
+    {
+        var pkgJson = DomainSpecRoot / "package.json";
+        using var doc = JsonDocument.Parse(File.ReadAllText(pkgJson));
+        var name = doc.RootElement.GetProperty("name").GetString()
+            ?? throw new InvalidOperationException($"'{pkgJson}' has no 'name'.");
+        return DomainSpecRoot / $"{name.TrimStart('@').Replace('/', '-')}-{PackageJsonVersion()}.tgz";
+    }
+
+    // Packing proves the artifacts assemble; only a consumer proves they are usable.
+    // A missing package.json#files entry, a broken exports map, a .d.ts that does not
+    // typecheck outside this repo, or a DTO that round-trips under the wrong wire name
+    // all pack cleanly and fail on install. Without this in Check they were first seen
+    // by publish.yml, mid-release.
+    Target VerifyPackedConsumers => _ => _
+        .Description("Install the packed npm tarball and NuGet package into throwaway consumers and run the probes under scripts/probes.")
+        .DependsOn(PackApiPackage, PackContractsNuget)
+        .Executes(() =>
+        {
+            var tarball = NpmTarball();
+            var nupkg = NugetOutputDir / $"Qyl.Api.Contracts.{NugetPackageVersion()}.nupkg";
+            if (!tarball.FileExists())
+                throw new InvalidOperationException(
+                    $"VerifyPackedConsumers: PackApiPackage did not produce '{tarball}'.");
+            if (!nupkg.FileExists())
+                throw new InvalidOperationException(
+                    $"VerifyPackedConsumers: PackContractsNuget did not produce '{nupkg}'.");
+
+            // Same script publish.yml runs before it pushes to either registry, so the
+            // release path and this gate cannot drift apart.
+            ProcessTasks.StartProcess(
+                    "node",
+                    $"scripts/verify-packed.mjs {NugetPackageVersion()} \"{tarball}\" \"{nupkg}\"",
+                    DomainSpecRoot)
+                .AssertZeroExitCode();
+        });
+
     Target Check => _ => _
-        .Description("Local everything-green gate: restore -> compile -> generated/contract invariants -> emit deterministically -> pack npm and C# contracts.")
+        .Description("Local everything-green gate: restore -> lint both surfaces -> compile -> generated/contract invariants -> emit deterministically -> pack npm and C# contracts -> install both into clean consumers.")
         .DependsOn(
             RestoreTypeSpecDeps,
             VerifyKeysLockstep,
             CompileDomainSpec,
+            LintFullSurface,
             VerifyGeneratedArtifactsCurrent,
             VerifyRouteContracts,
             VerifyContractFixtures,
@@ -374,5 +399,6 @@ sealed class Build : NukeBuild
             EmitAll,
             VerifyEmitDeterministic,
             PackApiPackage,
-            PackContractsNuget);
+            PackContractsNuget,
+            VerifyPackedConsumers);
 }

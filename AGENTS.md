@@ -162,3 +162,11 @@ Publication is GitHub Actions OIDC trusted publishing to npmjs.org and nuget.org
 Never add long-lived registry credentials or publish locally. The workflow publishes
 in an ordered, restartable sequence; it is not atomic across registries. Release
 completion requires both indexed artifacts and clean-consumer smoke tests.
+
+That rule is about publishing, and it stands. npm's OIDC authorizes `npm publish`
+alone, so registry writes it cannot perform — moving or deleting a dist-tag,
+deprecating a published version — have no credential in CI by design. Repair those
+with `~/.claude/bin/npm-authed <npm args...>`, which injects a keychain-held granular
+token scoped to this package for a single command and leaves `~/.npmrc` untouched. It
+exists to fix already-published state; it must never publish, and the release path
+must never depend on it.

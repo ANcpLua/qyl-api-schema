@@ -5,6 +5,24 @@ This is the repository's only editable agent/contributor instruction file.
 generated reports are evidence, not additional authorities. Do not add migration
 plans, progress diaries, handoff prompts, or a second rules file.
 
+## Place in the 1.0.0 taxonomy
+
+This repository is not one of the nine runtime components; it is where the
+**product API contract** is authored, and the collector consumes it through
+`Qyl.Api.Contracts`. The collector explicitly disables OpenAPI generation for
+that reason — it is not a contract or client-generation source. Keep it that
+way: one owner per contract.
+
+It also consumes the TypeSpec key projection from
+`Qyl.Telemetry.SemanticConventions` (today
+`Qyl.OpenTelemetry.SemanticConventions`). That projection is generated from the
+same Weaver registry as the producer constants and the collector's
+`CollectorSemanticAttributeCatalog.g.cs`, which is what keeps wire names
+consistent across all three. Never hand-author a name that the registry owns.
+
+The full ledger and the boundary law live in `qyl-workspace/AGENTS.md` — that
+file is binding and this one does not restate it.
+
 ## Product-contract ownership
 
 This TypeSpec repository is the sole owner of Qyl's client-visible product contract.

@@ -65,13 +65,20 @@ scalar UserId extends string;
 @encode(DateTimeKnownEncoding.rfc3339)
 scalar Timestamp extends utcDateTime;
 
-@doc("Unsigned Unix timestamp in nanoseconds since epoch")
+// Encoded as a decimal string, not a JSON number. A 2026 nanosecond timestamp is ~1.79e18,
+// well past Number.MAX_SAFE_INTEGER (9.007e15), so a bare JSON number is rounded to the
+// nearest 256 ns by every JavaScript consumer — two spans 100 ns apart come back byte-identical
+// and the waterfall reorders them on each reload. This is the same reason OTLP/JSON mandates
+// decimal strings for its 64-bit fixed64 fields.
+@doc("Unsigned Unix timestamp in nanoseconds since epoch, encoded as a decimal string")
 @minValue(0)
+@encode(string)
 @TypeSpec.OpenAPI.extension("x-csharp-type", "ulong")
 scalar UnixNanos extends uint64;
 
-@doc("Duration in nanoseconds")
+@doc("Duration in nanoseconds, encoded as a decimal string")
 @minValue(0)
+@encode(string)
 @TypeSpec.OpenAPI.extension("x-csharp-type", "ulong")
 scalar DurationNs extends uint64;
 

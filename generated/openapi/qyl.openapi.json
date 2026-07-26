@@ -12580,10 +12580,10 @@
         "x-csharp-type": "double"
       },
       "Common.DurationNs": {
-        "type": "integer",
+        "type": "string",
         "format": "uint64",
         "minimum": 0,
-        "description": "Duration in nanoseconds",
+        "description": "Duration in nanoseconds, encoded as a decimal string",
         "x-csharp-type": "ulong"
       },
       "Common.DurationS": {
@@ -13322,10 +13322,10 @@
         ]
       },
       "Common.UnixNanos": {
-        "type": "integer",
+        "type": "string",
         "format": "uint64",
         "minimum": 0,
-        "description": "Unsigned Unix timestamp in nanoseconds since epoch",
+        "description": "Unsigned Unix timestamp in nanoseconds since epoch, encoded as a decimal string",
         "x-csharp-type": "ulong"
       },
       "Common.UrlPath": {

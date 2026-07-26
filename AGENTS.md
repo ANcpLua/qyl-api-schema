@@ -20,8 +20,8 @@ same Weaver registry as the producer constants and the collector's
 `CollectorSemanticAttributeCatalog.g.cs`, which is what keeps wire names
 consistent across all three. Never hand-author a name that the registry owns.
 
-The full ledger and the boundary law live in `qyl-workspace/AGENTS.md` — that
-file is binding and this one does not restate it.
+The full ledger and the boundary law live in `qyl/ARCHITECTURE-1.0.0.md` — that
+document is normative and this one does not restate it.
 
 ## Product-contract ownership
 

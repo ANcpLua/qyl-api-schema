@@ -24,13 +24,13 @@
     "ExecutableTarget": {
       "type": "string",
       "enum": [
-        "BuildCSharpEmit",
         "Check",
         "CleanContractsEmit",
         "CompileDomainSpec",
         "EmitAll",
         "EmitCSharp",
         "EmitTsTypes",
+        "LintFullSurface",
         "PackApiPackage",
         "PackContractsNuget",
         "RestoreTypeSpecDeps",
@@ -39,6 +39,7 @@
         "VerifyGeneratedArtifactsCurrent",
         "VerifyKeysLockstep",
         "VerifyLintRules",
+        "VerifyPackedConsumers",
         "VerifyRouteContracts"
       ]
     },

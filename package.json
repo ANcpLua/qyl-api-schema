@@ -130,11 +130,11 @@
     "@ancplua/typespec-qyl-lint": "file:./emitters/qyl-lint",
     "@types/node": "24.13.3",
     "@typespec/compiler": "1.14.0",
-    "@typespec/events": "0.83.0",
-    "@typespec/http": "1.13.0",
-    "@typespec/openapi": "1.13.0",
-    "@typespec/openapi3": "1.13.0",
-    "@typespec/sse": "0.83.0",
+    "@typespec/events": "0.84.0",
+    "@typespec/http": "1.14.0",
+    "@typespec/openapi": "1.14.0",
+    "@typespec/openapi3": "1.14.0",
+    "@typespec/sse": "0.84.0",
     "ajv": "8.20.0",
     "typescript": "7.0.2"
   }

@@ -12369,11 +12369,7 @@
             "description": "Attribute key (dot-separated namespace)"
           },
           "value": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.AttributeValue"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.AttributeValue",
             "description": "Attribute value"
           }
         },
@@ -13021,11 +13017,7 @@
             "description": "Name of the instrumentation scope (library name)"
           },
           "version": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.SemVer"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.SemVer",
             "description": "Version of the instrumentation scope"
           },
           "attributes": {
@@ -13036,11 +13028,7 @@
             "description": "Additional attributes for the scope"
           },
           "dropped_attributes_count": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.Count"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.Count",
             "description": "Dropped attributes count"
           }
         },
@@ -13078,11 +13066,7 @@
         "type": "object",
         "properties": {
           "bucket": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.Pagination.TimeBucket"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.Pagination.TimeBucket",
             "description": "Time bucket size",
             "default": "auto"
           },
@@ -13119,11 +13103,7 @@
             "default": 100
           },
           "order": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.Pagination.SortOrder"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.Pagination.SortOrder",
             "description": "Sort direction",
             "default": "desc"
           }
@@ -13174,11 +13154,7 @@
             "description": "Include historical data from this timestamp"
           },
           "trace_id": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.TraceId"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.TraceId",
             "description": "Filter by trace ID"
           },
           "service_name": {
@@ -13406,19 +13382,11 @@
         ],
         "properties": {
           "session_id": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.SessionId"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.SessionId",
             "description": "Session ID"
           },
           "previous_session_id": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.SessionId"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.SessionId",
             "description": "Previous session ID (for session continuity)"
           }
         },
@@ -13431,27 +13399,15 @@
         "type": "object",
         "properties": {
           "ip": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.IpAddress"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.IpAddress",
             "description": "Client IP address"
           },
           "user_agent": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.UserAgent"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.UserAgent",
             "description": "User agent string"
           },
           "device_type": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Domains.Observe.Session.DeviceType"
-              }
-            ],
+            "$ref": "#/components/schemas/Domains.Observe.Session.DeviceType",
             "description": "Device type"
           },
           "os": {
@@ -13485,19 +13441,11 @@
         ],
         "properties": {
           "session_id": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.SessionId"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.SessionId",
             "description": "Session ID"
           },
           "user_id": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.UserId"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.UserId",
             "description": "User ID (if authenticated)"
           },
           "start_time": {
@@ -13511,11 +13459,7 @@
             "description": "Session end time"
           },
           "duration_ms": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.DurationMs"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.DurationMs",
             "description": "Session duration in milliseconds"
           },
           "trace_count": {
@@ -13544,35 +13488,19 @@
             "description": "Service names observed in this session"
           },
           "state": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Domains.Observe.Session.SessionState"
-              }
-            ],
+            "$ref": "#/components/schemas/Domains.Observe.Session.SessionState",
             "description": "Session state"
           },
           "client": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Domains.Observe.Session.SessionClientInfo"
-              }
-            ],
+            "$ref": "#/components/schemas/Domains.Observe.Session.SessionClientInfo",
             "description": "Client information"
           },
           "geo": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Domains.Observe.Session.SessionGeoInfo"
-              }
-            ],
+            "$ref": "#/components/schemas/Domains.Observe.Session.SessionGeoInfo",
             "description": "Location information"
           },
           "genai_usage": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Domains.Observe.Session.SessionGenAiUsage"
-              }
-            ],
+            "$ref": "#/components/schemas/Domains.Observe.Session.SessionGenAiUsage",
             "description": "GenAI usage summary"
           }
         },
@@ -13592,19 +13520,11 @@
         ],
         "properties": {
           "event_name": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Domains.Observe.Session.SessionEventName"
-              }
-            ],
+            "$ref": "#/components/schemas/Domains.Observe.Session.SessionEventName",
             "description": "Event name"
           },
           "session_id": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.SessionId"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.SessionId",
             "description": "Session ID"
           },
           "timestamp": {
@@ -13650,19 +13570,11 @@
             "description": "Total GenAI requests in session"
           },
           "total_input_tokens": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.TokenCount"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.TokenCount",
             "description": "Total input tokens consumed"
           },
           "total_output_tokens": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.TokenCount"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.TokenCount",
             "description": "Total output tokens generated"
           },
           "models_used": {
@@ -13741,19 +13653,11 @@
         ],
         "properties": {
           "active_sessions": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.Count"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.Count",
             "description": "Active sessions count"
           },
           "total_sessions": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.Count"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.Count",
             "description": "Total sessions in time range"
           },
           "avg_duration_ms": {
@@ -13762,27 +13666,15 @@
             "description": "Average session duration in milliseconds"
           },
           "sessions_with_errors": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.Count"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.Count",
             "description": "Sessions with errors"
           },
           "sessions_with_genai": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.Count"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.Count",
             "description": "Sessions with GenAI usage"
           },
           "bounce_rate": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.Ratio"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.Ratio",
             "description": "Bounce rate (single-page sessions)"
           }
         },
@@ -14632,43 +14524,23 @@
         ],
         "properties": {
           "time_unix_nano": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.UnixNanos"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.UnixNanos",
             "description": "Timestamp when the event occurred (nanoseconds since epoch)"
           },
           "observed_time_unix_nano": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.UnixNanos"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.UnixNanos",
             "description": "Timestamp when the log was observed/collected (nanoseconds since epoch)"
           },
           "severity_number": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/OTel.Enums.SeverityNumber"
-              }
-            ],
+            "$ref": "#/components/schemas/OTel.Enums.SeverityNumber",
             "description": "Severity number (1-24)"
           },
           "severity_text": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/OTel.Enums.SeverityText"
-              }
-            ],
+            "$ref": "#/components/schemas/OTel.Enums.SeverityText",
             "description": "Severity text (DEBUG, INFO, WARN, ERROR, etc.)"
           },
           "body": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/OTel.Logs.LogBody"
-              }
-            ],
+            "$ref": "#/components/schemas/OTel.Logs.LogBody",
             "description": "Log body - the main content"
           },
           "attributes": {
@@ -14679,11 +14551,7 @@
             "description": "Log attributes"
           },
           "dropped_attributes_count": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.Count"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.Count",
             "description": "Dropped attributes count"
           },
           "flags": {
@@ -14692,19 +14560,11 @@
             "description": "Flags (trace flags)"
           },
           "trace_id": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.TraceId"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.TraceId",
             "description": "Associated trace ID"
           },
           "span_id": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.SpanId"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.SpanId",
             "description": "Associated span ID"
           },
           "event_name": {
@@ -14712,19 +14572,11 @@
             "description": "Optional event category whose presence identifies this log record as an event; records with the same name are expected to share one body and attribute schema."
           },
           "resource": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/OTel.Resource.Resource"
-              }
-            ],
+            "$ref": "#/components/schemas/OTel.Resource.Resource",
             "description": "Resource describing the entity that produced this log"
           },
           "instrumentation_scope": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.InstrumentationScope"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.InstrumentationScope",
             "description": "Instrumentation scope"
           }
         },
@@ -14824,11 +14676,7 @@
             "description": "Service instance ID (unique per instance)"
           },
           "service_version": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.SemVer"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.SemVer",
             "description": "Service version"
           },
           "telemetry_sdk_name": {
@@ -14836,27 +14684,15 @@
             "description": "Telemetry SDK name"
           },
           "telemetry_sdk_language": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/OTel.Enums.TelemetrySdkLanguage"
-              }
-            ],
+            "$ref": "#/components/schemas/OTel.Enums.TelemetrySdkLanguage",
             "description": "Telemetry SDK language"
           },
           "telemetry_sdk_version": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.SemVer"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.SemVer",
             "description": "Telemetry SDK version"
           },
           "telemetry_distro_version": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.SemVer"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.SemVer",
             "description": "Telemetry distribution version"
           },
           "deployment_environment": {
@@ -14864,11 +14700,7 @@
             "description": "Deployment environment (e.g., production, staging)"
           },
           "cloud_provider": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/OTel.Resource.CloudProvider"
-              }
-            ],
+            "$ref": "#/components/schemas/OTel.Resource.CloudProvider",
             "description": "Cloud provider"
           },
           "cloud_region": {
@@ -14900,19 +14732,11 @@
             "description": "Host type (e.g., n1-standard-1)"
           },
           "host_arch": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/OTel.Resource.HostArch"
-              }
-            ],
+            "$ref": "#/components/schemas/OTel.Resource.HostArch",
             "description": "Host architecture (e.g., amd64, arm64)"
           },
           "os_type": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/OTel.Resource.OsType"
-              }
-            ],
+            "$ref": "#/components/schemas/OTel.Resource.OsType",
             "description": "Operating system type"
           },
           "os_description": {
@@ -14991,11 +14815,7 @@
             "description": "Additional resource attributes"
           },
           "dropped_attributes_count": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.Count"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.Count",
             "description": "Dropped attributes count"
           },
           "entity_refs": {
@@ -15025,35 +14845,19 @@
         ],
         "properties": {
           "span_id": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.SpanId"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.SpanId",
             "description": "Unique span identifier (16 hex chars)"
           },
           "trace_id": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.TraceId"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.TraceId",
             "description": "Trace identifier (32 hex chars)"
           },
           "parent_span_id": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.SpanId"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.SpanId",
             "description": "Parent span identifier (null for root spans)"
           },
           "trace_state": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.TraceState"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.TraceState",
             "description": "W3C trace state"
           },
           "name": {
@@ -15062,27 +14866,15 @@
             "description": "Human-readable span name"
           },
           "kind": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/OTel.Enums.SpanKind"
-              }
-            ],
+            "$ref": "#/components/schemas/OTel.Enums.SpanKind",
             "description": "Span kind"
           },
           "start_time_unix_nano": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.UnixNanos"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.UnixNanos",
             "description": "Start timestamp in nanoseconds since epoch"
           },
           "end_time_unix_nano": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.UnixNanos"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.UnixNanos",
             "description": "End timestamp in nanoseconds since epoch"
           },
           "attributes": {
@@ -15093,11 +14885,7 @@
             "description": "Span attributes"
           },
           "dropped_attributes_count": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.Count"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.Count",
             "description": "Dropped attributes count"
           },
           "events": {
@@ -15108,11 +14896,7 @@
             "description": "Span events (logs attached to span)"
           },
           "dropped_events_count": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.Count"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.Count",
             "description": "Dropped events count"
           },
           "links": {
@@ -15123,19 +14907,11 @@
             "description": "Links to other spans"
           },
           "dropped_links_count": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.Count"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.Count",
             "description": "Dropped links count"
           },
           "status": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/OTel.Traces.SpanStatus"
-              }
-            ],
+            "$ref": "#/components/schemas/OTel.Traces.SpanStatus",
             "description": "Span status"
           },
           "flags": {
@@ -15144,19 +14920,11 @@
             "description": "Span flags"
           },
           "resource": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/OTel.Resource.Resource"
-              }
-            ],
+            "$ref": "#/components/schemas/OTel.Resource.Resource",
             "description": "Resource describing the entity that produced this span"
           },
           "instrumentation_scope": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.InstrumentationScope"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.InstrumentationScope",
             "description": "Instrumentation scope"
           }
         },
@@ -15178,11 +14946,7 @@
             "description": "Event name"
           },
           "time_unix_nano": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.UnixNanos"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.UnixNanos",
             "description": "Event timestamp in nanoseconds since epoch"
           },
           "attributes": {
@@ -15193,11 +14957,7 @@
             "description": "Event attributes"
           },
           "dropped_attributes_count": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.Count"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.Count",
             "description": "Dropped attributes count"
           }
         },
@@ -15214,27 +14974,15 @@
         ],
         "properties": {
           "trace_id": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.TraceId"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.TraceId",
             "description": "Linked trace ID"
           },
           "span_id": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.SpanId"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.SpanId",
             "description": "Linked span ID"
           },
           "trace_state": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.TraceState"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.TraceState",
             "description": "Trace state of the linked span"
           },
           "attributes": {
@@ -15245,11 +14993,7 @@
             "description": "Link attributes"
           },
           "dropped_attributes_count": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.Count"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.Count",
             "description": "Dropped attributes count"
           },
           "flags": {
@@ -15267,19 +15011,11 @@
         "type": "object",
         "properties": {
           "trace_id": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.TraceId"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.TraceId",
             "description": "Filter by trace ID"
           },
           "parent_span_id": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.SpanId"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.SpanId",
             "description": "Filter by parent span ID"
           },
           "name": {
@@ -15287,11 +15023,7 @@
             "description": "Filter by span name (supports wildcards)"
           },
           "kind": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/OTel.Enums.SpanKind"
-              }
-            ],
+            "$ref": "#/components/schemas/OTel.Enums.SpanKind",
             "description": "Filter by span kind"
           },
           "service_name": {
@@ -15299,27 +15031,15 @@
             "description": "Filter by service name"
           },
           "status_code": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/OTel.Enums.SpanStatusCode"
-              }
-            ],
+            "$ref": "#/components/schemas/OTel.Enums.SpanStatusCode",
             "description": "Filter by status code"
           },
           "min_duration_ns": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.DurationNs"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.DurationNs",
             "description": "Minimum duration in nanoseconds"
           },
           "max_duration_ns": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.DurationNs"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.DurationNs",
             "description": "Maximum duration in nanoseconds"
           },
           "attribute": {
@@ -15348,27 +15068,15 @@
         ],
         "properties": {
           "total_count": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.Count"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.Count",
             "description": "Total span count"
           },
           "error_count": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.Count"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.Count",
             "description": "Error count"
           },
           "error_rate": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.Ratio"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.Ratio",
             "description": "Error rate (0.0 - 1.0)"
           },
           "avg_duration_ns": {
@@ -15377,43 +15085,23 @@
             "description": "Average duration in nanoseconds"
           },
           "p50_duration_ns": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.DurationNs"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.DurationNs",
             "description": "P50 duration in nanoseconds"
           },
           "p90_duration_ns": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.DurationNs"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.DurationNs",
             "description": "P90 duration in nanoseconds"
           },
           "p99_duration_ns": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.DurationNs"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.DurationNs",
             "description": "P99 duration in nanoseconds"
           },
           "min_duration_ns": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.DurationNs"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.DurationNs",
             "description": "Minimum duration in nanoseconds"
           },
           "max_duration_ns": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.DurationNs"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.DurationNs",
             "description": "Maximum duration in nanoseconds"
           },
           "throughput_per_second": {
@@ -15455,11 +15143,7 @@
             "description": "Dimension value (e.g., service name)"
           },
           "count": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.Count"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.Count",
             "description": "Span count for this dimension"
           },
           "avg_duration_ns": {
@@ -15468,11 +15152,7 @@
             "description": "Average duration in nanoseconds"
           },
           "error_rate": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.Ratio"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.Ratio",
             "description": "Error rate for this dimension"
           }
         },
@@ -15488,11 +15168,7 @@
         ],
         "properties": {
           "code": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/OTel.Enums.SpanStatusCode"
-              }
-            ],
+            "$ref": "#/components/schemas/OTel.Enums.SpanStatusCode",
             "description": "Status code"
           },
           "message": {
@@ -15542,19 +15218,11 @@
         ],
         "properties": {
           "trace_id": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.TraceId"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.TraceId",
             "description": "Trace identifier"
           },
           "root_span": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/OTel.Traces.Span"
-              }
-            ],
+            "$ref": "#/components/schemas/OTel.Traces.Span",
             "description": "Root span of the trace"
           },
           "span_count": {
@@ -15563,11 +15231,7 @@
             "description": "Total span count"
           },
           "duration_ns": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Common.DurationNs"
-              }
-            ],
+            "$ref": "#/components/schemas/Common.DurationNs",
             "description": "Trace duration in nanoseconds"
           },
           "start_time": {
@@ -16896,11 +16560,7 @@
             "$ref": "#/components/schemas/Workbench.WorkbenchExecutionRequest"
           },
           "effect": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Workbench.WorkbenchExecutionEffect"
-              }
-            ],
+            "$ref": "#/components/schemas/Workbench.WorkbenchExecutionEffect",
             "description": "Server-derived effect from the SDK-validated discovered Tool and its annotations."
           },
           "confirmation": {
@@ -17100,11 +16760,7 @@
             "$ref": "#/components/schemas/Workbench.WorkbenchSecretReference"
           },
           "scheme": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Workbench.WorkbenchHeaderSecretScheme"
-              }
-            ],
+            "$ref": "#/components/schemas/Workbench.WorkbenchHeaderSecretScheme",
             "description": "Optional HTTP authentication scheme applied to the resolved secret. Omit for a raw header value."
           }
         },

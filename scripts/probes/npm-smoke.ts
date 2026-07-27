@@ -7,12 +7,16 @@
 // There are no runtime assertions in this file. Everything it proves, it proves
 // by compiling — including the @ts-expect-error, which fails the build if the
 // contract ever starts accepting a bare number as an attribute value.
+import { CONTRACT_REVISION } from "@ancplua/qyl-api-schema/types";
 import type {
     Attribute,
     AttributeValue,
+    CiLogOutput,
     EntityRef,
+    HealthReport,
     LogRecord,
     Resource,
+    SessionId,
 } from "@ancplua/qyl-api-schema/types";
 
 const eventLog: LogRecord = {
@@ -60,6 +64,24 @@ const resource: Resource = {
 // @ts-expect-error Attribute integers require the tagged lossless representation.
 const invalidAttribute: AttributeValue = 1;
 
+// Compiling this is the whole assertion: the revision is a required member of
+// the health surface under its snake_case wire name, and the package exports the
+// value a client compares against it.
+const healthReport: HealthReport = {
+    status: "healthy",
+    total_duration_ms: 0,
+    entries: {},
+    contract_revision: CONTRACT_REVISION,
+};
+
+const ciLog: CiLogOutput = {
+    // A CI run id is the session identity, so it keeps that scalar rather than
+    // becoming a second spelling of it.
+    run_id: "nuget-publish-42" as SessionId,
+    phases: [{ leg: "macos-latest", phase: "pack", status: "error", duration_ms: 12 }],
+    mode: "live",
+};
+
 void [
     eventLog,
     emptyAttribute,
@@ -69,4 +91,6 @@ void [
     entityRef,
     resource,
     invalidAttribute,
+    healthReport,
+    ciLog,
 ];

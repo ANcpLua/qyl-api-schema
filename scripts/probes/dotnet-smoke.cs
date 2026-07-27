@@ -8,6 +8,7 @@
 using System.Text.Json;
 using ModelContextProtocol;
 using ModelContextProtocol.Protocol;
+using Qyl.Api.Contracts;
 using Qyl.Api.Contracts.Common.Errors;
 using System.Linq;
 using Qyl.Api.Contracts.Health;
@@ -135,6 +136,18 @@ var executionRequest = new WorkbenchExecutionRequest
 
 var toolInput = new FetchTelemetryInput { View = FetchTelemetryView.Traces };
 
+// The .NET face of the contract-revision handshake: the package carries the
+// revision it was generated from, and the health surface carries the peer's
+// under the wire name a client reads it by.
+var healthReport = new HealthReport
+{
+    Status = HealthStatus.Healthy,
+    TotalDurationMs = 0,
+    Entries = new Dictionary<string, HealthCheckEntry>(),
+    ContractRevision = ContractRevision.Value,
+};
+var healthReportWire = JsonSerializer.Serialize(healthReport);
+
 var serverConfigurationWire = JsonSerializer.Serialize(serverConfiguration);
 var serverConfigurationRoundTrip = JsonSerializer.Deserialize<WorkbenchServerConfiguration>(serverConfigurationWire);
 var assertionWire = JsonSerializer.Serialize(assertion);
@@ -185,6 +198,12 @@ var checks = new (string Name, bool Ok)[]
     ("executionRequestToolName", executionRequest.ToolName == "inspect"),
     ("executionRequestTimeoutMs", executionRequest.TimeoutMs == 30000),
     ("executionRequestWireTraceId", executionRequestWire.Contains("\"trace_id\":\"abc\"")),
+    ("contractRevisionEmitted", System.Text.RegularExpressions.Regex.IsMatch(
+        ContractRevision.Value, "^sha256:[a-f0-9]{16}$")),
+    ("healthReportWireContractRevision",
+        healthReportWire.Contains($"\"contract_revision\":\"{ContractRevision.Value}\"")),
+    ("ciLogOutputPresent", contractTypes.Any(type => type.Name == "CiLogOutput"
+        && type.Namespace == "Qyl.Api.Contracts.Mcp.Tools")),
 };
 
 var failed = checks.Where(check => !check.Ok).Select(check => check.Name).ToArray();

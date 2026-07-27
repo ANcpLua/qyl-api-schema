@@ -12558,6 +12558,16 @@
           "application/json"
         ]
       },
+      "Common.ContractRevision": {
+        "type": "string",
+        "minLength": 23,
+        "maxLength": 23,
+        "pattern": "^sha256:[a-f0-9]{16}$",
+        "description": "Deterministic revision of the generated API contract: 'sha256:' followed by the first 16 hex characters of the SHA-256 digest of the emitted OpenAPI document.",
+        "examples": [
+          "sha256:0f1e2d3c4b5a6978"
+        ]
+      },
       "Common.CostUsd": {
         "type": "number",
         "format": "double",
@@ -13711,7 +13721,8 @@
         "required": [
           "status",
           "total_duration_ms",
-          "entries"
+          "entries",
+          "contract_revision"
         ],
         "properties": {
           "status": {
@@ -13726,6 +13737,10 @@
             "unevaluatedProperties": {
               "$ref": "#/components/schemas/Health.HealthCheckEntry"
             }
+          },
+          "contract_revision": {
+            "$ref": "#/components/schemas/Common.ContractRevision",
+            "description": "Revision of the API contract this process serves, for the client-side startup handshake."
           }
         },
         "unevaluatedProperties": {
@@ -13741,6 +13756,141 @@
           "unhealthy"
         ],
         "description": "Health state reported by a qyl-managed process."
+      },
+      "Mcp.Tools.CiLogInput": {
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "$ref": "#/components/schemas/Common.SessionId",
+            "description": "Session id of one CI run for a per-leg phase breakdown; omit to list recent runs."
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 50,
+            "description": "Maximum CI runs to list.",
+            "default": 10
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Input for ci_log."
+      },
+      "Mcp.Tools.CiLogOutput": {
+        "type": "object",
+        "required": [
+          "mode"
+        ],
+        "properties": {
+          "runs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Mcp.Tools.CiRunSummary"
+            }
+          },
+          "run_id": {
+            "$ref": "#/components/schemas/Common.SessionId"
+          },
+          "phases": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Mcp.Tools.CiPhase"
+            }
+          },
+          "mode": {
+            "$ref": "#/components/schemas/Mcp.Tools.McpDataMode"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Structured output for ci_log: recent runs, or one run's phases."
+      },
+      "Mcp.Tools.CiPhase": {
+        "type": "object",
+        "required": [
+          "leg",
+          "phase",
+          "status",
+          "duration_ms"
+        ],
+        "properties": {
+          "leg": {
+            "type": "string",
+            "description": "Value of the span's ci.leg attribute, falling back to its service name."
+          },
+          "phase": {
+            "type": "string",
+            "description": "Span name, which the CI emitter convention sets to the phase name."
+          },
+          "status": {
+            "$ref": "#/components/schemas/Mcp.Tools.CiPhaseStatus"
+          },
+          "duration_ms": {
+            "$ref": "#/components/schemas/Common.DurationMs"
+          },
+          "message": {
+            "type": "string",
+            "description": "Span status message, present on a failed phase."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "One phase span of a CI run, attributed to the leg that executed it."
+      },
+      "Mcp.Tools.CiPhaseStatus": {
+        "type": "string",
+        "enum": [
+          "ok",
+          "error",
+          "unset"
+        ],
+        "description": "Outcome of one CI phase span, projected from its OpenTelemetry span status."
+      },
+      "Mcp.Tools.CiRunSummary": {
+        "type": "object",
+        "required": [
+          "run_id",
+          "state",
+          "start_time",
+          "error_count",
+          "services"
+        ],
+        "properties": {
+          "run_id": {
+            "$ref": "#/components/schemas/Common.SessionId"
+          },
+          "state": {
+            "$ref": "#/components/schemas/Domains.Observe.Session.SessionState"
+          },
+          "start_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "duration_ms": {
+            "$ref": "#/components/schemas/Common.DurationMs"
+          },
+          "error_count": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "description": "Spans in the run that ended with an error status."
+          },
+          "services": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Service names observed in the run, at least one of which is CI-emitted."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "One CI run, summarized from the session its telemetry is grouped under."
       },
       "Mcp.Tools.DisplayMcpDashboardInput": {
         "type": "object",

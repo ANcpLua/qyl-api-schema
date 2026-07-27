@@ -7,6 +7,7 @@
 // forgets this file fails here as an unresolved import, which is the intended
 // outcome.
 import {
+    CONTRACT_REVISION,
     HealthStatusValues,
     ProblemDetailsMediaType,
     RunnerResourceKindValues,
@@ -149,6 +150,14 @@ const signalSurfaceAbsent = Object.keys(schema.$defs).every((name) =>
 const costSurfaceAbsent = Object.keys(schema.$defs).every((name) => !name.startsWith("Cost."))
     && Object.keys(openapi.paths).every((path) => !path.startsWith("/api/v1/cost"));
 
+// The revision is only useful if a client can read the package's own value and
+// the collector's advertised one and compare them, so both halves are checked
+// here: the exported constant, and the health surface that carries the peer's.
+const healthReport = schema.$defs["Health.HealthReport"];
+const healthAdvertisesRevision = healthReport?.required?.includes("contract_revision") === true
+    && healthReport.properties?.contract_revision?.$ref === "#/$defs/Common.ContractRevision"
+    && schema.$defs["Common.ContractRevision"]?.pattern === "^sha256:[a-f0-9]{16}$";
+
 // Each entry is reported by name when it fails. A single OR-chained exit code
 // tells a release operator that something is wrong and nothing about what.
 const checks = [
@@ -173,6 +182,10 @@ const checks = [
     ["workbenchExecutionStatusTimedOut", WorkbenchExecutionStatusValues.timedOut === "timed_out"],
     ["workbenchEvaluationExportFormatReport", WorkbenchEvaluationExportFormatValues.report === "report"],
     ["fetchTelemetryInputDefined", Boolean(schema.$defs["Mcp.Tools.FetchTelemetryInput"])],
+    ["ciLogShapesDefined", Boolean(schema.$defs["Mcp.Tools.CiLogInput"])
+        && Boolean(schema.$defs["Mcp.Tools.CiLogOutput"])],
+    ["contractRevisionExported", /^sha256:[a-f0-9]{16}$/.test(CONTRACT_REVISION)],
+    ["healthAdvertisesRevision", healthAdvertisesRevision],
 ];
 
 const failed = checks.filter(([, ok]) => !ok).map(([name]) => name);

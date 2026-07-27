@@ -178,6 +178,18 @@ scalar Temperature extends float64;
 @maxLength(64)
 scalar Sha256Hash extends string;
 
+// The revision is a content hash of the emitted OpenAPI artifact, not a package
+// version: two builds of the same contract share it whatever their package
+// versions say, and any contract edit changes it without anyone remembering to
+// bump anything. Truncated to 16 hex characters because it is compared for
+// equality, never used as a security boundary.
+@doc("Deterministic revision of the generated API contract: 'sha256:' followed by the first 16 hex characters of the SHA-256 digest of the emitted OpenAPI document.")
+@pattern("^sha256:[a-f0-9]{16}$")
+@minLength(23)
+@maxLength(23)
+@example("sha256:0f1e2d3c4b5a6978")
+scalar ContractRevision extends string;
+
 @doc("Semantic version string (e.g., 1.2.3)")
 @pattern("^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$")
 @example("2.1.0")

@@ -334,6 +334,13 @@ sealed class Build : NukeBuild
         {
             RunTypeSpecEmitter("@ancplua/typespec-emit-csharp", ContractsEmitDir);
 
+            // The revision is hashed from the tracked OpenAPI document, which
+            // VerifyGeneratedArtifactsCurrent has already proven equal to a fresh
+            // emit. Without this step the packed NuGet would carry the contract
+            // types and not the revision that identifies them.
+            ProcessTasks.StartProcess("node", "scripts/emit-contract-revision.mjs --csharp", DomainSpecRoot)
+                .AssertZeroExitCode();
+
             // Fail fast rather than ship an empty assembly if the emit produced nothing.
             if (ContractsEmitDir.GlobFiles("**/*.cs").Count == 0)
                 throw new InvalidOperationException(

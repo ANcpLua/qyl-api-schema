@@ -117,6 +117,76 @@ model SearchLogsOutput {
   mode: McpDataMode;
 }
 
+@doc("Outcome of one CI phase span, projected from its OpenTelemetry span status.")
+enum CiPhaseStatus {
+  ok: "ok",
+  error: "error",
+  unset: "unset",
+}
+
+@doc("Input for ci_log.")
+model CiLogInput {
+  @doc("Session id of one CI run for a per-leg phase breakdown; omit to list recent runs.")
+  @encodedName("application/json", "run_id")
+  runId?: SessionId;
+
+  @doc("Maximum CI runs to list.")
+  @minValue(1)
+  @maxValue(50)
+  limit?: int32 = 10;
+}
+
+@doc("One CI run, summarized from the session its telemetry is grouped under.")
+model CiRunSummary {
+  @encodedName("application/json", "run_id")
+  runId: SessionId;
+
+  state: SessionState;
+
+  @encodedName("application/json", "start_time")
+  startTime: utcDateTime;
+
+  @encodedName("application/json", "duration_ms")
+  durationMs?: DurationMs;
+
+  @doc("Spans in the run that ended with an error status.")
+  @encodedName("application/json", "error_count")
+  @minValue(0)
+  errorCount: int32;
+
+  @doc("Service names observed in the run, at least one of which is CI-emitted.")
+  services: string[];
+}
+
+@doc("One phase span of a CI run, attributed to the leg that executed it.")
+model CiPhase {
+  @doc("Value of the span's ci.leg attribute, falling back to its service name.")
+  leg: string;
+
+  @doc("Span name, which the CI emitter convention sets to the phase name.")
+  phase: string;
+
+  status: CiPhaseStatus;
+
+  @encodedName("application/json", "duration_ms")
+  durationMs: DurationMs;
+
+  @doc("Span status message, present on a failed phase.")
+  message?: string;
+}
+
+@doc("Structured output for ci_log: recent runs, or one run's phases.")
+model CiLogOutput {
+  runs?: CiRunSummary[];
+
+  @encodedName("application/json", "run_id")
+  runId?: SessionId;
+
+  phases?: CiPhase[];
+
+  mode: McpDataMode;
+}
+
 @doc("Input for the app-only fetch_telemetry tool.")
 model FetchTelemetryInput {
   view: FetchTelemetryView;

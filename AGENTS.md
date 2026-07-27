@@ -75,6 +75,13 @@ The package and namespace identities are:
 - Emitters under `emitters/` own generated C# and TypeScript contracts; TypeSpec's
   official emitter owns OpenAPI, and `scripts/openapi-to-json-schema.mjs` owns the
   bundled JSON Schema projection with the same wire names.
+- `scripts/emit-contract-revision.mjs` owns the contract revision in both faces
+  (`ContractRevision.Value`, `CONTRACT_REVISION`). It hashes the emitted OpenAPI
+  document, so the revision is a property of the contract rather than of a package
+  version, and it runs after the OpenAPI emit because no emitter can hash a file
+  its own compile pass is still writing. `PackContractsNuget` reruns it: a NuGet
+  carrying the contract types but not the revision that identifies them would
+  break the consumer handshake it exists to serve.
 - Never hand-edit generated output. Change TypeSpec, an emitter, or an upstream
   generated input and regenerate deterministically.
 

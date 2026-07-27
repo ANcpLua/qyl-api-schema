@@ -119,8 +119,13 @@ export const IDENTITIES: readonly IdentityBinding[] = [
     singular: "sessionId",
     plural: "sessionIds",
     reserved: ["sessionId", "sessionIds", "previousSessionId"],
-    // Session continuity across a reconnect.
-    edges: { previousSessionId: "the session this one continues from" },
+    edges: {
+      // Session continuity across a reconnect.
+      previousSessionId: "the session this one continues from",
+      // A CI workflow run is emitted as one session; `ci_log` names it for the
+      // agent in the run's own vocabulary while keeping the session identity.
+      runId: "the CI workflow run whose telemetry is grouped under this session",
+    },
   },
   {
     scalar: "UserId",

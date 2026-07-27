@@ -2,11 +2,13 @@ import "../common/types.tsp";
 import "../otel/logs.tsp";
 import "../otel/span.tsp";
 import "./session.tsp";
+import "./workflow.tsp";
 
 using Qyl.Api.Contracts.Common;
 using Qyl.Api.Contracts.Domains.Observe.Session;
 using Qyl.Api.Contracts.OTel.Logs;
 using Qyl.Api.Contracts.OTel.Traces;
+using Qyl.Api.Contracts.Workflow;
 
 namespace Qyl.Api.Contracts.Mcp.Tools;
 
@@ -214,6 +216,157 @@ model FetchTelemetryOutput {
   logs?: LogRecord[];
   stats?: McpDashboardStats;
   mode: McpDataMode;
+}
+
+@doc("Input for list_workflow_runs.")
+model ListWorkflowRunsInput {
+  status?: WorkflowRunStatus;
+
+  cursor?: string;
+
+  @minValue(1)
+  @maxValue(100)
+  limit?: int32 = 20;
+}
+
+@doc("Structured output for list_workflow_runs.")
+model ListWorkflowRunsOutput {
+  runs: WorkflowRun[];
+
+  @encodedName("application/json", "next_cursor")
+  nextCursor?: string;
+
+  @encodedName("application/json", "has_more")
+  hasMore: boolean;
+
+  mode: McpDataMode;
+}
+
+@doc("Input for get_workflow_graph.")
+model GetWorkflowGraphInput {
+  @encodedName("application/json", "run_id")
+  runId: WorkflowRunId;
+
+  @encodedName("application/json", "node_cursor")
+  nodeCursor?: string;
+
+  @encodedName("application/json", "node_limit")
+  @minValue(1)
+  @maxValue(1000)
+  nodeLimit?: int32 = 250;
+
+  @encodedName("application/json", "edge_cursor")
+  edgeCursor?: string;
+
+  @encodedName("application/json", "edge_limit")
+  @minValue(1)
+  @maxValue(2000)
+  edgeLimit?: int32 = 500;
+}
+
+@doc("Structured output for get_workflow_graph.")
+model GetWorkflowGraphOutput {
+  graph: WorkflowGraphSnapshot;
+  mode: McpDataMode;
+}
+
+@doc("Input for display_workflow_graph. Omit run_id to select the most recent run.")
+model DisplayWorkflowGraphInput {
+  @encodedName("application/json", "run_id")
+  runId?: WorkflowRunId;
+
+  @encodedName("application/json", "node_cursor")
+  nodeCursor?: string;
+
+  @encodedName("application/json", "node_limit")
+  @minValue(1)
+  @maxValue(1000)
+  nodeLimit?: int32 = 250;
+
+  @encodedName("application/json", "edge_cursor")
+  edgeCursor?: string;
+
+  @encodedName("application/json", "edge_limit")
+  @minValue(1)
+  @maxValue(2000)
+  edgeLimit?: int32 = 500;
+}
+
+@doc("Structured output for display_workflow_graph.")
+model DisplayWorkflowGraphOutput {
+  graph: WorkflowGraphSnapshot;
+
+  @encodedName("application/json", "live_controls_available")
+  liveControlsAvailable: boolean;
+
+  mode: McpDataMode;
+}
+
+@doc("Input for the app-only fetch_workflow_graph_updates tool.")
+model FetchWorkflowGraphUpdatesInput {
+  @encodedName("application/json", "run_id")
+  runId: WorkflowRunId;
+
+  @encodedName("application/json", "after_sequence")
+  afterSequence: WorkflowSequence;
+
+  @minValue(1)
+  @maxValue(1000)
+  limit?: int32 = 250;
+
+  @encodedName("application/json", "wait_ms")
+  @minValue(0)
+  @maxValue(30000)
+  waitMs?: int32 = 20000;
+
+  @encodedName("application/json", "node_cursor")
+  nodeCursor?: string;
+
+  @encodedName("application/json", "node_limit")
+  @minValue(1)
+  @maxValue(1000)
+  nodeLimit?: int32 = 250;
+
+  @encodedName("application/json", "edge_cursor")
+  edgeCursor?: string;
+
+  @encodedName("application/json", "edge_limit")
+  @minValue(1)
+  @maxValue(2000)
+  edgeLimit?: int32 = 500;
+
+  @doc("Optional captured payload to retrieve lazily for the selected run.")
+  @encodedName("application/json", "content_ref")
+  contentRef?: WorkflowContentRef;
+}
+
+@doc("Structured output for the app-only fetch_workflow_graph_updates tool.")
+model FetchWorkflowGraphUpdatesOutput {
+  page: WorkflowEventPage;
+  graph?: WorkflowGraphSnapshot;
+  content?: WorkflowContent;
+  mode: McpDataMode;
+}
+
+@doc("Input for control_workflow_run.")
+model ControlWorkflowRunInput {
+  @encodedName("application/json", "run_id")
+  runId: WorkflowRunId;
+
+  action: WorkflowControlAction;
+
+  @encodedName("application/json", "idempotency_key")
+  @minLength(1)
+  @maxLength(160)
+  idempotencyKey: string;
+
+  @maxLength(32768)
+  input?: string;
+}
+
+@doc("Structured output for control_workflow_run.")
+model ControlWorkflowRunOutput {
+  command: WorkflowControlCommand;
 }
 
 @doc("Aggregate MCP traffic statistics shown by qyl.mcp.")

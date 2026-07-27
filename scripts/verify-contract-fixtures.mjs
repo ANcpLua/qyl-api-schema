@@ -17,6 +17,10 @@ const csharpLogsRuntime = await readFile(
   "generated/contracts/Qyl/Api/Contracts/OTel/Logs.cs",
   "utf8",
 );
+const csharpWorkflowRuntime = await readFile(
+  "generated/contracts/Qyl/Api/Contracts/Workflow.cs",
+  "utf8",
+);
 const defs = schema.$defs ?? {};
 const ajv = new Ajv2020({ allErrors: true, strict: true, validateFormats: false });
 ajv.addKeyword({ keyword: "x-csharp-struct", schemaType: "boolean" });
@@ -620,4 +624,82 @@ if (removedSignalDefinitions.length > 0 || removedSignalPaths.length > 0) {
     `Removed signal contract survived. Definitions: ${removedSignalDefinitions.join(", ") || "none"}. ` +
     `Paths: ${removedSignalPaths.join(", ") || "none"}.`,
   );
+}
+
+const workflowEventFixture = {
+  event_id: "evt-0001",
+  source_sequence: "7",
+  timestamp: "2026-07-28T12:34:56Z",
+  kind: "agent_spawned",
+  thread_id: "thr-1",
+  attempt_id: "attempt-1",
+  agent_id: "agent-child",
+  parent_agent_id: "agent-root",
+  content_refs: [`sha256:${"a".repeat(64)}`],
+  run_id: "run-1",
+  client_id: "qyl-codex",
+  journal_sequence: "11",
+};
+const validateWorkflowEvent = validatorFor("Workflow.WorkflowJournalEvent");
+assertValid(validateWorkflowEvent, workflowEventFixture, "workflow journal event");
+assertInvalid(
+  validateWorkflowEvent,
+  { ...workflowEventFixture, source_sequence: 7 },
+  "workflow journal event with a numeric source sequence",
+);
+assertInvalid(
+  validateWorkflowEvent,
+  { ...workflowEventFixture, content_refs: ["sha256:not-a-digest"] },
+  "workflow journal event with an invalid content reference",
+);
+
+const validateWorkflowEdge = validatorFor("Workflow.WorkflowGraphEdge");
+const edge = {
+  edge_id: "parent:agent-root:agent-child",
+  source_node_id: "agent:agent-root",
+  target_node_id: "agent:agent-child",
+  kind: "control",
+  provenance: { type: "recorded", event_ids: ["evt-0001"] },
+};
+assertValid(validateWorkflowEdge, edge, "recorded workflow graph edge");
+assertValid(validateWorkflowEdge, {
+  ...edge,
+  kind: "conflict",
+  provenance: {
+    type: "derived",
+    event_ids: ["evt-0001"],
+    evidence: "Both agents wrote src/index.ts",
+    confidence: 1,
+  },
+}, "derived workflow graph edge");
+assertInvalid(validateWorkflowEdge, {
+  ...edge,
+  provenance: { type: "derived", event_ids: ["evt-0001"], evidence: "overlap" },
+}, "derived workflow graph edge without confidence");
+
+for (const toolShape of [
+  "ListWorkflowRunsInput",
+  "ListWorkflowRunsOutput",
+  "GetWorkflowGraphInput",
+  "GetWorkflowGraphOutput",
+  "DisplayWorkflowGraphInput",
+  "DisplayWorkflowGraphOutput",
+  "FetchWorkflowGraphUpdatesInput",
+  "FetchWorkflowGraphUpdatesOutput",
+  "ControlWorkflowRunInput",
+  "ControlWorkflowRunOutput",
+]) {
+  if (!defs[`Mcp.Tools.${toolShape}`]) {
+    throw new Error(`Generated MCP workflow tool shape Mcp.Tools.${toolShape} is missing.`);
+  }
+}
+
+for (const marker of [
+  '[JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]',
+  '[JsonDerivedType(typeof(RecordedWorkflowEdgeProvenance), "recorded")]',
+  '[JsonDerivedType(typeof(DerivedWorkflowEdgeProvenance), "derived")]',
+]) {
+  if (!csharpWorkflowRuntime.includes(marker)) {
+    throw new Error(`C# workflow edge provenance lost generated polymorphism: ${marker}.`);
+  }
 }

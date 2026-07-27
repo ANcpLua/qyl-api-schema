@@ -6,6 +6,7 @@
 // It asserts wire shape, not just type shape — the Contains checks below read
 // serialized JSON, so a rename that keeps C# compiling still fails here.
 using System.Text.Json;
+using System.Text;
 using ModelContextProtocol;
 using ModelContextProtocol.Protocol;
 using Qyl.Api.Contracts;
@@ -17,6 +18,7 @@ using Qyl.Api.Contracts.OTel.Enums;
 using Qyl.Api.Contracts.OTel.Logs;
 using Qyl.Api.Contracts.Runner;
 using Qyl.Api.Contracts.Workbench;
+using Qyl.Api.Contracts.Workflow;
 #pragma warning disable MCPEXP001
 using Qyl.Api.Contracts.Common;
 using OTelAttribute = Qyl.Api.Contracts.Common.Attribute;
@@ -148,6 +150,23 @@ var healthReport = new HealthReport
 };
 var healthReportWire = JsonSerializer.Serialize(healthReport);
 
+var workflowEvent = new WorkflowJournalEvent
+{
+    EventId = "evt-0001",
+    SourceSequence = 7,
+    Timestamp = new DateTimeOffset(2026, 7, 28, 12, 34, 56, TimeSpan.Zero),
+    Kind = WorkflowJournalEventKind.AgentSpawned,
+    ThreadId = "thr-1",
+    AttemptId = "attempt-1",
+    AgentId = "agent-child",
+    ParentAgentId = "agent-root",
+    ContentRefs = [$"sha256:{new string('a', 64)}"],
+    RunId = "run-1",
+    ClientId = "qyl-codex",
+    JournalSequence = 11,
+};
+var workflowFixtureWire = JsonSerializer.Serialize(workflowEvent);
+
 var serverConfigurationWire = JsonSerializer.Serialize(serverConfiguration);
 var serverConfigurationRoundTrip = JsonSerializer.Deserialize<WorkbenchServerConfiguration>(serverConfigurationWire);
 var assertionWire = JsonSerializer.Serialize(assertion);
@@ -204,6 +223,8 @@ var checks = new (string Name, bool Ok)[]
         healthReportWire.Contains($"\"contract_revision\":\"{ContractRevision.Value}\"")),
     ("ciLogOutputPresent", contractTypes.Any(type => type.Name == "CiLogOutput"
         && type.Namespace == "Qyl.Api.Contracts.Mcp.Tools")),
+    ("workflowGraphPresent", contractTypes.Any(type => type.Name == "WorkflowGraphSnapshot"
+        && type.Namespace == "Qyl.Api.Contracts.Workflow")),
 };
 
 var failed = checks.Where(check => !check.Ok).Select(check => check.Name).ToArray();
@@ -217,5 +238,7 @@ if (failed.Length > 0)
     return 1;
 }
 
+Console.WriteLine($"contract-revision={ContractRevision.Value}");
+Console.WriteLine($"workflow-fixture={Convert.ToBase64String(Encoding.UTF8.GetBytes(workflowFixtureWire))}");
 Console.WriteLine($"dotnet consumer probe passed {checks.Length} checks");
 return 0;

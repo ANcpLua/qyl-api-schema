@@ -33,6 +33,7 @@ const workbenchTags = new Set([
   "Workbench MCP suites",
   "Workbench MCP evaluations",
 ]);
+const workflowTags = new Set(["Workflow runs"]);
 const expectedRunnerOperations = new Set([
   "GET /runner/resources",
   "GET /runner/resources/stream",
@@ -88,6 +89,19 @@ const expectedWorkbenchOperations = new Set([
   "GET /workbench/workspaces/{workspace_id}/evaluation-runs/{evaluation_run_id}/exports/{export_id}",
   "GET /workbench/workspaces/{workspace_id}/evaluation-runs/{evaluation_run_id}/exports/{export_id}/content",
 ]);
+const expectedWorkflowOperations = new Set([
+  "POST /api/v1/workflow-runs",
+  "GET /api/v1/workflow-runs",
+  "GET /api/v1/workflow-runs/{run_id}",
+  "POST /api/v1/workflow-runs/{run_id}/events",
+  "GET /api/v1/workflow-runs/{run_id}/events",
+  "GET /api/v1/workflow-runs/{run_id}/graph",
+  "GET /api/v1/workflow-runs/{run_id}/content/{content_ref}",
+  "GET /api/v1/workflow-runs/{run_id}/stream",
+  "POST /api/v1/workflow-runs/{run_id}/commands",
+  "GET /api/v1/workflow-runs/{run_id}/commands",
+  "POST /api/v1/workflow-runs/{run_id}/commands/{command_id}/status",
+]);
 
 function verifyOperationInventory(label, tags, expected) {
   const actual = new Set(
@@ -107,6 +121,7 @@ function verifyOperationInventory(label, tags, expected) {
 
 verifyOperationInventory("Runner", runnerTags, expectedRunnerOperations);
 verifyOperationInventory("Workbench", workbenchTags, expectedWorkbenchOperations);
+verifyOperationInventory("Workflow", workflowTags, expectedWorkflowOperations);
 
 for (const operationId of expectedRunnerOperations) {
   verifyExactResponse(operationId, "403", "ForbiddenError");
@@ -118,6 +133,13 @@ for (const operationId of expectedRunnerOperations) {
 for (const operationId of expectedWorkbenchOperations) {
   verifyExactResponse(operationId, "401", "UnauthorizedError");
   verifyExactResponse(operationId, "403", "ForbiddenError");
+}
+for (const operationId of expectedWorkflowOperations) {
+  verifyExactResponse(operationId, "401", "UnauthorizedError");
+  const security = operations.get(operationId)?.security;
+  if (JSON.stringify(security) !== JSON.stringify([{ ApiKeyAuth: [] }])) {
+    throw new Error(`${operationId} must require only the x-otlp-api-key ApiKeyAuth scheme.`);
+  }
 }
 
 const workbenchCookieAuthName = "WorkbenchSessionCookieAuth";
@@ -150,6 +172,7 @@ if (setCookie?.required !== true || setCookie.schema?.type !== "string" ||
 const capacityLimitedOperations = new Set([
   ...expectedRunnerOperations,
   ...expectedWorkbenchOperations,
+  ...expectedWorkflowOperations,
   "GET /api/v1/stream/logs",
 ]);
 for (const operationId of capacityLimitedOperations) {
@@ -162,6 +185,9 @@ const validationQueries = new Map([
   ["GET /api/v1/sessions", ["is_active", "start_time", "end_time", "limit", "cursor"]],
   ["GET /api/v1/sessions/stats", ["start_time", "end_time"]],
   ["GET /api/v1/stream/logs", ["min_severity"]],
+  ["GET /api/v1/workflow-runs", ["status", "limit", "cursor"]],
+  ["GET /api/v1/workflow-runs/{run_id}/events", ["after_sequence", "limit", "wait_ms"]],
+  ["GET /api/v1/workflow-runs/{run_id}/commands", ["after_sequence", "limit", "wait_ms"]],
   ["GET /workbench/workspaces/{workspace_id}/servers/{server_id}/protocol", ["cursor", "limit"]],
   ["GET /workbench/workspaces/{workspace_id}/servers/{server_id}/executions", ["status", "cursor", "limit"]],
   ["GET /workbench/workspaces/{workspace_id}/test-cases", ["server_id", "tool_name", "cursor", "limit"]],
@@ -184,6 +210,7 @@ for (const [operationId, runtimeValidatedQueries] of validationQueries) {
 
 const resumableSseOperations = new Set([
   "GET /api/v1/stream/logs",
+  "GET /api/v1/workflow-runs/{run_id}/stream",
   "GET /runner/resources/{resource}/logs/stream",
   "GET /workbench/workspaces/{workspace_id}/servers/{server_id}/protocol/stream",
   "GET /workbench/workspaces/{workspace_id}/servers/{server_id}/executions/stream",
@@ -201,7 +228,8 @@ for (const operationId of resumableSseOperations) {
 }
 
 console.log(
-  `Verified ${expectedRunnerOperations.size} runner and ${expectedWorkbenchOperations.size} workbench routes, ` +
+  `Verified ${expectedRunnerOperations.size} runner, ${expectedWorkbenchOperations.size} workbench, and ` +
+  `${expectedWorkflowOperations.size} workflow routes, ` +
   `${expectedWorkbenchOperations.size - publicWorkbenchOperations.size} private workbench operations, ` +
   `${capacityLimitedOperations.size} capacity responses, and ` +
   `${validationQueries.size} typed-query validation responses, and ` +

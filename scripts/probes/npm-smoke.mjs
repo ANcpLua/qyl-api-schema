@@ -14,6 +14,7 @@ import {
     RunnerResourceLifecycleValues,
     WorkbenchEvaluationExportFormatValues,
     WorkbenchExecutionStatusValues,
+    WorkflowJournalEventKindValues,
     // Unused below on purpose: a named ESM import of a missing binding is a
     // link-time error, so the import itself asserts the export survives.
     WorkbenchTransportKindValues,
@@ -158,6 +159,22 @@ const healthAdvertisesRevision = healthReport?.required?.includes("contract_revi
     && healthReport.properties?.contract_revision?.$ref === "#/$defs/Common.ContractRevision"
     && schema.$defs["Common.ContractRevision"]?.pattern === "^sha256:[a-f0-9]{16}$";
 
+const workflowFixture = {
+    event_id: "evt-0001",
+    source_sequence: "7",
+    timestamp: "2026-07-28T12:34:56+00:00",
+    kind: WorkflowJournalEventKindValues.agentSpawned,
+    thread_id: "thr-1",
+    attempt_id: "attempt-1",
+    agent_id: "agent-child",
+    parent_agent_id: "agent-root",
+    content_refs: [`sha256:${"a".repeat(64)}`],
+    run_id: "run-1",
+    client_id: "qyl-codex",
+    journal_sequence: "11",
+};
+const workflowFixtureWire = JSON.stringify(workflowFixture);
+
 // Each entry is reported by name when it fails. A single OR-chained exit code
 // tells a release operator that something is wrong and nothing about what.
 const checks = [
@@ -186,6 +203,8 @@ const checks = [
         && Boolean(schema.$defs["Mcp.Tools.CiLogOutput"])],
     ["contractRevisionExported", /^sha256:[a-f0-9]{16}$/.test(CONTRACT_REVISION)],
     ["healthAdvertisesRevision", healthAdvertisesRevision],
+    ["workflowGraphDefined", Boolean(schema.$defs["Workflow.WorkflowGraphSnapshot"])],
+    ["workflowJournalDefined", Boolean(schema.$defs["Workflow.WorkflowJournalEvent"])],
 ];
 
 const failed = checks.filter(([, ok]) => !ok).map(([name]) => name);
@@ -194,4 +213,6 @@ if (failed.length > 0) {
     for (const name of failed) console.error(`  - ${name}`);
     process.exit(1);
 }
+console.log(`contract-revision=${CONTRACT_REVISION}`);
+console.log(`workflow-fixture=${Buffer.from(workflowFixtureWire).toString("base64")}`);
 console.log(`npm consumer probe passed ${checks.length} checks`);

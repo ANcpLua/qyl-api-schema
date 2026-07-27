@@ -32,14 +32,25 @@ async function exists(path) {
   }
 }
 
-function run(command, args, cwd, environment = {}) {
+function run(command, args, cwd, environment = {}, capture = false) {
   const result = spawnSync(command, args, {
     cwd,
     encoding: "utf8",
-    stdio: "inherit",
+    stdio: capture ? "pipe" : "inherit",
     env: { ...process.env, ...environment },
   });
+  if (capture) {
+    if (result.stdout) process.stdout.write(result.stdout);
+    if (result.stderr) process.stderr.write(result.stderr);
+  }
   if (result.status !== 0) throw new Error(`${command} ${args.join(" ")} failed with ${result.status}`);
+  return result.stdout ?? "";
+}
+
+function probeValue(output, name) {
+  const match = new RegExp(`^${name}=(.+)$`, "mu").exec(output);
+  if (!match) throw new Error(`consumer probe did not report ${name}`);
+  return match[1];
 }
 
 function escapeXml(value) {
@@ -76,7 +87,7 @@ export async function verifyConsumers({ version, npmSpec, npmInstallArgs = [], n
     }
 
     await copyFile(join(probesDir, "npm-smoke.mjs"), join(npmDir, "smoke.mjs"));
-    run("node", ["smoke.mjs"], npmDir);
+    const npmProbeOutput = run("node", ["smoke.mjs"], npmDir, {}, true);
 
     await copyFile(join(probesDir, "npm-smoke.ts"), join(npmDir, "smoke.ts"));
     run(
@@ -129,12 +140,27 @@ export async function verifyConsumers({ version, npmSpec, npmInstallArgs = [], n
     );
 
     await copyFile(join(probesDir, "dotnet-smoke.cs"), join(dotnetDir, "Program.cs"));
-    run(
+    const dotnetProbeOutput = run(
       "dotnet",
       ["run", "--configuration", "Release", "--no-restore"],
       dotnetDir,
       dotnetEnvironment,
+      true,
     );
+
+    const npmRevision = probeValue(npmProbeOutput, "contract-revision");
+    const dotnetRevision = probeValue(dotnetProbeOutput, "contract-revision");
+    if (npmRevision !== dotnetRevision) {
+      throw new Error(
+        `packed contract revisions differ: npm=${npmRevision}, NuGet=${dotnetRevision}`,
+      );
+    }
+
+    const npmWorkflowFixture = probeValue(npmProbeOutput, "workflow-fixture");
+    const dotnetWorkflowFixture = probeValue(dotnetProbeOutput, "workflow-fixture");
+    if (npmWorkflowFixture !== dotnetWorkflowFixture) {
+      throw new Error("packed TypeScript and .NET workflow fixtures are not wire-equivalent");
+    }
 
     succeeded = true;
   } finally {

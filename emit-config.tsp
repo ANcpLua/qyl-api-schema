@@ -13,6 +13,7 @@ using Qyl.Api.Schema.Emit.TsTypes;
 @@csharpNamespace(Qyl.Api.Contracts.Mcp.Tools, "Qyl.Api.Contracts.Mcp.Tools");
 @@csharpNamespace(Qyl.Api.Contracts.Runner, "Qyl.Api.Contracts.Runner");
 @@csharpNamespace(Qyl.Api.Contracts.Workbench, "Qyl.Api.Contracts.Workbench");
+@@csharpNamespace(Qyl.Api.Contracts.Workflow, "Qyl.Api.Contracts.Workflow");
 @@csharpPolymorphic(
   Qyl.Api.Contracts.Workbench.WorkbenchServerConfiguration,
   "transport"
@@ -24,6 +25,10 @@ using Qyl.Api.Schema.Emit.TsTypes;
 @@csharpPolymorphic(
   Qyl.Api.Contracts.Workbench.WorkbenchEvaluationExportPayload,
   "format"
+);
+@@csharpPolymorphic(
+  Qyl.Api.Contracts.Workflow.WorkflowEdgeProvenance,
+  "type"
 );
 
 @@csharpNamespace(Qyl.Api.Contracts.Common, "Qyl.Api.Contracts.Common");
@@ -65,3 +70,11 @@ using Qyl.Api.Schema.Emit.TsTypes;
 @@tsBrand(Qyl.Api.Contracts.Workbench.WorkbenchSuiteId);
 @@tsBrand(Qyl.Api.Contracts.Workbench.WorkbenchEvaluationRunId);
 @@tsBrand(Qyl.Api.Contracts.Workbench.WorkbenchEvaluationExportId);
+@@tsBrand(Qyl.Api.Contracts.Workflow.WorkflowRunId);
+@@tsBrand(Qyl.Api.Contracts.Workflow.WorkflowAttemptId);
+@@tsBrand(Qyl.Api.Contracts.Workflow.WorkflowAgentId);
+@@tsBrand(Qyl.Api.Contracts.Workflow.WorkflowToolCallId);
+@@tsBrand(Qyl.Api.Contracts.Workflow.WorkflowEventId);
+@@tsBrand(Qyl.Api.Contracts.Workflow.WorkflowCommandId);
+@@tsBrand(Qyl.Api.Contracts.Workflow.WorkflowNodeId);
+@@tsBrand(Qyl.Api.Contracts.Workflow.WorkflowContentRef);

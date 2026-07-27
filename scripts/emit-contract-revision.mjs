@@ -1,11 +1,11 @@
 /**
  * Emits the contract revision into both generated faces of the contract.
  *
- * The revision is a content hash of the emitted OpenAPI document, so it is a
- * property of the contract itself: two builds of the same TypeSpec agree on it
- * whatever their package versions say, and no contract edit can reach a client
- * without changing it. Package versions cannot do that job — they move for
- * release reasons and stand still for contract ones.
+ * The revision hashes the semantic OpenAPI projection plus the exported
+ * telemetry-key TypeSpec projection. Presentation-only OpenAPI fields are
+ * removed and object keys are sorted before hashing, so documentation edits do
+ * not force a lockstep deploy while any route, schema, operation, or exported
+ * key change does.
  *
  * It runs after the OpenAPI emit rather than inside an emitter because no
  * emitter can hash a file its own compile pass is still writing.
@@ -19,6 +19,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 
 const openApiPath = "generated/openapi/qyl.openapi.json";
+const otelKeysPath = "generated/otel-keys.gen.tsp";
 const csharpPath = "generated/contracts/Qyl/Api/ContractRevision.cs";
 const tsPath = "generated/ts-types/api.ts";
 
@@ -37,14 +38,60 @@ const emitTs = flags.length === 0 || flags.includes("--ts");
 
 let openApi;
 try {
-  openApi = await readFile(openApiPath);
-} catch {
+  openApi = JSON.parse(await readFile(openApiPath, "utf8"));
+} catch (error) {
   throw new Error(
-    `emit-contract-revision: '${openApiPath}' is missing — run \`npm run compile\` so the OpenAPI emit precedes the revision.`,
+    `emit-contract-revision: could not read '${openApiPath}' — run \`npm run compile\` so the OpenAPI emit precedes the revision.`,
+    { cause: error },
   );
 }
 
-const revision = `sha256:${createHash("sha256").update(openApi).digest("hex").slice(0, 16)}`;
+let otelKeys;
+try {
+  otelKeys = await readFile(otelKeysPath, "utf8");
+} catch (error) {
+  throw new Error(
+    `emit-contract-revision: could not read exported key projection '${otelKeysPath}'.`,
+    { cause: error },
+  );
+}
+
+const presentationKeys = new Set([
+  "description",
+  "example",
+  "examples",
+  "externalDocs",
+  "summary",
+  "title",
+]);
+
+function canonicalize(value) {
+  if (Array.isArray(value)) return value.map(canonicalize);
+  if (typeof value !== "object" || value === null) return value;
+  return Object.fromEntries(
+    Object.keys(value)
+      .filter((key) => !presentationKeys.has(key))
+      .sort()
+      .map((key) => [key, canonicalize(value[key])]),
+  );
+}
+
+function semanticTypeSpec(value) {
+  return value
+    .replace(/^\uFEFF/u, "")
+    .replace(/\/\*[\s\S]*?\*\//gu, "")
+    .replace(/\/\/[^\r\n]*/gu, "")
+    .replace(/\s+/gu, " ")
+    .trim();
+}
+
+const revisionPayload = [
+  "qyl-contract-revision-v2",
+  JSON.stringify(canonicalize(openApi)),
+  semanticTypeSpec(otelKeys),
+].join("\n");
+const revision =
+  `sha256:${createHash("sha256").update(revisionPayload).digest("hex").slice(0, 16)}`;
 
 if (emitCSharp) {
   await mkdir(dirname(csharpPath), { recursive: true });
@@ -66,7 +113,7 @@ public static class ContractRevision
     /// same contract. A client compares the two and refuses to run on a
     /// mismatch.
     /// </summary>
-    public const string Value = "${revision}";
+    public static readonly string Value = "${revision}";
 }
 `,
   );
@@ -76,9 +123,10 @@ if (emitTs) {
   let api;
   try {
     api = await readFile(tsPath, "utf8");
-  } catch {
+  } catch (error) {
     throw new Error(
-      `emit-contract-revision: '${tsPath}' is missing — run \`npm run compile\` so the TypeScript emit precedes the revision.`,
+      `emit-contract-revision: could not read '${tsPath}' — run \`npm run compile\` so the TypeScript emit precedes the revision.`,
+      { cause: error },
     );
   }
 

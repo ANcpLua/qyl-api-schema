@@ -1,0 +1,537 @@
+import "../common/types.tsp";
+
+using Qyl.Api.Contracts.Common;
+
+namespace Qyl.Api.Contracts.Workflow;
+
+@doc("Stable identifier of one observed Codex workflow run.")
+@minLength(1)
+@maxLength(128)
+scalar WorkflowRunId extends string;
+
+@doc("Stable identifier of one workflow attempt.")
+@minLength(1)
+@maxLength(128)
+scalar WorkflowAttemptId extends string;
+
+@doc("Stable identifier of one agent within a workflow run.")
+@minLength(1)
+@maxLength(128)
+scalar WorkflowAgentId extends string;
+
+@doc("Stable identifier of one tool call within a workflow run.")
+@minLength(1)
+@maxLength(128)
+scalar WorkflowToolCallId extends string;
+
+@doc("Stable identifier of one immutable journal event.")
+@minLength(1)
+@maxLength(160)
+scalar WorkflowEventId extends string;
+
+@doc("Stable identifier of one run-level control command.")
+@minLength(1)
+@maxLength(128)
+scalar WorkflowCommandId extends string;
+
+@doc("Stable identifier of one graph node.")
+@minLength(1)
+@maxLength(192)
+scalar WorkflowNodeId extends string;
+
+@doc("Content-addressed reference to a captured workflow payload.")
+@pattern("^sha256:[a-f0-9]{64}$")
+@minLength(71)
+@maxLength(71)
+scalar WorkflowContentRef extends string;
+
+@doc("Unsigned source or collector journal sequence encoded without JavaScript precision loss.")
+@minValue(0)
+@encode(string)
+scalar WorkflowSequence extends uint64;
+
+@doc("Current lifecycle of a workflow run.")
+enum WorkflowRunStatus {
+  active: "active",
+  completed: "completed",
+  failed: "failed",
+  interrupted: "interrupted",
+}
+
+@doc("Current lifecycle of one workflow attempt.")
+enum WorkflowAttemptStatus {
+  pending: "pending",
+  running: "running",
+  succeeded: "succeeded",
+  failed: "failed",
+  interrupted: "interrupted",
+}
+
+@doc("Current lifecycle of an observed workflow agent.")
+enum WorkflowAgentStatus {
+  pending: "pending",
+  running: "running",
+  waiting: "waiting",
+  succeeded: "succeeded",
+  failed: "failed",
+  interrupted: "interrupted",
+}
+
+@doc("Current lifecycle of an observed tool call.")
+enum WorkflowToolCallStatus {
+  requested: "requested",
+  running: "running",
+  succeeded: "succeeded",
+  failed: "failed",
+  rejected: "rejected",
+}
+
+@doc("Kinds of execution node in the deterministic workflow graph.")
+enum WorkflowNodeKind {
+  run: "run",
+  attempt: "attempt",
+  turn: "turn",
+  agent: "agent",
+  toolCall: "tool_call",
+  message: "message",
+  wait: "wait",
+  gate: "gate",
+  resource: "resource",
+}
+
+@doc("Semantic relationship represented by a workflow graph edge.")
+enum WorkflowEdgeKind {
+  data: "data",
+  control: "control",
+  conflict: "conflict",
+  resource: "resource",
+  gate: "gate",
+  temporal: "temporal",
+}
+
+@doc("Immutable journal event kinds accepted from a Codex observer.")
+enum WorkflowJournalEventKind {
+  runCreated: "run_created",
+  runCompleted: "run_completed",
+  threadStarted: "thread_started",
+  threadResumed: "thread_resumed",
+  turnStarted: "turn_started",
+  turnCompleted: "turn_completed",
+  turnInterrupted: "turn_interrupted",
+  attemptStarted: "attempt_started",
+  attemptCompleted: "attempt_completed",
+  agentSpawned: "agent_spawned",
+  agentStarted: "agent_started",
+  agentCompleted: "agent_completed",
+  messageSent: "message_sent",
+  messageReceived: "message_received",
+  waitStarted: "wait_started",
+  waitCompleted: "wait_completed",
+  joined: "joined",
+  itemStarted: "item_started",
+  itemCompleted: "item_completed",
+  toolStarted: "tool_started",
+  toolCompleted: "tool_completed",
+  approvalRequested: "approval_requested",
+  approvalResolved: "approval_resolved",
+  contentCaptured: "content_captured",
+  fileWritten: "file_written",
+  controlRequested: "control_requested",
+  controlAccepted: "control_accepted",
+  controlApplied: "control_applied",
+  controlRejected: "control_rejected",
+  controlFailed: "control_failed",
+}
+
+@doc("Control operation supported by the Codex app-server boundary.")
+enum WorkflowControlAction {
+  steer: "steer",
+  interrupt: "interrupt",
+  resume: "resume",
+}
+
+@doc("Durable lifecycle of a workflow control command.")
+enum WorkflowControlStatus {
+  requested: "requested",
+  accepted: "accepted",
+  applied: "applied",
+  rejected: "rejected",
+  failed: "failed",
+}
+
+@doc("Encoding used when lazily returning captured workflow content.")
+enum WorkflowContentEncoding {
+  utf8: "utf8",
+  base64: "base64",
+}
+
+@doc("One immutable workflow run.")
+model WorkflowRun {
+  @encodedName("application/json", "run_id")
+  runId: WorkflowRunId;
+
+  @encodedName("application/json", "thread_id")
+  threadId?: string;
+
+  title?: string;
+  status: WorkflowRunStatus;
+
+  @encodedName("application/json", "started_at")
+  startedAt: utcDateTime;
+
+  @encodedName("application/json", "ended_at")
+  endedAt?: utcDateTime;
+
+  @encodedName("application/json", "latest_journal_sequence")
+  latestJournalSequence: WorkflowSequence;
+
+  @encodedName("application/json", "active_attempt_id")
+  activeAttemptId?: WorkflowAttemptId;
+
+  metadata?: Record<unknown>;
+}
+
+@doc("Request to create an observed workflow run before appending journal events.")
+model WorkflowRunCreateRequest {
+  @encodedName("application/json", "run_id")
+  runId: WorkflowRunId;
+
+  @encodedName("application/json", "thread_id")
+  threadId?: string;
+
+  title?: string;
+
+  @encodedName("application/json", "started_at")
+  startedAt: utcDateTime;
+
+  metadata?: Record<unknown>;
+}
+
+@doc("Cursor page of workflow runs.")
+model WorkflowRunPage {
+  items: WorkflowRun[];
+
+  @encodedName("application/json", "next_cursor")
+  nextCursor?: string;
+
+  @encodedName("application/json", "has_more")
+  hasMore: boolean;
+}
+
+@doc("One captured payload supplied with an append batch.")
+model WorkflowContentChunk {
+  @encodedName("application/json", "content_ref")
+  contentRef: WorkflowContentRef;
+
+  @encodedName("application/json", "content_type")
+  contentType: ContentType;
+
+  encoding: WorkflowContentEncoding;
+
+  @doc("UTF-8 text or base64 bytes, according to encoding.")
+  @maxLength(1398104)
+  content: string;
+}
+
+@doc("One source-ordered immutable journal event awaiting collector sequence assignment.")
+model WorkflowEventAppend {
+  @encodedName("application/json", "event_id")
+  eventId: WorkflowEventId;
+
+  @encodedName("application/json", "source_sequence")
+  sourceSequence: WorkflowSequence;
+
+  timestamp: utcDateTime;
+  kind: WorkflowJournalEventKind;
+
+  @encodedName("application/json", "thread_id")
+  threadId?: string;
+
+  @encodedName("application/json", "turn_id")
+  turnId?: string;
+
+  @encodedName("application/json", "attempt_id")
+  attemptId?: WorkflowAttemptId;
+
+  @encodedName("application/json", "agent_id")
+  agentId?: WorkflowAgentId;
+
+  @encodedName("application/json", "parent_agent_id")
+  parentAgentId?: WorkflowAgentId;
+
+  @encodedName("application/json", "receiver_agent_id")
+  receiverAgentId?: WorkflowAgentId;
+
+  @encodedName("application/json", "tool_call_id")
+  toolCallId?: WorkflowToolCallId;
+
+  @encodedName("application/json", "content_refs")
+  @maxItems(64)
+  contentRefs?: WorkflowContentRef[];
+
+  data?: Record<unknown>;
+}
+
+@doc("Idempotent append batch from one observer client.")
+model WorkflowEventBatchAppendRequest {
+  @encodedName("application/json", "client_id")
+  @minLength(1)
+  @maxLength(128)
+  clientId: string;
+
+  @minItems(1)
+  @maxItems(500)
+  events: WorkflowEventAppend[];
+
+  @maxItems(500)
+  content?: WorkflowContentChunk[];
+}
+
+@doc("Collector acknowledgement for an idempotent workflow-event append.")
+model WorkflowEventBatchAppendResponse {
+  @encodedName("application/json", "accepted_count")
+  @minValue(0)
+  acceptedCount: int32;
+
+  @encodedName("application/json", "duplicate_count")
+  @minValue(0)
+  duplicateCount: int32;
+
+  @encodedName("application/json", "acknowledged_source_sequence")
+  acknowledgedSourceSequence: WorkflowSequence;
+
+  @encodedName("application/json", "first_journal_sequence")
+  firstJournalSequence?: WorkflowSequence;
+
+  @encodedName("application/json", "last_journal_sequence")
+  lastJournalSequence?: WorkflowSequence;
+}
+
+@doc("One immutable event after collector journal sequence assignment.")
+model WorkflowJournalEvent extends WorkflowEventAppend {
+  @encodedName("application/json", "run_id")
+  runId: WorkflowRunId;
+
+  @encodedName("application/json", "client_id")
+  clientId: string;
+
+  @encodedName("application/json", "journal_sequence")
+  journalSequence: WorkflowSequence;
+}
+
+@doc("A bounded page of workflow journal events.")
+model WorkflowEventPage {
+  events: WorkflowJournalEvent[];
+
+  @encodedName("application/json", "next_sequence")
+  nextSequence: WorkflowSequence;
+
+  @encodedName("application/json", "high_water_mark")
+  highWaterMark: WorkflowSequence;
+
+  @encodedName("application/json", "cursor_gap")
+  cursorGap: boolean;
+}
+
+@doc("Recorded edge provenance directly observed from Codex.")
+model RecordedWorkflowEdgeProvenance {
+  type: "recorded";
+
+  @encodedName("application/json", "event_ids")
+  @minItems(1)
+  eventIds: WorkflowEventId[];
+}
+
+@doc("Derived edge provenance with explicit evidence and confidence.")
+model DerivedWorkflowEdgeProvenance {
+  type: "derived";
+
+  @encodedName("application/json", "event_ids")
+  @minItems(1)
+  eventIds: WorkflowEventId[];
+
+  evidence: string;
+  confidence: Ratio;
+}
+
+@doc("Provenance for one workflow graph edge.")
+union WorkflowEdgeProvenance {
+  recorded: RecordedWorkflowEdgeProvenance,
+  derived: DerivedWorkflowEdgeProvenance,
+}
+
+@doc("One node in the deterministic workflow graph projection.")
+model WorkflowGraphNode {
+  @encodedName("application/json", "node_id")
+  nodeId: WorkflowNodeId;
+
+  kind: WorkflowNodeKind;
+  label: string;
+  status: string;
+
+  @encodedName("application/json", "attempt_id")
+  attemptId?: WorkflowAttemptId;
+
+  @encodedName("application/json", "agent_id")
+  agentId?: WorkflowAgentId;
+
+  @encodedName("application/json", "parent_node_id")
+  parentNodeId?: WorkflowNodeId;
+
+  @encodedName("application/json", "started_at")
+  startedAt?: utcDateTime;
+
+  @encodedName("application/json", "ended_at")
+  endedAt?: utcDateTime;
+
+  @encodedName("application/json", "duration_ms")
+  durationMs?: DurationMs;
+
+  @encodedName("application/json", "content_refs")
+  contentRefs?: WorkflowContentRef[];
+
+  attributes?: Record<unknown>;
+}
+
+@doc("One typed edge in the deterministic workflow graph projection.")
+model WorkflowGraphEdge {
+  @encodedName("application/json", "edge_id")
+  edgeId: string;
+
+  @encodedName("application/json", "source_node_id")
+  sourceNodeId: WorkflowNodeId;
+
+  @encodedName("application/json", "target_node_id")
+  targetNodeId: WorkflowNodeId;
+
+  kind: WorkflowEdgeKind;
+  provenance: WorkflowEdgeProvenance;
+}
+
+@doc("Work and critical-path statistics for a workflow graph.")
+model WorkflowGraphStatistics {
+  @encodedName("application/json", "t1_ms")
+  t1Ms: DurationMs;
+
+  @encodedName("application/json", "t_infinity_ms")
+  tInfinityMs: DurationMs;
+
+  @encodedName("application/json", "wall_time_ms")
+  wallTimeMs: DurationMs;
+
+  @encodedName("application/json", "peak_concurrency")
+  @minValue(0)
+  peakConcurrency: int32;
+
+  @encodedName("application/json", "worker_count")
+  @minValue(1)
+  workerCount: int32;
+
+  @encodedName("application/json", "parallel_lower_bound_ms")
+  parallelLowerBoundMs: DurationMs;
+
+  @encodedName("application/json", "critical_path_node_ids")
+  criticalPathNodeIds: WorkflowNodeId[];
+}
+
+@doc("Deterministic graph projection at one journal cursor.")
+model WorkflowGraphSnapshot {
+  run: WorkflowRun;
+  nodes: WorkflowGraphNode[];
+  edges: WorkflowGraphEdge[];
+  statistics: WorkflowGraphStatistics;
+
+  @encodedName("application/json", "journal_sequence")
+  journalSequence: WorkflowSequence;
+
+  @encodedName("application/json", "next_node_cursor")
+  nextNodeCursor?: string;
+
+  @encodedName("application/json", "next_edge_cursor")
+  nextEdgeCursor?: string;
+
+  @encodedName("application/json", "has_more_nodes")
+  hasMoreNodes: boolean;
+
+  @encodedName("application/json", "has_more_edges")
+  hasMoreEdges: boolean;
+
+  @encodedName("application/json", "total_node_count")
+  @minValue(0)
+  totalNodeCount: int32;
+
+  @encodedName("application/json", "total_edge_count")
+  @minValue(0)
+  totalEdgeCount: int32;
+}
+
+@doc("Lazily retrieved captured workflow content.")
+model WorkflowContent {
+  @encodedName("application/json", "content_ref")
+  contentRef: WorkflowContentRef;
+
+  @encodedName("application/json", "content_type")
+  contentType: ContentType;
+
+  encoding: WorkflowContentEncoding;
+  content: string;
+
+  @encodedName("application/json", "size_bytes")
+  sizeBytes: ByteSize;
+}
+
+@doc("Request to enqueue one idempotent run-level control command.")
+model WorkflowControlRequest {
+  action: WorkflowControlAction;
+
+  @encodedName("application/json", "idempotency_key")
+  @minLength(1)
+  @maxLength(160)
+  idempotencyKey: string;
+
+  @doc("Text appended by steer or resume. Omit for interrupt.")
+  @maxLength(32768)
+  input?: string;
+}
+
+@doc("Durable run-level control command.")
+model WorkflowControlCommand {
+  @encodedName("application/json", "command_id")
+  commandId: WorkflowCommandId;
+
+  @encodedName("application/json", "run_id")
+  runId: WorkflowRunId;
+
+  action: WorkflowControlAction;
+  status: WorkflowControlStatus;
+
+  @encodedName("application/json", "idempotency_key")
+  idempotencyKey: string;
+
+  input?: string;
+
+  @encodedName("application/json", "requested_at")
+  requestedAt: utcDateTime;
+
+  @encodedName("application/json", "updated_at")
+  updatedAt: utcDateTime;
+
+  @encodedName("application/json", "command_sequence")
+  commandSequence: WorkflowSequence;
+
+  error?: string;
+}
+
+@doc("Page of control commands polled by the launcher-owned outbound adapter.")
+model WorkflowControlCommandPage {
+  commands: WorkflowControlCommand[];
+
+  @encodedName("application/json", "next_sequence")
+  nextSequence: WorkflowSequence;
+}
+
+@doc("Adapter acknowledgement or terminal result for one control command.")
+model WorkflowControlStatusUpdateRequest {
+  status: WorkflowControlStatus;
+  error?: string;
+}

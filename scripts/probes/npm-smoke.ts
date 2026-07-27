@@ -17,6 +17,12 @@ import type {
     LogRecord,
     Resource,
     SessionId,
+    WorkflowJournalEvent,
+    WorkflowAgentId,
+    WorkflowAttemptId,
+    WorkflowContentRef,
+    WorkflowEventId,
+    WorkflowRunId,
 } from "@ancplua/qyl-api-schema/types";
 
 const eventLog: LogRecord = {
@@ -82,6 +88,21 @@ const ciLog: CiLogOutput = {
     mode: "live",
 };
 
+const workflowEvent: WorkflowJournalEvent = {
+    event_id: "evt-0001" as WorkflowEventId,
+    source_sequence: "7",
+    timestamp: "2026-07-28T12:34:56+00:00",
+    kind: "agent_spawned",
+    thread_id: "thr-1",
+    attempt_id: "attempt-1" as WorkflowAttemptId,
+    agent_id: "agent-child" as WorkflowAgentId,
+    parent_agent_id: "agent-root" as WorkflowAgentId,
+    content_refs: [`sha256:${"a".repeat(64)}` as WorkflowContentRef],
+    run_id: "run-1" as WorkflowRunId,
+    client_id: "qyl-codex",
+    journal_sequence: "11",
+};
+
 void [
     eventLog,
     emptyAttribute,
@@ -93,4 +114,5 @@ void [
     invalidAttribute,
     healthReport,
     ciLog,
+    workflowEvent,
 ];

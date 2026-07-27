@@ -178,12 +178,11 @@ scalar Temperature extends float64;
 @maxLength(64)
 scalar Sha256Hash extends string;
 
-// The revision is a content hash of the emitted OpenAPI artifact, not a package
-// version: two builds of the same contract share it whatever their package
-// versions say, and any contract edit changes it without anyone remembering to
-// bump anything. Truncated to 16 hex characters because it is compared for
-// equality, never used as a security boundary.
-@doc("Deterministic revision of the generated API contract: 'sha256:' followed by the first 16 hex characters of the SHA-256 digest of the emitted OpenAPI document.")
+// The revision is a canonical digest of the semantic OpenAPI projection and the
+// exported telemetry-key projection, not a package version. Presentation-only
+// fields do not change it. Truncated to 16 hex characters because it is compared
+// for equality, never used as a security boundary.
+@doc("Deterministic revision of the generated API contract: 'sha256:' followed by the first 16 hex characters of its canonical semantic digest.")
 @pattern("^sha256:[a-f0-9]{16}$")
 @minLength(23)
 @maxLength(23)

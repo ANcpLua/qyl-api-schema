@@ -534,4 +534,14 @@ model WorkflowControlCommandPage {
 model WorkflowControlStatusUpdateRequest {
   status: WorkflowControlStatus;
   error?: string;
+
+  @doc("""
+    When the reported transition actually occurred at the adapter that executed
+    it. The journal event minted for this transition carries this clock — the
+    originating agent's — so control events order and measure consistently with
+    the agent-clocked events around them; omitted, the collector's receipt time
+    is the fallback.
+    """)
+  @encodedName("application/json", "occurred_at")
+  occurredAt?: utcDateTime;
 }

@@ -45,9 +45,10 @@ regenerate the artifacts, and map the runtime model to the generated contract.
 
 ## Published artifacts
 
-Both registries carry the same version from one release tag. The contract line is at
-`4.0.0`; it advances on its own major cadence and does not track the qyl product
-version.
+Both registries carry the same version from one release tag. The contract advances on
+its own major cadence and does not track the qyl product version — it was already at
+`5.0.0` when qyl launched at `1.0.0`. Read the current version from npm or nuget.org
+rather than from prose here; this line moves faster than a README is revised.
 
 | Ecosystem | Artifact | Purpose |
 | --- | --- | --- |

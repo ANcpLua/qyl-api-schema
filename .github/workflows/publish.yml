@@ -186,6 +186,19 @@ jobs:
               ;;
           esac
 
+      # The two package faces hash their revision from different bytes: PackContractsNuget
+      # reruns emit-contract-revision over the COMMITTED generated/openapi, while npm pack's
+      # prepack deletes and regenerates it first. Equal only if the committed artifact already
+      # equals a fresh emit — which is exactly what this asserts, before either pack runs. A
+      # release cut from a commit one regeneration behind its .tsp sources would otherwise push
+      # revision A to nuget.org and revision B to npmjs for the same version, and every client
+      # comparing CONTRACT_REVISION against the collector's HealthReport.contract_revision
+      # would refuse to start for the life of that release. PackContractsNuget also declares
+      # this as a Nuke dependency; naming it here fails the release at a step whose name says
+      # what is wrong, and keeps the gate if that dependency is ever dropped.
+      - name: Verify committed generated artifacts are current
+        run: ./build.sh VerifyGeneratedArtifactsCurrent
+
       # Pack + validate the NuGet BEFORE any publish: both registries are immutable, so a pack
       # failure must abort the whole release with nothing pushed. Output:
       # Artifacts/nuget/Qyl.Api.Contracts.<version>.nupkg

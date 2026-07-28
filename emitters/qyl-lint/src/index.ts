@@ -9,6 +9,7 @@
 //   wire-name-snake-case          one casing convention for JSON body keys
 //   http-param-snake-case         the same convention for query/path params
 //   identity-binding              one identity: one scalar, one name, one key
+//   identity-edge-typed           an identity edge is a declared scalar
 //   confusable-identity-documented  look-alike identities declare their relation
 // =============================================================================
 
@@ -16,6 +17,7 @@ import { createTypeSpecLibrary, defineLinter } from "@typespec/compiler";
 import { confusableIdentityDocumentedRule } from "./rules/confusable-identity-documented.js";
 import { httpParamSnakeCaseRule } from "./rules/http-param-snake-case.js";
 import { identityBindingRule } from "./rules/identity-binding.js";
+import { identityEdgeTypedRule } from "./rules/identity-edge-typed.js";
 import { wireNameSnakeCaseRule } from "./rules/wire-name-snake-case.js";
 
 export const $lib = createTypeSpecLibrary({
@@ -28,6 +30,7 @@ export const $linter = defineLinter({
     wireNameSnakeCaseRule,
     httpParamSnakeCaseRule,
     identityBindingRule,
+    identityEdgeTypedRule,
     confusableIdentityDocumentedRule,
   ],
 });

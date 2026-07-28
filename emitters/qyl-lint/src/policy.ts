@@ -157,6 +157,46 @@ export function reservedNameFor(propertyName: string): ReservedName | undefined 
   return RESERVED_NAMES.get(propertyName);
 }
 
+const EDGE_NAMES = new Map<string, IdentityBinding>();
+for (const identity of IDENTITIES) {
+  for (const edge of Object.keys(identity.edges)) {
+    EDGE_NAMES.set(edge, identity);
+  }
+}
+
+/**
+ * The identity a registered edge name qualifies, if the name is an edge.
+ *
+ * `reserved` and `edges` overlap but are not the same list, and the gap is
+ * load-bearing. `previousSessionId` is in both: it can only ever be a
+ * `SessionId`, so the reserved check pins the exact scalar. `runId` is an edge
+ * only, because the same edge legitimately qualifies different identities —
+ * `SessionId` on the ci_log shapes, `WorkflowRunId` on the workflow graph,
+ * `WorkbenchEvaluationRunId` on an evaluation export. Which of those is right is
+ * a modelling decision no lint rule can make; that it is a validated scalar at
+ * all is not.
+ */
+export function edgeNameFor(propertyName: string): IdentityBinding | undefined {
+  return EDGE_NAMES.get(propertyName);
+}
+
+/**
+ * Whether `type` is a scalar this contract declares, rather than a TypeSpec
+ * built-in.
+ *
+ * A declared scalar is where `@pattern`, `@minLength` and `@maxLength` live, so
+ * this is the difference between a run id that is checked at the boundary and
+ * one that accepts any string at all.
+ */
+export function isDeclaredScalar(type: Type): boolean {
+  if (type.kind !== "Scalar") return false;
+  let outermost: string | undefined;
+  for (let ns = (type as Scalar).namespace; ns?.name; ns = ns.namespace) {
+    outermost = ns.name;
+  }
+  return outermost !== undefined && outermost !== "TypeSpec";
+}
+
 /**
  * Whether a property carrying this identity may be spelled `name`.
  *

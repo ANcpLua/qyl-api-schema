@@ -23,6 +23,11 @@ sealed class Build : NukeBuild
     public static int Main() => Execute<Build>(x => x.EmitAll);
 
     const string OtelKeysVersion = "1.43.0";
+
+    // The GenAI registry is pinned by commit, not by version: it is a dev registry that
+    // moves freely, and it is the pin that actually moves between regenerations. A core
+    // version bump is visible in the version string; a GenAI bump is only visible here.
+    const string OtelKeysGenAiCommit = "64cfaa612a1af8472b2f063374fbe3c9e6cea2ab";
     static readonly string[] Emitters = ["csharp", "ts-types"];
     AbsolutePath DomainSpecRoot => RootDirectory;
     AbsolutePath EmitOutputDir => RootDirectory / "Artifacts" / "emit";
@@ -36,14 +41,18 @@ sealed class Build : NukeBuild
             NpmCi(s => s.SetProcessWorkingDirectory(DomainSpecRoot));
         });
 
-    // The generated header binds TypeSpec keys to the semantic-conventions version.
+    // The generated header binds TypeSpec keys to both upstream registries it was resolved
+    // from. Both are checked: nothing in this repository compiles otel-keys.gen.tsp for its
+    // key names — main.tsp imports it, but it declares only namespaces, so a renamed or
+    // dropped key is not a TypeSpec error — and the file is a published entry point. This
+    // header is therefore the only place a registry move is observable before consumers see
+    // key names that disagree with the producer constants and the collector's catalog.
     Target VerifyKeysLockstep => _ => _
-        .Description("Assert generated/otel-keys.gen.tsp is pinned at core semconv OtelKeysVersion.")
+        .Description("Assert generated/otel-keys.gen.tsp pins both the core semconv version and the GenAI registry commit.")
         .DependsOn(RestoreTypeSpecDeps)
         .Executes(() =>
         {
             var spec = DomainSpecRoot;
-            var expected = OtelKeysVersion;
 
             var committed = spec / "generated" / "otel-keys.gen.tsp";
 
@@ -53,21 +62,34 @@ sealed class Build : NukeBuild
                     $"VerifyKeysLockstep: committed keys file '{committed}' is missing.");
             }
 
-            if (!string.IsNullOrWhiteSpace(expected))
-            {
-                var pin = $"open-telemetry/semantic-conventions v{expected} ";
-                if (!File.ReadAllText(committed).Contains(pin, StringComparison.Ordinal))
-                {
-                    throw new InvalidOperationException(
-                        $"VerifyKeysLockstep: '{committed}' header does not pin '{pin.TrimEnd()}' (OtelKeysVersion='{expected}'). " +
-                        "Regenerate via the Qyl.OpenTelemetry.SemanticConventions repo's emit_typespec_keys.py or fix the pin.");
-                }
-            }
+            var header = File.ReadAllText(committed);
+
+            // Trailing space in each pin: the header writes "<pin> (<sha>)", so without it a
+            // prefix of a longer version or commit would satisfy the check.
+            AssertHeaderPin(
+                committed, header,
+                $"open-telemetry/semantic-conventions v{OtelKeysVersion} ",
+                nameof(OtelKeysVersion), OtelKeysVersion);
+            AssertHeaderPin(
+                committed, header,
+                $"open-telemetry/semantic-conventions-genai {OtelKeysGenAiCommit} ",
+                nameof(OtelKeysGenAiCommit), OtelKeysGenAiCommit);
 
             Log.Information(
-                "VerifyKeysLockstep: '{Committed}' pinned at core semconv v{Version}.",
-                committed, expected);
+                "VerifyKeysLockstep: '{Committed}' pinned at core semconv v{Version} and GenAI registry {Commit}.",
+                committed, OtelKeysVersion, OtelKeysGenAiCommit);
         });
+
+    static void AssertHeaderPin(AbsolutePath committed, string header, string pin, string constant, string expected)
+    {
+        if (string.IsNullOrWhiteSpace(expected)) return;
+        if (header.Contains(pin, StringComparison.Ordinal)) return;
+
+        throw new InvalidOperationException(
+            $"VerifyKeysLockstep: '{committed}' header does not pin '{pin.TrimEnd()}' ({constant}='{expected}'). " +
+            "Regenerate via the Qyl.Telemetry.SemanticConventions repo's emit_typespec_keys.py, or update the pin here " +
+            "if the registry move is intended.");
+    }
 
     Target CompileDomainSpec => _ => _
         .Description("Compile the published TypeSpec surface (index.tsp) with --no-emit --warn-as-error via `npm run lint:public`.")

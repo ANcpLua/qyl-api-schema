@@ -36,25 +36,33 @@ if (unknown.length > 0) {
 const emitCSharp = flags.length === 0 || flags.includes("--csharp");
 const emitTs = flags.length === 0 || flags.includes("--ts");
 
-let openApi;
-try {
-  openApi = JSON.parse(await readFile(openApiPath, "utf8"));
-} catch (error) {
-  throw new Error(
-    `emit-contract-revision: could not read '${openApiPath}' — run \`npm run compile\` so the OpenAPI emit precedes the revision.`,
-    { cause: error },
-  );
+// "Run `npm run compile`" is the right advice for a file that is not there yet and
+// useless for one that is. An EACCES from a badly restored checkout, an EISDIR from a
+// half-finished clean, an EMFILE under a parallel Nuke run: told to compile, the operator
+// compiles, watches it succeed, reruns the pack, and reads the identical message. So only
+// ENOENT gets that sentence; everything else surfaces its own error as the cause.
+async function readGenerated(path, what, missingAdvice) {
+  try {
+    return await readFile(path, "utf8");
+  } catch (error) {
+    const detail = error?.code === "ENOENT" ? `is missing — ${missingAdvice}` : `could not be read (${error?.code ?? error})`;
+    throw new Error(`emit-contract-revision: ${what} '${path}' ${detail}.`, { cause: error });
+  }
 }
 
-let otelKeys;
-try {
-  otelKeys = await readFile(otelKeysPath, "utf8");
-} catch (error) {
-  throw new Error(
-    `emit-contract-revision: could not read exported key projection '${otelKeysPath}'.`,
-    { cause: error },
-  );
-}
+const openApi = JSON.parse(
+  await readGenerated(
+    openApiPath,
+    "emitted OpenAPI document",
+    "run `npm run compile` so the OpenAPI emit precedes the revision",
+  ),
+);
+
+const otelKeys = await readGenerated(
+  otelKeysPath,
+  "exported key projection",
+  "regenerate it from the Qyl.Telemetry.SemanticConventions repo",
+);
 
 const presentationKeys = new Set([
   "description",
@@ -120,15 +128,11 @@ public static class ContractRevision
 }
 
 if (emitTs) {
-  let api;
-  try {
-    api = await readFile(tsPath, "utf8");
-  } catch (error) {
-    throw new Error(
-      `emit-contract-revision: could not read '${tsPath}' — run \`npm run compile\` so the TypeScript emit precedes the revision.`,
-      { cause: error },
-    );
-  }
+  const api = await readGenerated(
+    tsPath,
+    "emitted TypeScript contract types",
+    "run `npm run compile` so the TypeScript emit precedes the revision",
+  );
 
   const markerIndex = api.indexOf(tsMarker);
   const emitted = markerIndex === -1 ? api : api.slice(0, markerIndex);

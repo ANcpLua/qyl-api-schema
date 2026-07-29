@@ -21332,9 +21332,6 @@
           "agent_id": {
             "$ref": "#/components/schemas/Workflow.WorkflowAgentId"
           },
-          "parent_node_id": {
-            "$ref": "#/components/schemas/Workflow.WorkflowNodeId"
-          },
           "started_at": {
             "type": "string",
             "format": "date-time"

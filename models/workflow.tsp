@@ -375,9 +375,6 @@ model WorkflowGraphNode {
   @encodedName("application/json", "agent_id")
   agentId?: WorkflowAgentId;
 
-  @encodedName("application/json", "parent_node_id")
-  parentNodeId?: WorkflowNodeId;
-
   @encodedName("application/json", "started_at")
   startedAt?: utcDateTime;
 

@@ -5,6 +5,13 @@ This is the repository's only editable agent/contributor instruction file.
 generated reports are evidence, not additional authorities. Do not add migration
 plans, progress diaries, handoff prompts, or a second rules file.
 
+## Verified concern status
+
+| Concern | Status | Evidence / concrete remainder |
+| --- | --- | --- |
+| [`QYL-CONTRACT-RELEASE`](https://github.com/ANcpLua/dedupe-28th-july/blob/main/concerns/01-contract-and-release-integrity.md) | `IN_PROGRESS` | Deterministic C#/TypeScript contract revision emission and packed-consumer comparison are tracked; no durable schema index → collector deploy → MCP repin/deploy orchestration/provenance exists. |
+| [`QYL-WORKFLOW-GRAPH`](https://github.com/ANcpLua/dedupe-28th-july/blob/main/concerns/04-workflow-graph-correctness.md) | `IN_PROGRESS` | The TypeSpec workflow graph exists, and source/OpenAPI plus qyl/MCP removals are committed and pushed (`qyl-api-schema` `7cd020b9`, `qyl` `ab1f512d`, `qyl.mcp` `39a0af4f`). The new contract/packages are not published/indexed, consumers/deployments are not repinned/released, and full coordinated release/orchestration, tests, and live evidence remain. |
+
 ## Place in the 1.0.0 taxonomy
 
 This repository is not one of the nine runtime components; it is where the

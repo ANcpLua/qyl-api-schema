@@ -1,7 +1,7 @@
 # PRD: Event-Sourced Workflow Architecture and DuckDB.NET 1.5.5 Integration
 
-**Status:** Implementation specification
-**Revision:** 2026-07-31; this checked-in revision supersedes earlier drafts and copied excerpts.
+**Status:** Implemented, validated, and published
+**Revision:** 2026-08-01; this completion record supersedes earlier drafts and copied excerpts.
 **Target repositories:**
 
 - `/Users/ancplua/RiderProjects/qyl-workspace/qyl`
@@ -9,7 +9,7 @@
 
 **Primary architecture owner:** `qyl`
 **Public contract owner:** `qyl-api-schema`
-**Audience:** An implementation agent responsible for completing, validating, committing, and pushing the change across both repositories, and for publishing only when Alex explicitly authorizes the required release operation in chat.
+**Audience:** Delivery reviewers and future maintainers verifying the completed change across both repositories.
 
 ---
 
@@ -107,9 +107,13 @@ The completed system must recover all derived workflow state from the journal, r
 
 ---
 
-## 2. Current-state constraint
+## 2. Initial-state constraint (satisfied)
 
-The `qyl` worktree currently contains an uncommitted workflow/storage rewrite touching this scope, including checkpoint storage, projection runtime, lifecycle handling, schema generation, DuckDB 1.5.5, and workflow tests.
+At the start of this work order, the `qyl` worktree contained an uncommitted
+workflow/storage rewrite touching this scope, including checkpoint storage,
+projection runtime, lifecycle handling, schema generation, DuckDB 1.5.5, and workflow
+tests. That inherited work was adopted, reconciled, validated, and published; neither
+target repository has a dirty implementation worktree at completion.
 
 The implementation agent must:
 
@@ -919,6 +923,10 @@ The implementation is complete only when all of the following are true:
 
 ## 18. Agent handoff requirements
 
+This section defined the evidence required during implementation handoffs. Delivery is
+complete; the final evidence and requirement state are recorded in section 19, and
+there is no active implementation handoff.
+
 A replacement agent or a new context window must begin by reading this PRD in full,
 the applicable `AGENTS.md` files, the current worktree status and diff, and the latest
 requirement ledger. It must not reconstruct authority from a conversation summary,
@@ -956,3 +964,83 @@ The implementation agent’s final report must include:
 - Every unresolved, unverified, uncommitted, unpushed, unpublished, undeployed, or user-dependent item under **Remaining**.
 
 The agent must not claim completion based only on successful compilation. Direct behavioral, recovery, concurrency, and generated-artifact validation is required.
+
+---
+
+## 19. Completion ledger and publication evidence
+
+This work order is retired as an active implementation authority. Durable product
+architecture now lives in `qyl/ARCHITECTURE-1.0.0.md`; the workspace ownership and
+owner-first publication rules live in `qyl-workspace/AGENTS.md` and
+`qyl-workspace/README.md`. This section is delivery evidence, not a second design
+source.
+
+### 19.1 Published commits and releases
+
+| Repository | GitHub `main` | Published release | Publication evidence |
+| --- | --- | --- | --- |
+| `qyl-api-schema` | `f2addef63048ef554051d5c05a8fe6284ff4a084` | `v7.0.0` | GitHub Release `v7.0.0`; publish run `30666703788` succeeded; `Qyl.Api.Contracts` 7.0.0 and `@ancplua/qyl-api-schema` 7.0.0 are publicly indexed. |
+| `qyl` | `f1b96b9170614b1f79fc97ff89f955c667d6beb0` | `v1.1.5` | Main CI run `30670826247` and trusted-publishing run `30671215113` succeeded; GitHub Release `v1.1.5` targets this commit. |
+| `riderprojects-meta` | `cff4c6640ea5773b77a13308a7d1c23035bf8a18` | Documentation only | Workspace `AGENTS.md` and `README.md` record the repository map, authority split, and owner-first release order. |
+
+The first qyl publication attempt used tag `v1.1.4` at
+`8ca9fcc5a9b49468c652b9836e5318c5c8323288`. Its Windows consumer smoke correctly
+blocked publication because the inherited checkpoint filesystem rejected Windows.
+No `1.1.4` package or GitHub Release was produced. The tag was not rewritten; the
+platform correction advanced the immutable version to `1.1.5`.
+
+The public qyl release contains `qyl`, `qyl.linux-x64`, `qyl.linux-arm64`,
+`qyl.osx-x64`, `qyl.osx-arm64`, `qyl.win-x64`, and `qyl.win-arm64` at 1.1.5. Every
+flat-container package URL returned HTTP 200 after publication. The release workflow
+also installed `qyl` 1.1.5 from public NuGet in a clean consumer, checked its version,
+and exercised the installed product.
+
+### 19.2 Numbered requirement ledger
+
+| PRD section | Final state | Owning evidence and direct validation |
+| --- | --- | --- |
+| 0. Authority and interpretation | `satisfied` | Conflicting comments, migration tests, caller retries, and inherited WIP behavior were evaluated against this PRD. The durable result was folded into `qyl/ARCHITECTURE-1.0.0.md`; this PRD is now explicitly retired as an active authority. |
+| 1. Product outcome | `satisfied` | `qyl-api-schema/api/workflow.tsp` and `models/workflow.tsp` own the public contract. `DuckDbStore.Workflow.cs`, `WorkflowCheckpointStore.cs`, and `WorkflowProjectionBuilder.cs` implement journal authority plus disposable incremental projections. |
+| 2. Initial-state adoption | `satisfied` | The inherited workflow rewrite was adopted from the dirty worktree, reconciled with current source, and published through the commits above. No WIP snapshot is required to reconstruct current behavior. |
+| 3. Architectural invariants | `satisfied` | Typed public contracts, append-only journal authority, generation fencing, bounded projection, cancellation, NativeAOT, tombstone deletion, and atomic checkpoint replacement are implemented and recorded in the owning architecture document. |
+| 4. Scope | `satisfied` | Both target repositories changed. First-party CLI and dashboard consumers moved to the published 7.0.0 contract. Workspace ownership documentation was updated without changing live infrastructure. |
+| 5. Public contracts | `satisfied` | Branded project/run/generation/event/content identifiers, distinct run/graph cursors, journal position, closed projection status, structured errors, typed HTTP operations, and curated MCP shapes are generated from TypeSpec. OpenAPI, C#, TypeScript, route fixtures, and consumer probes validate the surface. |
+| 6. Persistence model | `satisfied` | The journal is authoritative. One committed manifest identifies one content-addressed checkpoint per generation and carries journal position, canonical input hash, semantic/configuration fingerprints, format, length, creation time, and content digest. Reads advance incrementally from valid checkpoints. |
+| 7. Projection runtime | `satisfied` | `WorkflowProjectionRuntime.cs` uses closed `Advanced`, `Rotated`, and `Gone` outcomes, transfers waiters to successor generations, coalesces demand, bounds workers/cache, preserves cancellation, and contains no caller-side magic retry budget or outer catch-all. |
+| 8. DuckDB.NET 1.5.5 | `satisfied` | `Version.props` pins 1.5.5. Generated `AppendRow<TState>` uses a reused row and static callback; BLOB mapping accepts `byte[]`; generated Arrow reads stream async batches; statement-level CAS/conflict/transaction paths remain parameterized SQL; retry classification is exhaustive over `DuckDBErrorType`. |
+| 9. Schema generation | `satisfied` | `DuckDbSchemaEmitter.cs`, `DuckDbEmitter.cs`, and `DuckDbInsertGenerator.cs` share the metadata source for canonical DDL, stable column order/types, schema identities, appenders, Arrow readers, and verifier metadata. `qyl_schema_meta` stores authoritative and derived SHA-256 identities; derived mismatches drop/recreate and non-empty authoritative mismatches fail closed. |
+| 10. Reconciliation and recovery | `satisfied` | A single hosted reconciliation service validates manifests/files, records and schedules repair without clearing the committed manifest, publishes replacement through CAS, and sweeps only after publication and the temporary-file grace period. Linux/macOS use pinned no-follow handles; Windows uses rooted reparse-aware persistent operations. |
+| 11. Required deletions | `satisfied` | Persisted projection node/edge/state tables, replay-on-read, ALTER/backfill migration machinery, `qyl_storage_migrations`, `OmitDefaultFromMigration`, caller retry patches, duplicate public DTOs, and dead worker catch-all behavior are absent from active source. |
+| 12. Delivery sequence | `satisfied` | Contracts were validated and published first as 7.0.0, qyl consumed that public version, focused and broad validation followed, then qyl 1.1.5 was tagged and published. |
+| 13. Required tests | `satisfied` | Contract compilation/probes, generator/appender/BLOB/Arrow tests, real DuckDB/filesystem recovery tests, runtime concurrency/CAS tests, typed failure tests, pagination/cursor tests, NativeAOT smokes, browser E2E, and all-platform package consumers passed. |
+| 14. Performance acceptance | `satisfied` | The owning architecture document records the identical 2,000-event workload: 3.338 s to 1.152 s, 599 to 1,736 events/s, 8.99 MB to 7.69 MB runtime allocation, and 494.9 MB to 177.5 MB peak RSS. The checkpoint was 1,168 bytes and missing-file rebuild was 58.8 ms. |
+| 15. Observability | `satisfied` | Owned structured logs cover journal commits, projection lifecycle/coalescing, processed positions, full/incremental reconstruction, checkpoint bytes/validation, CAS, repair/sweep, typed DuckDB classification, and Arrow batches/rows without payloads or secrets. The rejected handwritten metric was deleted rather than bypassing vocabulary ownership. |
+| 16. Non-goals | `satisfied` | No federation, consensus, remote checkpoint store, public checkpoint API, public DuckDB/Arrow model, generic event framework, compatibility shim, reflection mapper, or automatic authoritative-journal destruction was introduced. |
+| 17. Definition of done | `satisfied` | The itemized closure is recorded below. |
+| 18. Handoff evidence | `satisfied` | This ledger records source, validations, performance, NativeAOT, commits, releases, remote state, and the empty remainder. No further implementation handoff exists. |
+
+### 19.3 Definition-of-done closure
+
+| Definition-of-done item | Evidence |
+| --- | --- |
+| One public workflow contract owner | `qyl-api-schema` 7.0.0 owns HTTP, SSE, MCP, C#, TypeScript, OpenAPI, and JSON Schema shapes. |
+| Branded identifiers and dedicated cursors | Generated C# and TypeScript distinguish every required identity and run/graph cursor at compile time. |
+| Published-contract consumption | qyl pins `Qyl.Api.Contracts` 7.0.0 and the dashboard pins `@ancplua/qyl-api-schema` 7.0.0; build verifiers reject local duplicate DTOs. |
+| One persisted workflow authority | The append-only journal is the sole semantic history; derived graph/checkpoint state is reconstructable. |
+| Checkpoint reads, validation, and incremental advance | Checkpoints validate every required axis and valid reads advance from the committed journal position without full replay. |
+| Durable atomic replacement | File write, fsync, validation, CAS publication, winner reload, repair ordering, and orphan safety are directly tested. The prior checkpoint remains referenced until CAS success. |
+| Generation and deletion fencing | Rotation transfers demand; deletion tombstones block append/publication; stale generations cannot publish. |
+| DuckDB.NET 1.5.5 API adoption | Appender, BLOB, Arrow, typed failure classification, and retained parameterized SQL divisions are generated and validated. |
+| Unified generated storage surface | Canonical DDL, hashes, appenders, Arrow readers, mappings, and verification derive from one metadata model. |
+| Obsolete implementation removed | No active projection tables, migration framework, replay-on-read, duplicate public model, caller retry, or handwritten hot ingestion remains. |
+| No stale active prescription | Repository searches and build verifiers found no active source prescribing the retired migration/projection/caller-retry design. The failed 1.1.4 tag is immutable historical evidence, not active architecture. |
+| Durable architecture owner updated | `qyl/ARCHITECTURE-1.0.0.md` contains the final authority, checkpoint, runtime, schema, API-use, platform-filesystem, observability, and performance decisions. |
+| Behavioral and platform validation | `npm ci && timeout 300 ./build.sh Check` passed all 15 schema targets. The final local qyl `Ci` gate passed 237/237 tests plus NativeAOT and browser/product gates; after the Windows correction the collector suite passed 196/196 and a `win-x64` tool pack succeeded. Main CI `30670826247` and release consumers on Ubuntu, macOS, and Windows passed. |
+| NativeAOT delivery | The Linux image contains the native checkpoint sidecar, starts as the non-root qyl user, serves dashboard/API/OTLP, persists through restart, and passed all seven wire lanes. Runtime-native resolver layouts are present for regular builds. |
+| Clean synchronized repositories | At final evidence collection, `qyl`, `qyl-api-schema`, and `riderprojects-meta` had clean worktrees and `HEAD...origin/main` equal to `0 0`; GitHub `main` matched the recorded hashes. |
+
+### 19.4 Remaining
+
+None. There are no partial, missing, conflicting, unverified, uncommitted, unpushed,
+unpublished, undeployed, or user-dependent items in this PRD's scope. No live service,
+endpoint, DNS record, or deployment was changed or required by this work order.

@@ -12,3 +12,5 @@ boundaries.
 Validate with `npm ci` and `./build.sh Check`; boundary changes also restore
 the produced `Qyl.Api.Contracts` into a clean consumer. npm and NuGet publishing
 is CI OIDC only and completes only after both artifacts are indexed and consumed.
+A registry write that is not a publish goes through `~/.claude/bin/npm-authed` —
+the script header is the runbook.

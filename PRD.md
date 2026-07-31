@@ -977,9 +977,9 @@ source.
 
 ### 19.1 Published commits and releases
 
-| Repository | GitHub `main` | Published release | Publication evidence |
+| Repository | Implementation commit | Published release | Publication evidence |
 | --- | --- | --- | --- |
-| `qyl-api-schema` | `f2addef63048ef554051d5c05a8fe6284ff4a084` | `v7.0.0` | GitHub Release `v7.0.0`; publish run `30666703788` succeeded; `Qyl.Api.Contracts` 7.0.0 and `@ancplua/qyl-api-schema` 7.0.0 are publicly indexed. |
+| `qyl-api-schema` | `f2addef63048ef554051d5c05a8fe6284ff4a084` | `v7.0.0` | This is the published contract implementation commit. GitHub Release `v7.0.0`; publish run `30666703788` succeeded; `Qyl.Api.Contracts` 7.0.0 and `@ancplua/qyl-api-schema` 7.0.0 are publicly indexed. |
 | `qyl` | `f1b96b9170614b1f79fc97ff89f955c667d6beb0` | `v1.1.5` | Main CI run `30670826247` and trusted-publishing run `30671215113` succeeded; GitHub Release `v1.1.5` targets this commit. |
 | `riderprojects-meta` | `cff4c6640ea5773b77a13308a7d1c23035bf8a18` | Documentation only | Workspace `AGENTS.md` and `README.md` record the repository map, authority split, and owner-first release order. |
 
@@ -1037,7 +1037,7 @@ and exercised the installed product.
 | Durable architecture owner updated | `qyl/ARCHITECTURE-1.0.0.md` contains the final authority, checkpoint, runtime, schema, API-use, platform-filesystem, observability, and performance decisions. |
 | Behavioral and platform validation | `npm ci && timeout 300 ./build.sh Check` passed all 15 schema targets. The final local qyl `Ci` gate passed 237/237 tests plus NativeAOT and browser/product gates; after the Windows correction the collector suite passed 196/196 and a `win-x64` tool pack succeeded. Main CI `30670826247` and release consumers on Ubuntu, macOS, and Windows passed. |
 | NativeAOT delivery | The Linux image contains the native checkpoint sidecar, starts as the non-root qyl user, serves dashboard/API/OTLP, persists through restart, and passed all seven wire lanes. Runtime-native resolver layouts are present for regular builds. |
-| Clean synchronized repositories | At final evidence collection, `qyl`, `qyl-api-schema`, and `riderprojects-meta` had clean worktrees and `HEAD...origin/main` equal to `0 0`; GitHub `main` matched the recorded hashes. |
+| Clean synchronized repositories | At final evidence collection, `qyl`, `qyl-api-schema`, and `riderprojects-meta` had clean worktrees and `HEAD...origin/main` equal to `0 0`; GitHub `main` matched each local `HEAD`. The final documentation commit is verified from Git rather than embedded self-referentially in its own contents. |
 
 ### 19.4 Remaining
 

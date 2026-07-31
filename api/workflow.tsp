@@ -131,12 +131,14 @@ interface WorkflowRunsApi {
   getGraph(
     ...Qyl.Api.Contracts.ProjectScopeHeader,
     @path("run_id") runId: WorkflowRunId,
-    @query("node_cursor") nodeCursor?: string,
+    @doc("Opaque node continuation. Reuse it unchanged from the preceding snapshot's next_node_cursor; do not parse, construct, or modify it.")
+    @query("node_cursor") nodeCursor?: WorkflowNodeId,
     @query("node_limit")
     @minValue(1)
     @maxValue(1000)
     nodeLimit?: int32 = 250,
-    @query("edge_cursor") edgeCursor?: string,
+    @doc("Opaque edge continuation. Reuse it unchanged from the preceding snapshot's next_edge_cursor; do not parse, construct, or modify it.")
+    @query("edge_cursor") edgeCursor?: WorkflowEdgeId,
     @query("edge_limit")
     @minValue(1)
     @maxValue(2000)

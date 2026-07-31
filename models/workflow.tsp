@@ -34,10 +34,15 @@ scalar WorkflowEventId extends string;
 @maxLength(128)
 scalar WorkflowCommandId extends string;
 
-@doc("Stable identifier of one graph node.")
+@doc("Stable identifier of one graph node. Canonical tuples structurally distinguish run scope from attempt scope, escape colon as \\c and backslash as \\\\, and never infer scope from a literal component value. A canonical identifier over 192 Unicode scalar values is replaced by its kind, a tilde, and the full lowercase 64-hex SHA-256 of the length-prefixed canonical tuple.")
 @minLength(1)
 @maxLength(192)
 scalar WorkflowNodeId extends string;
+
+@doc("Stable identifier of one graph edge. Endpoint tuples preserve the nodes' structural run-versus-attempt scope and ordinal component boundaries, escape colon as \\c and backslash as \\\\, and never infer scope from a literal component value. A canonical identifier over 192 Unicode scalar values is replaced by its edge kind, a tilde, and the full lowercase 64-hex SHA-256 of the length-prefixed canonical tuple.")
+@minLength(1)
+@maxLength(192)
+scalar WorkflowEdgeId extends string;
 
 @doc("Content-addressed reference to a captured workflow payload.")
 @pattern("^sha256:[a-f0-9]{64}$")
@@ -390,10 +395,10 @@ model WorkflowGraphNode {
   attributes?: Record<unknown>;
 }
 
-@doc("One typed edge in the deterministic workflow graph projection.")
+@doc("One typed edge in the deterministic workflow graph projection. Data, Control, and Gate edges are causal dependencies. Temporal edges describe observed order, Resource edges describe resource use, and Conflict edges describe contention; Temporal, Resource, and Conflict edges are excluded from critical-path causality.")
 model WorkflowGraphEdge {
   @encodedName("application/json", "edge_id")
-  edgeId: string;
+  edgeId: WorkflowEdgeId;
 
   @encodedName("application/json", "source_node_id")
   sourceNodeId: WorkflowNodeId;
@@ -405,7 +410,7 @@ model WorkflowGraphEdge {
   provenance: WorkflowEdgeProvenance;
 }
 
-@doc("Work and critical-path statistics for a workflow graph.")
+@doc("Work and critical-path statistics for a workflow graph. Every ToolCall, Wait, Gate, and duration-bearing Message or Item contributes an independently weighted interval even when it has no Agent owner. An Agent contributes its own-work fragments: its interval minus the union of precisely owned child intervals clipped to the Agent interval. Precisely owned children are Control-linked Agent and ToolCall nodes, Temporal-linked Wait nodes, Gate-linked Gate nodes, and Data-linked duration-bearing Message or Item nodes. Peak concurrency sweeps every positive independently weighted or Agent own-work fragment. Critical-path analysis uses only Data, Control, and Gate edges, condenses each causal strongly connected component, charges every component member exactly once, and expands selected component members in ordinal node-id order.")
 model WorkflowGraphStatistics {
   @encodedName("application/json", "t1_ms")
   t1Ms: DurationMs;
@@ -442,10 +447,12 @@ model WorkflowGraphSnapshot {
   journalSequence: WorkflowSequence;
 
   @encodedName("application/json", "next_node_cursor")
-  nextNodeCursor?: string;
+  @doc("Opaque node continuation for the next page. Reuse it unchanged as node_cursor on the next graph request; do not parse, construct, or modify it.")
+  nextNodeCursor?: WorkflowNodeId;
 
   @encodedName("application/json", "next_edge_cursor")
-  nextEdgeCursor?: string;
+  @doc("Opaque edge continuation for the next page. Reuse it unchanged as edge_cursor on the next graph request; do not parse, construct, or modify it.")
+  nextEdgeCursor?: WorkflowEdgeId;
 
   @encodedName("application/json", "has_more_nodes")
   hasMoreNodes: boolean;

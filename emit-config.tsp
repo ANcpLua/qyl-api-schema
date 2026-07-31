@@ -77,4 +77,5 @@ using Qyl.Api.Schema.Emit.TsTypes;
 @@tsBrand(Qyl.Api.Contracts.Workflow.WorkflowEventId);
 @@tsBrand(Qyl.Api.Contracts.Workflow.WorkflowCommandId);
 @@tsBrand(Qyl.Api.Contracts.Workflow.WorkflowNodeId);
+@@tsBrand(Qyl.Api.Contracts.Workflow.WorkflowEdgeId);
 @@tsBrand(Qyl.Api.Contracts.Workflow.WorkflowContentRef);

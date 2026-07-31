@@ -146,6 +146,25 @@ for (const id of [
     throw new Error(`${id} must remain a branded TypeScript identifier.`);
   }
 }
+for (const id of ["WorkflowNodeId", "WorkflowEdgeId"]) {
+  if (!tsRuntime.includes(`readonly __brand: "${id}"`)) {
+    throw new Error(`${id} must remain a branded TypeScript workflow identifier.`);
+  }
+}
+for (const property of [
+  '"node_id": WorkflowNodeId;',
+  '"edge_id": WorkflowEdgeId;',
+  '"source_node_id": WorkflowNodeId;',
+  '"target_node_id": WorkflowNodeId;',
+  '"next_node_cursor"?: WorkflowNodeId;',
+  '"next_edge_cursor"?: WorkflowEdgeId;',
+  '"node_cursor"?: WorkflowNodeId;',
+  '"edge_cursor"?: WorkflowEdgeId;',
+]) {
+  if (!tsRuntime.includes(property)) {
+    throw new Error(`Generated TypeScript workflow identifier property drifted: ${property}.`);
+  }
+}
 for (const marker of [
   '[JsonPolymorphic(TypeDiscriminatorPropertyName = "format")]',
   '[JsonDerivedType(typeof(WorkbenchEvaluationJsonExportPayload), "json")]',
@@ -652,6 +671,27 @@ assertInvalid(
   { ...workflowEventFixture, content_refs: ["sha256:not-a-digest"] },
   "workflow journal event with an invalid content reference",
 );
+for (const [definition, maximum] of [
+  ["Workflow.WorkflowRunId", 128],
+  ["Workflow.WorkflowAttemptId", 128],
+  ["Workflow.WorkflowAgentId", 128],
+  ["Workflow.WorkflowToolCallId", 128],
+  ["Workflow.WorkflowEventId", 160],
+  ["Workflow.WorkflowNodeId", 192],
+  ["Workflow.WorkflowEdgeId", 192],
+]) {
+  const validateIdentifier = validatorFor(definition);
+  assertValid(
+    validateIdentifier,
+    "😀".repeat(maximum),
+    `${definition} with its maximum Unicode-scalar length`,
+  );
+  assertInvalid(
+    validateIdentifier,
+    "x".repeat(maximum + 1),
+    `${definition} beyond its maximum length`,
+  );
+}
 
 const validateWorkflowEdge = validatorFor("Workflow.WorkflowGraphEdge");
 const edge = {
@@ -662,6 +702,26 @@ const edge = {
   provenance: { type: "recorded", event_ids: ["evt-0001"] },
 };
 assertValid(validateWorkflowEdge, edge, "recorded workflow graph edge");
+assertValid(
+  validateWorkflowEdge,
+  { ...edge, edge_id: "e".repeat(192) },
+  "workflow graph edge with a 192-character identifier",
+);
+assertInvalid(
+  validateWorkflowEdge,
+  { ...edge, edge_id: "e".repeat(193) },
+  "workflow graph edge with a 193-character identifier",
+);
+assertValid(
+  validateWorkflowEdge,
+  { ...edge, source_node_id: "n".repeat(192), target_node_id: "t".repeat(192) },
+  "workflow graph edge with 192-character node identifiers",
+);
+assertInvalid(
+  validateWorkflowEdge,
+  { ...edge, source_node_id: "n".repeat(193) },
+  "workflow graph edge with a 193-character source node identifier",
+);
 assertValid(validateWorkflowEdge, {
   ...edge,
   kind: "conflict",
@@ -676,6 +736,92 @@ assertInvalid(validateWorkflowEdge, {
   ...edge,
   provenance: { type: "derived", event_ids: ["evt-0001"], evidence: "overlap" },
 }, "derived workflow graph edge without confidence");
+
+const validateGetWorkflowGraphInput = validatorFor("Mcp.Tools.GetWorkflowGraphInput");
+assertValid(
+  validateGetWorkflowGraphInput,
+  { run_id: "run-1", node_cursor: "n".repeat(192), edge_cursor: "e".repeat(192) },
+  "workflow graph input with maximum-length cursors",
+);
+assertInvalid(
+  validateGetWorkflowGraphInput,
+  { run_id: "run-1", node_cursor: "n".repeat(193) },
+  "workflow graph input with an oversized node cursor",
+);
+assertInvalid(
+  validateGetWorkflowGraphInput,
+  { run_id: "run-1", edge_cursor: "e".repeat(193) },
+  "workflow graph input with an oversized edge cursor",
+);
+
+const nodeCursorInputDescription =
+  "Opaque node continuation. Reuse it unchanged from the preceding snapshot's next_node_cursor; " +
+  "do not parse, construct, or modify it.";
+const edgeCursorInputDescription =
+  "Opaque edge continuation. Reuse it unchanged from the preceding snapshot's next_edge_cursor; " +
+  "do not parse, construct, or modify it.";
+const snapshot = defs["Workflow.WorkflowGraphSnapshot"];
+if (snapshot?.properties?.next_node_cursor?.description !==
+    "Opaque node continuation for the next page. Reuse it unchanged as node_cursor on the next graph request; " +
+    "do not parse, construct, or modify it." ||
+    snapshot?.properties?.next_edge_cursor?.description !==
+    "Opaque edge continuation for the next page. Reuse it unchanged as edge_cursor on the next graph request; " +
+    "do not parse, construct, or modify it.") {
+  throw new Error("Workflow graph snapshot cursor output pairing or opacity documentation drifted.");
+}
+for (const definition of [
+  "Mcp.Tools.GetWorkflowGraphInput",
+  "Mcp.Tools.DisplayWorkflowGraphInput",
+  "Mcp.Tools.FetchWorkflowGraphUpdatesInput",
+]) {
+  if (defs[definition]?.properties?.node_cursor?.description !== nodeCursorInputDescription ||
+      defs[definition]?.properties?.edge_cursor?.description !== edgeCursorInputDescription) {
+    throw new Error(`${definition} cursor input pairing or opacity documentation drifted.`);
+  }
+}
+const graphParameters = openapi.paths?.["/api/v1/workflow-runs/{run_id}/graph"]?.get?.parameters ?? [];
+const graphParameter = (name) => graphParameters.find((parameter) => parameter.name === name);
+if (graphParameter("node_cursor")?.description !== nodeCursorInputDescription ||
+    graphParameter("edge_cursor")?.description !== edgeCursorInputDescription) {
+  throw new Error("HTTP workflow graph cursor input pairing or opacity documentation drifted.");
+}
+
+const workflowContractText = JSON.stringify({
+  edge: defs["Workflow.WorkflowGraphEdge"],
+  edgeId: defs["Workflow.WorkflowEdgeId"],
+  nodeId: defs["Workflow.WorkflowNodeId"],
+  statistics: defs["Workflow.WorkflowGraphStatistics"],
+});
+for (const [definition, scopeSemantics] of [
+  ["Workflow.WorkflowNodeId", "structurally distinguish run scope from attempt scope"],
+  ["Workflow.WorkflowEdgeId", "structural run-versus-attempt scope"],
+]) {
+  const description = defs[definition]?.description ?? "";
+  for (const semantic of [
+    scopeSemantics,
+    "escape colon as \\c and backslash as \\\\",
+    "over 192 Unicode scalar values",
+    "full lowercase 64-hex SHA-256",
+    "length-prefixed canonical tuple",
+  ]) {
+    if (!description.includes(semantic)) {
+      throw new Error(`${definition} lost required identifier semantics: ${semantic}.`);
+    }
+  }
+}
+for (const semantic of [
+  "Data, Control, and Gate edges are causal dependencies",
+  "Temporal, Resource, and Conflict edges are excluded from critical-path causality",
+  "Every ToolCall, Wait, Gate, and duration-bearing Message or Item contributes an independently weighted interval",
+  "minus the union of precisely owned child intervals clipped to the Agent interval",
+  "Peak concurrency sweeps every positive independently weighted or Agent own-work fragment",
+  "condenses each causal strongly connected component",
+  "expands selected component members in ordinal node-id order",
+]) {
+  if (!workflowContractText.includes(semantic)) {
+    throw new Error(`Workflow graph contract lost required semantics: ${semantic}.`);
+  }
+}
 
 for (const toolShape of [
   "ListWorkflowRunsInput",

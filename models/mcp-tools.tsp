@@ -247,16 +247,18 @@ model GetWorkflowGraphInput {
   @encodedName("application/json", "run_id")
   runId: WorkflowRunId;
 
+  @doc("Opaque node continuation. Reuse it unchanged from the preceding snapshot's next_node_cursor; do not parse, construct, or modify it.")
   @encodedName("application/json", "node_cursor")
-  nodeCursor?: string;
+  nodeCursor?: WorkflowNodeId;
 
   @encodedName("application/json", "node_limit")
   @minValue(1)
   @maxValue(1000)
   nodeLimit?: int32 = 250;
 
+  @doc("Opaque edge continuation. Reuse it unchanged from the preceding snapshot's next_edge_cursor; do not parse, construct, or modify it.")
   @encodedName("application/json", "edge_cursor")
-  edgeCursor?: string;
+  edgeCursor?: WorkflowEdgeId;
 
   @encodedName("application/json", "edge_limit")
   @minValue(1)
@@ -275,16 +277,18 @@ model DisplayWorkflowGraphInput {
   @encodedName("application/json", "run_id")
   runId?: WorkflowRunId;
 
+  @doc("Opaque node continuation. Reuse it unchanged from the preceding snapshot's next_node_cursor; do not parse, construct, or modify it.")
   @encodedName("application/json", "node_cursor")
-  nodeCursor?: string;
+  nodeCursor?: WorkflowNodeId;
 
   @encodedName("application/json", "node_limit")
   @minValue(1)
   @maxValue(1000)
   nodeLimit?: int32 = 250;
 
+  @doc("Opaque edge continuation. Reuse it unchanged from the preceding snapshot's next_edge_cursor; do not parse, construct, or modify it.")
   @encodedName("application/json", "edge_cursor")
-  edgeCursor?: string;
+  edgeCursor?: WorkflowEdgeId;
 
   @encodedName("application/json", "edge_limit")
   @minValue(1)
@@ -319,16 +323,18 @@ model FetchWorkflowGraphUpdatesInput {
   @maxValue(30000)
   waitMs?: int32 = 20000;
 
+  @doc("Opaque node continuation. Reuse it unchanged from the preceding snapshot's next_node_cursor; do not parse, construct, or modify it.")
   @encodedName("application/json", "node_cursor")
-  nodeCursor?: string;
+  nodeCursor?: WorkflowNodeId;
 
   @encodedName("application/json", "node_limit")
   @minValue(1)
   @maxValue(1000)
   nodeLimit?: int32 = 250;
 
+  @doc("Opaque edge continuation. Reuse it unchanged from the preceding snapshot's next_edge_cursor; do not parse, construct, or modify it.")
   @encodedName("application/json", "edge_cursor")
-  edgeCursor?: string;
+  edgeCursor?: WorkflowEdgeId;
 
   @encodedName("application/json", "edge_limit")
   @minValue(1)

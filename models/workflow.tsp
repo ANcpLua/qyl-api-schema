@@ -9,6 +9,17 @@ namespace Qyl.Api.Contracts.Workflow;
 @maxLength(128)
 scalar WorkflowRunId extends string;
 
+@doc("Opaque incarnation identifier for one workflow run's projected state.")
+@pattern("^[0-9a-f]{12}4[0-9a-f]{3}[89ab][0-9a-f]{15}$")
+@minLength(32)
+@maxLength(32)
+scalar WorkflowGeneration extends string;
+
+@doc("Opaque workflow-run list continuation scoped to the project and status filter. Reuse it unchanged; clients must not parse or construct it.")
+@minLength(1)
+@maxLength(512)
+scalar WorkflowRunCursor extends string;
+
 @doc("Stable identifier of one workflow attempt.")
 @minLength(1)
 @maxLength(128)
@@ -44,6 +55,16 @@ scalar WorkflowNodeId extends string;
 @maxLength(192)
 scalar WorkflowEdgeId extends string;
 
+@doc("Opaque node-page continuation scoped to one workflow run and generation. Reuse it unchanged; clients must not parse or construct it.")
+@minLength(1)
+@maxLength(1536)
+scalar WorkflowNodeCursor extends string;
+
+@doc("Opaque edge-page continuation scoped to one workflow run and generation. Reuse it unchanged; clients must not parse or construct it.")
+@minLength(1)
+@maxLength(1536)
+scalar WorkflowEdgeCursor extends string;
+
 @doc("Content-addressed reference to a captured workflow payload.")
 @pattern("^sha256:[a-f0-9]{64}$")
 @minLength(71)
@@ -54,6 +75,11 @@ scalar WorkflowContentRef extends string;
 @minValue(0)
 @encode(string)
 scalar WorkflowSequence extends uint64;
+
+@doc("Collector-assigned position in the authoritative workflow journal, encoded without JavaScript precision loss.")
+@minValue(0)
+@encode(string)
+scalar WorkflowJournalPosition extends uint64;
 
 @doc("Current lifecycle of a workflow run.")
 enum WorkflowRunStatus {
@@ -170,10 +196,59 @@ enum WorkflowContentEncoding {
   base64: "base64",
 }
 
+@doc("A valid committed projection that can be served to readers.")
+model CommittedWorkflowProjectionStatus {
+  state: "committed";
+  generation: WorkflowGeneration;
+
+  @encodedName("application/json", "journal_position")
+  journalPosition: WorkflowJournalPosition;
+}
+
+@doc("The requested generation is being reconstructed from its authoritative journal.")
+model RebuildingWorkflowProjectionStatus {
+  state: "rebuilding";
+  generation: WorkflowGeneration;
+
+  @encodedName("application/json", "target_journal_position")
+  targetJournalPosition: WorkflowJournalPosition;
+
+  @encodedName("application/json", "retry_after_ms")
+  @minValue(1)
+  retryAfterMs: int32;
+}
+
+@doc("Projection work is temporarily unavailable after a retryable storage failure.")
+model UnavailableWorkflowProjectionStatus {
+  state: "unavailable";
+  generation?: WorkflowGeneration;
+
+  @encodedName("application/json", "retry_after_ms")
+  @minValue(1)
+  retryAfterMs: int32;
+}
+
+@doc("Derived projection state is corrupt or incompatible and cannot currently be served.")
+model CorruptWorkflowProjectionStatus {
+  state: "corrupt";
+  generation?: WorkflowGeneration;
+  reason: "corrupt_derived_state" | "incompatible_derived_state";
+}
+
+@doc("Closed public availability state for one workflow projection. Storage paths, hashes, fingerprints, and database errors remain private.")
+union WorkflowProjectionStatus {
+  committed: CommittedWorkflowProjectionStatus,
+  rebuilding: RebuildingWorkflowProjectionStatus,
+  unavailable: UnavailableWorkflowProjectionStatus,
+  corrupt: CorruptWorkflowProjectionStatus,
+}
+
 @doc("One immutable workflow run.")
 model WorkflowRun {
   @encodedName("application/json", "run_id")
   runId: WorkflowRunId;
+
+  generation: WorkflowGeneration;
 
   @encodedName("application/json", "thread_id")
   threadId?: string;
@@ -188,7 +263,7 @@ model WorkflowRun {
   endedAt?: utcDateTime;
 
   @encodedName("application/json", "latest_journal_sequence")
-  latestJournalSequence: WorkflowSequence;
+  latestJournalSequence: WorkflowJournalPosition;
 
   @encodedName("application/json", "active_attempt_id")
   activeAttemptId?: WorkflowAttemptId;
@@ -217,7 +292,7 @@ model WorkflowRunPage {
   items: WorkflowRun[];
 
   @encodedName("application/json", "next_cursor")
-  nextCursor?: string;
+  nextCursor?: WorkflowRunCursor;
 
   @encodedName("application/json", "has_more")
   hasMore: boolean;
@@ -306,10 +381,10 @@ model WorkflowEventBatchAppendResponse {
   acknowledgedSourceSequence: WorkflowSequence;
 
   @encodedName("application/json", "first_journal_sequence")
-  firstJournalSequence?: WorkflowSequence;
+  firstJournalSequence?: WorkflowJournalPosition;
 
   @encodedName("application/json", "last_journal_sequence")
-  lastJournalSequence?: WorkflowSequence;
+  lastJournalSequence?: WorkflowJournalPosition;
 }
 
 @doc("One immutable event after collector journal sequence assignment.")
@@ -321,7 +396,7 @@ model WorkflowJournalEvent extends WorkflowEventAppend {
   clientId: string;
 
   @encodedName("application/json", "journal_sequence")
-  journalSequence: WorkflowSequence;
+  journalSequence: WorkflowJournalPosition;
 }
 
 @doc("A bounded page of workflow journal events.")
@@ -329,10 +404,10 @@ model WorkflowEventPage {
   events: WorkflowJournalEvent[];
 
   @encodedName("application/json", "next_sequence")
-  nextSequence: WorkflowSequence;
+  nextSequence: WorkflowJournalPosition;
 
   @encodedName("application/json", "high_water_mark")
-  highWaterMark: WorkflowSequence;
+  highWaterMark: WorkflowJournalPosition;
 
   @encodedName("application/json", "cursor_gap")
   cursorGap: boolean;
@@ -439,20 +514,23 @@ model WorkflowGraphStatistics {
 @doc("Deterministic graph projection at one journal cursor.")
 model WorkflowGraphSnapshot {
   run: WorkflowRun;
+
+  @encodedName("application/json", "projection_status")
+  projectionStatus: WorkflowProjectionStatus;
   nodes: WorkflowGraphNode[];
   edges: WorkflowGraphEdge[];
   statistics: WorkflowGraphStatistics;
 
   @encodedName("application/json", "journal_sequence")
-  journalSequence: WorkflowSequence;
+  journalSequence: WorkflowJournalPosition;
 
   @encodedName("application/json", "next_node_cursor")
   @doc("Opaque node continuation for the next page. Reuse it unchanged as node_cursor on the next graph request; do not parse, construct, or modify it.")
-  nextNodeCursor?: WorkflowNodeId;
+  nextNodeCursor?: WorkflowNodeCursor;
 
   @encodedName("application/json", "next_edge_cursor")
   @doc("Opaque edge continuation for the next page. Reuse it unchanged as edge_cursor on the next graph request; do not parse, construct, or modify it.")
-  nextEdgeCursor?: WorkflowEdgeId;
+  nextEdgeCursor?: WorkflowEdgeCursor;
 
   @encodedName("application/json", "has_more_nodes")
   hasMoreNodes: boolean;

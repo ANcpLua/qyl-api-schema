@@ -30,6 +30,10 @@ using Qyl.Api.Schema.Emit.TsTypes;
   Qyl.Api.Contracts.Workflow.WorkflowEdgeProvenance,
   "type"
 );
+@@csharpPolymorphic(
+  Qyl.Api.Contracts.Workflow.WorkflowProjectionStatus,
+  "state"
+);
 
 @@csharpNamespace(Qyl.Api.Contracts.Common, "Qyl.Api.Contracts.Common");
 @@csharpNamespace(
@@ -71,6 +75,8 @@ using Qyl.Api.Schema.Emit.TsTypes;
 @@tsBrand(Qyl.Api.Contracts.Workbench.WorkbenchEvaluationRunId);
 @@tsBrand(Qyl.Api.Contracts.Workbench.WorkbenchEvaluationExportId);
 @@tsBrand(Qyl.Api.Contracts.Workflow.WorkflowRunId);
+@@tsBrand(Qyl.Api.Contracts.Workflow.WorkflowGeneration);
+@@tsBrand(Qyl.Api.Contracts.Workflow.WorkflowRunCursor);
 @@tsBrand(Qyl.Api.Contracts.Workflow.WorkflowAttemptId);
 @@tsBrand(Qyl.Api.Contracts.Workflow.WorkflowAgentId);
 @@tsBrand(Qyl.Api.Contracts.Workflow.WorkflowToolCallId);
@@ -78,4 +84,21 @@ using Qyl.Api.Schema.Emit.TsTypes;
 @@tsBrand(Qyl.Api.Contracts.Workflow.WorkflowCommandId);
 @@tsBrand(Qyl.Api.Contracts.Workflow.WorkflowNodeId);
 @@tsBrand(Qyl.Api.Contracts.Workflow.WorkflowEdgeId);
+@@tsBrand(Qyl.Api.Contracts.Workflow.WorkflowNodeCursor);
+@@tsBrand(Qyl.Api.Contracts.Workflow.WorkflowEdgeCursor);
+@@tsBrand(Qyl.Api.Contracts.Workflow.WorkflowJournalPosition);
 @@tsBrand(Qyl.Api.Contracts.Workflow.WorkflowContentRef);
+
+@@csharpBrand(Qyl.Api.Contracts.Workflow.WorkflowRunId);
+@@csharpBrand(Qyl.Api.Contracts.Workflow.WorkflowGeneration);
+@@csharpBrand(Qyl.Api.Contracts.Workflow.WorkflowRunCursor);
+@@csharpBrand(Qyl.Api.Contracts.Workflow.WorkflowAttemptId);
+@@csharpBrand(Qyl.Api.Contracts.Workflow.WorkflowAgentId);
+@@csharpBrand(Qyl.Api.Contracts.Workflow.WorkflowToolCallId);
+@@csharpBrand(Qyl.Api.Contracts.Workflow.WorkflowEventId);
+@@csharpBrand(Qyl.Api.Contracts.Workflow.WorkflowCommandId);
+@@csharpBrand(Qyl.Api.Contracts.Workflow.WorkflowNodeId);
+@@csharpBrand(Qyl.Api.Contracts.Workflow.WorkflowEdgeId);
+@@csharpBrand(Qyl.Api.Contracts.Workflow.WorkflowNodeCursor);
+@@csharpBrand(Qyl.Api.Contracts.Workflow.WorkflowEdgeCursor);
+@@csharpBrand(Qyl.Api.Contracts.Workflow.WorkflowContentRef);

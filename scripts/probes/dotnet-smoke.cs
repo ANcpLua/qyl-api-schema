@@ -152,16 +152,16 @@ var healthReportWire = JsonSerializer.Serialize(healthReport);
 
 var workflowEvent = new WorkflowJournalEvent
 {
-    EventId = "evt-0001",
+    EventId = new WorkflowEventId("evt-0001"),
     SourceSequence = 7,
     Timestamp = new DateTimeOffset(2026, 7, 28, 12, 34, 56, TimeSpan.Zero),
     Kind = WorkflowJournalEventKind.AgentSpawned,
     ThreadId = "thr-1",
-    AttemptId = "attempt-1",
-    AgentId = "agent-child",
-    ParentAgentId = "agent-root",
-    ContentRefs = [$"sha256:{new string('a', 64)}"],
-    RunId = "run-1",
+    AttemptId = new WorkflowAttemptId("attempt-1"),
+    AgentId = new WorkflowAgentId("agent-child"),
+    ParentAgentId = new WorkflowAgentId("agent-root"),
+    ContentRefs = [new WorkflowContentRef($"sha256:{new string('a', 64)}")],
+    RunId = new WorkflowRunId("run-1"),
     ClientId = "qyl-codex",
     JournalSequence = 11,
 };

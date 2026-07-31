@@ -22,6 +22,7 @@ import type {
     WorkflowAttemptId,
     WorkflowContentRef,
     WorkflowEventId,
+    WorkflowJournalPosition,
     WorkflowRunId,
 } from "@ancplua/qyl-api-schema/types";
 
@@ -100,7 +101,7 @@ const workflowEvent: WorkflowJournalEvent = {
     content_refs: [`sha256:${"a".repeat(64)}` as WorkflowContentRef],
     run_id: "run-1" as WorkflowRunId,
     client_id: "qyl-codex",
-    journal_sequence: "11",
+    journal_sequence: "11" as WorkflowJournalPosition,
 };
 
 void [

@@ -222,7 +222,7 @@ model FetchTelemetryOutput {
 model ListWorkflowRunsInput {
   status?: WorkflowRunStatus;
 
-  cursor?: string;
+  cursor?: WorkflowRunCursor;
 
   @minValue(1)
   @maxValue(100)
@@ -234,7 +234,7 @@ model ListWorkflowRunsOutput {
   runs: WorkflowRun[];
 
   @encodedName("application/json", "next_cursor")
-  nextCursor?: string;
+  nextCursor?: WorkflowRunCursor;
 
   @encodedName("application/json", "has_more")
   hasMore: boolean;
@@ -249,7 +249,7 @@ model GetWorkflowGraphInput {
 
   @doc("Opaque node continuation. Reuse it unchanged from the preceding snapshot's next_node_cursor; do not parse, construct, or modify it.")
   @encodedName("application/json", "node_cursor")
-  nodeCursor?: WorkflowNodeId;
+  nodeCursor?: WorkflowNodeCursor;
 
   @encodedName("application/json", "node_limit")
   @minValue(1)
@@ -258,7 +258,7 @@ model GetWorkflowGraphInput {
 
   @doc("Opaque edge continuation. Reuse it unchanged from the preceding snapshot's next_edge_cursor; do not parse, construct, or modify it.")
   @encodedName("application/json", "edge_cursor")
-  edgeCursor?: WorkflowEdgeId;
+  edgeCursor?: WorkflowEdgeCursor;
 
   @encodedName("application/json", "edge_limit")
   @minValue(1)
@@ -279,7 +279,7 @@ model DisplayWorkflowGraphInput {
 
   @doc("Opaque node continuation. Reuse it unchanged from the preceding snapshot's next_node_cursor; do not parse, construct, or modify it.")
   @encodedName("application/json", "node_cursor")
-  nodeCursor?: WorkflowNodeId;
+  nodeCursor?: WorkflowNodeCursor;
 
   @encodedName("application/json", "node_limit")
   @minValue(1)
@@ -288,7 +288,7 @@ model DisplayWorkflowGraphInput {
 
   @doc("Opaque edge continuation. Reuse it unchanged from the preceding snapshot's next_edge_cursor; do not parse, construct, or modify it.")
   @encodedName("application/json", "edge_cursor")
-  edgeCursor?: WorkflowEdgeId;
+  edgeCursor?: WorkflowEdgeCursor;
 
   @encodedName("application/json", "edge_limit")
   @minValue(1)
@@ -312,7 +312,7 @@ model FetchWorkflowGraphUpdatesInput {
   runId: WorkflowRunId;
 
   @encodedName("application/json", "after_sequence")
-  afterSequence: WorkflowSequence;
+  afterSequence: WorkflowJournalPosition;
 
   @minValue(1)
   @maxValue(1000)
@@ -325,7 +325,7 @@ model FetchWorkflowGraphUpdatesInput {
 
   @doc("Opaque node continuation. Reuse it unchanged from the preceding snapshot's next_node_cursor; do not parse, construct, or modify it.")
   @encodedName("application/json", "node_cursor")
-  nodeCursor?: WorkflowNodeId;
+  nodeCursor?: WorkflowNodeCursor;
 
   @encodedName("application/json", "node_limit")
   @minValue(1)
@@ -334,7 +334,7 @@ model FetchWorkflowGraphUpdatesInput {
 
   @doc("Opaque edge continuation. Reuse it unchanged from the preceding snapshot's next_edge_cursor; do not parse, construct, or modify it.")
   @encodedName("application/json", "edge_cursor")
-  edgeCursor?: WorkflowEdgeId;
+  edgeCursor?: WorkflowEdgeCursor;
 
   @encodedName("application/json", "edge_limit")
   @minValue(1)

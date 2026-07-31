@@ -11,13 +11,13 @@ const operations = new Map(
   ),
 );
 
-function verifyExactResponse(operationId, status, schemaName) {
+function verifyExactResponse(operationId, status, schemaName, schemaNamespace = "Common.Errors") {
   const operation = operations.get(operationId);
   if (!operation) throw new Error(`${operationId} is missing from ${openapiPath}.`);
 
   const content = operation.responses?.[status]?.content ?? {};
   const mediaType = "application/problem+json";
-  const schema = `#/components/schemas/Common.Errors.${schemaName}`;
+  const schema = `#/components/schemas/${schemaNamespace}.${schemaName}`;
   if (Object.keys(content).length !== 1 || content[mediaType]?.schema?.$ref !== schema) {
     throw new Error(`${operationId} must declare ${status} ${mediaType} ${schema}.`);
   }
@@ -176,7 +176,16 @@ const capacityLimitedOperations = new Set([
   "GET /api/v1/stream/logs",
 ]);
 for (const operationId of capacityLimitedOperations) {
-  verifyExactResponse(operationId, "503", "ServiceUnavailableError");
+  if (operationId === "GET /api/v1/workflow-runs/{run_id}/graph") {
+    verifyExactResponse(
+      operationId,
+      "503",
+      "WorkflowProjectionUnavailableError",
+      "Workflow",
+    );
+  } else {
+    verifyExactResponse(operationId, "503", "ServiceUnavailableError");
+  }
 }
 
 const validationQueries = new Map([

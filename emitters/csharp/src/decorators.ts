@@ -1,4 +1,4 @@
-import type { DecoratorContext, Enum, Model, Namespace, Type, Union } from "@typespec/compiler";
+import type { DecoratorContext, Enum, Model, Namespace, Scalar, Type, Union } from "@typespec/compiler";
 import { stateKeys } from "./lib.js";
 
 export function $csharpNamespace(
@@ -11,6 +11,10 @@ export function $csharpNamespace(
 
 export function $csharpRecord(context: DecoratorContext, target: Model): void {
   context.program.stateMap(stateKeys.csharpRecord).set(target, true);
+}
+
+export function $csharpBrand(context: DecoratorContext, target: Scalar): void {
+  context.program.stateMap(stateKeys.csharpBrand).set(target, true);
 }
 
 export function $csharpEnum(context: DecoratorContext, target: Enum | Union): void {
@@ -31,6 +35,10 @@ export function getCsharpNamespace(program: { stateMap: (k: symbol) => Map<Type,
 
 export function hasCsharpRecord(program: { stateMap: (k: symbol) => Map<Type, unknown> }, target: Type): boolean {
   return program.stateMap(stateKeys.csharpRecord).has(target);
+}
+
+export function hasCsharpBrand(program: { stateMap: (k: symbol) => Map<Type, unknown> }, target: Type): boolean {
+  return program.stateMap(stateKeys.csharpBrand).has(target);
 }
 
 export function hasCsharpEnum(program: { stateMap: (k: symbol) => Map<Type, unknown> }, target: Type): boolean {

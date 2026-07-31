@@ -1,6 +1,7 @@
 import type { Program, Scalar, Type } from "@typespec/compiler";
 import { isArrayModelType, isRecordModelType, getFormat } from "@typespec/compiler";
 import { getCsharpNamespace, hasCsharpPolymorphic } from "./decorators.js";
+import { hasCsharpBrand } from "./decorators.js";
 import { reportDiagnostic } from "./lib.js";
 
 const SCALAR_MAP: Record<string, string> = {
@@ -111,6 +112,7 @@ function isFloat64Scalar(scalar: Scalar): boolean {
 }
 
 function mapScalar(program: Program, scalar: Scalar): string {
+  if (hasCsharpBrand(program, scalar)) return qualifyModelOrEnum(program, scalar);
   if (scalar.name === "string") {
     const format = getFormat(program, scalar as unknown as Parameters<typeof getFormat>[1]);
     if (format === "uuid") return "Guid";

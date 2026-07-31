@@ -19,6 +19,7 @@ export const $lib = createTypeSpecLibrary({
   state: {
     csharpNamespace: { description: "C# namespace override on a model/namespace/enum" },
     csharpRecord: { description: "Emit the target model as a C# record" },
+    csharpBrand: { description: "Emit the target string scalar as a distinct C# value type" },
     csharpEnum: { description: "Emit the target union/enum as a C# enum" },
     csharpPolymorphic: { description: "Emit a model union as a strongly typed C# polymorphic contract" },
   },

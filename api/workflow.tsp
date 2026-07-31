@@ -20,7 +20,7 @@ model WorkflowHeartbeatEvent {
   type: "heartbeat";
 
   @encodedName("application/json", "high_water_mark")
-  highWaterMark: WorkflowSequence;
+  highWaterMark: WorkflowJournalPosition;
 
   timestamp: utcDateTime;
 }
@@ -30,10 +30,10 @@ model WorkflowCursorGapEvent {
   type: "cursor_gap";
 
   @encodedName("application/json", "oldest_available_sequence")
-  oldestAvailableSequence: WorkflowSequence;
+  oldestAvailableSequence: WorkflowJournalPosition;
 
   @encodedName("application/json", "high_water_mark")
-  highWaterMark: WorkflowSequence;
+  highWaterMark: WorkflowJournalPosition;
 
   timestamp: utcDateTime;
 }
@@ -43,6 +43,68 @@ union WorkflowStreamEvents {
   event: WorkflowJournalEvent,
   heartbeat: WorkflowHeartbeatEvent,
   cursorGap: WorkflowCursorGapEvent,
+}
+
+@doc("Which opaque graph cursor was rejected.")
+enum WorkflowCursorKind {
+  node: "node",
+  edge: "edge",
+}
+
+@doc("Why an opaque graph cursor cannot be reused for this request.")
+enum WorkflowCursorFailureReason {
+  invalid: "invalid",
+  wrongRun: "wrong_run",
+  wrongGeneration: "wrong_generation",
+  stale: "stale",
+}
+
+@doc("Opaque graph cursor is malformed, belongs to another run, or targets a stale generation.")
+@error
+model WorkflowCursorError extends ProblemDetails {
+  @statusCode _: 409;
+  title: "Invalid Workflow Cursor";
+
+  @encodedName("application/json", "cursor_kind")
+  cursorKind: WorkflowCursorKind;
+
+  reason: WorkflowCursorFailureReason;
+
+  @encodedName("application/json", "current_generation")
+  currentGeneration?: WorkflowGeneration;
+}
+
+@doc("Workflow run was durably deleted and can no longer accept events or publish projections.")
+@error
+model WorkflowRunDeletedError extends ProblemDetails {
+  @statusCode _: 410;
+  title: "Workflow Run Deleted";
+
+  @encodedName("application/json", "run_id")
+  runId: WorkflowRunId;
+}
+
+@doc("Workflow projection is rebuilding or temporarily unavailable after a retryable storage failure.")
+@error
+model WorkflowProjectionUnavailableError extends ProblemDetails {
+  @statusCode _: 503;
+  title: "Workflow Projection Unavailable";
+
+  @header("Retry-After")
+  @encodedName("application/json", "retry_after")
+  retryAfter: int32;
+
+  @encodedName("application/json", "projection_status")
+  projectionStatus: WorkflowProjectionStatus;
+}
+
+@doc("Workflow projection is non-retryably corrupt or incompatible. Internal storage details are intentionally omitted.")
+@error
+model WorkflowProjectionCorruptError extends ProblemDetails {
+  @statusCode _: 500;
+  title: "Workflow Projection Corrupt";
+  @encodedName("application/json", "projection_status")
+  projectionStatus: WorkflowProjectionStatus;
 }
 
 @route("/api/v1/workflow-runs")
@@ -58,6 +120,7 @@ interface WorkflowRunsApi {
     | ValidationError
     | UnauthorizedError
     | ConflictError
+    | WorkflowRunDeletedError
     | ServiceUnavailableError
     | InternalServerError;
 
@@ -69,7 +132,8 @@ interface WorkflowRunsApi {
     @minValue(1)
     @maxValue(200)
     limit?: int32 = 50,
-    @query cursor?: string,
+    @doc("Opaque continuation scoped to the project and status filter. Reuse it unchanged from next_cursor; do not parse, construct, or modify it.")
+    @query cursor?: WorkflowRunCursor,
   ):
     | WorkflowRunPage
     | ValidationError
@@ -86,6 +150,7 @@ interface WorkflowRunsApi {
     | WorkflowRun
     | UnauthorizedError
     | NotFoundError
+    | WorkflowRunDeletedError
     | ServiceUnavailableError
     | InternalServerError;
 
@@ -100,6 +165,7 @@ interface WorkflowRunsApi {
     | ValidationError
     | UnauthorizedError
     | NotFoundError
+    | WorkflowRunDeletedError
     | ConflictError
     | ServiceUnavailableError
     | InternalServerError;
@@ -109,7 +175,7 @@ interface WorkflowRunsApi {
   readEvents(
     ...Qyl.Api.Contracts.ProjectScopeHeader,
     @path("run_id") runId: WorkflowRunId,
-    @query("after_sequence") afterSequence?: WorkflowSequence,
+    @query("after_sequence") afterSequence?: WorkflowJournalPosition,
     @query
     @minValue(1)
     @maxValue(1000)
@@ -123,6 +189,7 @@ interface WorkflowRunsApi {
     | ValidationError
     | UnauthorizedError
     | NotFoundError
+    | WorkflowRunDeletedError
     | ServiceUnavailableError
     | InternalServerError;
 
@@ -132,13 +199,13 @@ interface WorkflowRunsApi {
     ...Qyl.Api.Contracts.ProjectScopeHeader,
     @path("run_id") runId: WorkflowRunId,
     @doc("Opaque node continuation. Reuse it unchanged from the preceding snapshot's next_node_cursor; do not parse, construct, or modify it.")
-    @query("node_cursor") nodeCursor?: WorkflowNodeId,
+    @query("node_cursor") nodeCursor?: WorkflowNodeCursor,
     @query("node_limit")
     @minValue(1)
     @maxValue(1000)
     nodeLimit?: int32 = 250,
     @doc("Opaque edge continuation. Reuse it unchanged from the preceding snapshot's next_edge_cursor; do not parse, construct, or modify it.")
-    @query("edge_cursor") edgeCursor?: WorkflowEdgeId,
+    @query("edge_cursor") edgeCursor?: WorkflowEdgeCursor,
     @query("edge_limit")
     @minValue(1)
     @maxValue(2000)
@@ -148,8 +215,10 @@ interface WorkflowRunsApi {
     | ValidationError
     | UnauthorizedError
     | NotFoundError
-    | ServiceUnavailableError
-    | InternalServerError;
+    | WorkflowRunDeletedError
+    | WorkflowCursorError
+    | WorkflowProjectionUnavailableError
+    | WorkflowProjectionCorruptError;
 
   @get
   @route("/{run_id}/content/{content_ref}")
@@ -161,6 +230,7 @@ interface WorkflowRunsApi {
     | WorkflowContent
     | UnauthorizedError
     | NotFoundError
+    | WorkflowRunDeletedError
     | ServiceUnavailableError
     | InternalServerError;
 
@@ -175,6 +245,7 @@ interface WorkflowRunsApi {
     | ValidationError
     | UnauthorizedError
     | NotFoundError
+    | WorkflowRunDeletedError
     | ServiceUnavailableError
     | InternalServerError;
 
@@ -189,6 +260,7 @@ interface WorkflowRunsApi {
     | ValidationError
     | UnauthorizedError
     | NotFoundError
+    | WorkflowRunDeletedError
     | ConflictError
     | ServiceUnavailableError
     | InternalServerError;
@@ -212,6 +284,7 @@ interface WorkflowRunsApi {
     | ValidationError
     | UnauthorizedError
     | NotFoundError
+    | WorkflowRunDeletedError
     | ServiceUnavailableError
     | InternalServerError;
 
@@ -227,6 +300,7 @@ interface WorkflowRunsApi {
     | ValidationError
     | UnauthorizedError
     | NotFoundError
+    | WorkflowRunDeletedError
     | ConflictError
     | ServiceUnavailableError
     | InternalServerError;

@@ -146,9 +146,44 @@ for (const id of [
     throw new Error(`${id} must remain a branded TypeScript identifier.`);
   }
 }
-for (const id of ["WorkflowNodeId", "WorkflowEdgeId"]) {
+for (const id of [
+  "WorkflowRunId",
+  "WorkflowAttemptId",
+  "WorkflowAgentId",
+  "WorkflowToolCallId",
+  "WorkflowEventId",
+  "WorkflowCommandId",
+  "WorkflowNodeId",
+  "WorkflowEdgeId",
+  "WorkflowContentRef",
+  "WorkflowGeneration",
+  "WorkflowJournalPosition",
+  "WorkflowRunCursor",
+  "WorkflowNodeCursor",
+  "WorkflowEdgeCursor",
+]) {
   if (!tsRuntime.includes(`readonly __brand: "${id}"`)) {
     throw new Error(`${id} must remain a branded TypeScript workflow identifier.`);
+  }
+}
+for (const id of [
+  "WorkflowRunId",
+  "WorkflowAttemptId",
+  "WorkflowAgentId",
+  "WorkflowToolCallId",
+  "WorkflowEventId",
+  "WorkflowCommandId",
+  "WorkflowNodeId",
+  "WorkflowEdgeId",
+  "WorkflowContentRef",
+  "WorkflowGeneration",
+  "WorkflowRunCursor",
+  "WorkflowNodeCursor",
+  "WorkflowEdgeCursor",
+]) {
+  if (!csharpWorkflowRuntime.includes(`public readonly record struct ${id}(string Value)`) ||
+      !csharpWorkflowRuntime.includes(`[JsonConverter(typeof(${id}JsonConverter))]`)) {
+    throw new Error(`${id} must remain a branded, JSON-converted C# identifier.`);
   }
 }
 for (const property of [
@@ -156,10 +191,10 @@ for (const property of [
   '"edge_id": WorkflowEdgeId;',
   '"source_node_id": WorkflowNodeId;',
   '"target_node_id": WorkflowNodeId;',
-  '"next_node_cursor"?: WorkflowNodeId;',
-  '"next_edge_cursor"?: WorkflowEdgeId;',
-  '"node_cursor"?: WorkflowNodeId;',
-  '"edge_cursor"?: WorkflowEdgeId;',
+  '"next_node_cursor"?: WorkflowNodeCursor;',
+  '"next_edge_cursor"?: WorkflowEdgeCursor;',
+  '"node_cursor"?: WorkflowNodeCursor;',
+  '"edge_cursor"?: WorkflowEdgeCursor;',
 ]) {
   if (!tsRuntime.includes(property)) {
     throw new Error(`Generated TypeScript workflow identifier property drifted: ${property}.`);
@@ -740,17 +775,17 @@ assertInvalid(validateWorkflowEdge, {
 const validateGetWorkflowGraphInput = validatorFor("Mcp.Tools.GetWorkflowGraphInput");
 assertValid(
   validateGetWorkflowGraphInput,
-  { run_id: "run-1", node_cursor: "n".repeat(192), edge_cursor: "e".repeat(192) },
+  { run_id: "run-1", node_cursor: "n".repeat(1536), edge_cursor: "e".repeat(1536) },
   "workflow graph input with maximum-length cursors",
 );
 assertInvalid(
   validateGetWorkflowGraphInput,
-  { run_id: "run-1", node_cursor: "n".repeat(193) },
+  { run_id: "run-1", node_cursor: "n".repeat(1537) },
   "workflow graph input with an oversized node cursor",
 );
 assertInvalid(
   validateGetWorkflowGraphInput,
-  { run_id: "run-1", edge_cursor: "e".repeat(193) },
+  { run_id: "run-1", edge_cursor: "e".repeat(1537) },
   "workflow graph input with an oversized edge cursor",
 );
 

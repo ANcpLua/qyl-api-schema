@@ -1687,6 +1687,32 @@
               }
             }
           },
+          "410": {
+            "description": "Workflow run was durably deleted and can no longer accept events or publish projections.",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Workflow.WorkflowRunDeletedError"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal server error (500)",
             "headers": {
@@ -1799,8 +1825,9 @@
             "name": "cursor",
             "in": "query",
             "required": false,
+            "description": "Opaque continuation scoped to the project and status filter. Reuse it unchanged from next_cursor; do not parse, construct, or modify it.",
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/Workflow.WorkflowRunCursor"
             },
             "explode": false
           }
@@ -2032,6 +2059,32 @@
               }
             }
           },
+          "410": {
+            "description": "Workflow run was durably deleted and can no longer accept events or publish projections.",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Workflow.WorkflowRunDeletedError"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal server error (500)",
             "headers": {
@@ -2237,6 +2290,32 @@
               "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Common.Errors.ConflictError"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Workflow run was durably deleted and can no longer accept events or publish projections.",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Workflow.WorkflowRunDeletedError"
                 }
               }
             }
@@ -2467,6 +2546,32 @@
               }
             }
           },
+          "410": {
+            "description": "Workflow run was durably deleted and can no longer accept events or publish projections.",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Workflow.WorkflowRunDeletedError"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal server error (500)",
             "headers": {
@@ -2684,6 +2789,32 @@
               }
             }
           },
+          "410": {
+            "description": "Workflow run was durably deleted and can no longer accept events or publish projections.",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Workflow.WorkflowRunDeletedError"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal server error (500)",
             "headers": {
@@ -2855,6 +2986,32 @@
               "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Common.Errors.NotFoundError"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Workflow run was durably deleted and can no longer accept events or publish projections.",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Workflow.WorkflowRunDeletedError"
                 }
               }
             }
@@ -3068,6 +3225,32 @@
               }
             }
           },
+          "410": {
+            "description": "Workflow run was durably deleted and can no longer accept events or publish projections.",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Workflow.WorkflowRunDeletedError"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal server error (500)",
             "headers": {
@@ -3167,7 +3350,7 @@
             "in": "query",
             "required": false,
             "schema": {
-              "$ref": "#/components/schemas/Workflow.WorkflowSequence"
+              "$ref": "#/components/schemas/Workflow.WorkflowJournalPosition"
             },
             "explode": false
           },
@@ -3294,6 +3477,32 @@
               }
             }
           },
+          "410": {
+            "description": "Workflow run was durably deleted and can no longer accept events or publish projections.",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Workflow.WorkflowRunDeletedError"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal server error (500)",
             "headers": {
@@ -3386,7 +3595,7 @@
             "required": false,
             "description": "Opaque node continuation. Reuse it unchanged from the preceding snapshot's next_node_cursor; do not parse, construct, or modify it.",
             "schema": {
-              "$ref": "#/components/schemas/Workflow.WorkflowNodeId"
+              "$ref": "#/components/schemas/Workflow.WorkflowNodeCursor"
             },
             "explode": false
           },
@@ -3409,7 +3618,7 @@
             "required": false,
             "description": "Opaque edge continuation. Reuse it unchanged from the preceding snapshot's next_edge_cursor; do not parse, construct, or modify it.",
             "schema": {
-              "$ref": "#/components/schemas/Workflow.WorkflowEdgeId"
+              "$ref": "#/components/schemas/Workflow.WorkflowEdgeCursor"
             },
             "explode": false
           },
@@ -3523,8 +3732,8 @@
               }
             }
           },
-          "500": {
-            "description": "Internal server error (500)",
+          "409": {
+            "description": "Opaque graph cursor is malformed, belongs to another run, or targets a stale generation.",
             "headers": {
               "X-Trace-Id": {
                 "required": false,
@@ -3544,17 +3753,68 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Common.Errors.InternalServerError"
+                  "$ref": "#/components/schemas/Workflow.WorkflowCursorError"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Workflow run was durably deleted and can no longer accept events or publish projections.",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Workflow.WorkflowRunDeletedError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Workflow projection is non-retryably corrupt or incompatible. Internal storage details are intentionally omitted.",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Workflow.WorkflowProjectionCorruptError"
                 }
               }
             }
           },
           "503": {
-            "description": "Service unavailable (503)",
+            "description": "Workflow projection is rebuilding or temporarily unavailable after a retryable storage failure.",
             "headers": {
               "Retry-After": {
-                "required": false,
-                "description": "Expected availability time",
+                "required": true,
                 "schema": {
                   "type": "integer",
                   "format": "int32"
@@ -3578,7 +3838,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Common.Errors.ServiceUnavailableError"
+                  "$ref": "#/components/schemas/Workflow.WorkflowProjectionUnavailableError"
                 }
               }
             }
@@ -3762,6 +4022,32 @@
               "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Common.Errors.NotFoundError"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Workflow run was durably deleted and can no longer accept events or publish projections.",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Workflow.WorkflowRunDeletedError"
                 }
               }
             }
@@ -16278,7 +16564,7 @@
             "$ref": "#/components/schemas/Workflow.WorkflowRunId"
           },
           "node_cursor": {
-            "$ref": "#/components/schemas/Workflow.WorkflowNodeId",
+            "$ref": "#/components/schemas/Workflow.WorkflowNodeCursor",
             "description": "Opaque node continuation. Reuse it unchanged from the preceding snapshot's next_node_cursor; do not parse, construct, or modify it."
           },
           "node_limit": {
@@ -16289,7 +16575,7 @@
             "default": 250
           },
           "edge_cursor": {
-            "$ref": "#/components/schemas/Workflow.WorkflowEdgeId",
+            "$ref": "#/components/schemas/Workflow.WorkflowEdgeCursor",
             "description": "Opaque edge continuation. Reuse it unchanged from the preceding snapshot's next_edge_cursor; do not parse, construct, or modify it."
           },
           "edge_limit": {
@@ -16424,7 +16710,7 @@
             "$ref": "#/components/schemas/Workflow.WorkflowRunId"
           },
           "after_sequence": {
-            "$ref": "#/components/schemas/Workflow.WorkflowSequence"
+            "$ref": "#/components/schemas/Workflow.WorkflowJournalPosition"
           },
           "limit": {
             "type": "integer",
@@ -16441,7 +16727,7 @@
             "default": 20000
           },
           "node_cursor": {
-            "$ref": "#/components/schemas/Workflow.WorkflowNodeId",
+            "$ref": "#/components/schemas/Workflow.WorkflowNodeCursor",
             "description": "Opaque node continuation. Reuse it unchanged from the preceding snapshot's next_node_cursor; do not parse, construct, or modify it."
           },
           "node_limit": {
@@ -16452,7 +16738,7 @@
             "default": 250
           },
           "edge_cursor": {
-            "$ref": "#/components/schemas/Workflow.WorkflowEdgeId",
+            "$ref": "#/components/schemas/Workflow.WorkflowEdgeCursor",
             "description": "Opaque edge continuation. Reuse it unchanged from the preceding snapshot's next_edge_cursor; do not parse, construct, or modify it."
           },
           "edge_limit": {
@@ -16541,7 +16827,7 @@
             "$ref": "#/components/schemas/Workflow.WorkflowRunId"
           },
           "node_cursor": {
-            "$ref": "#/components/schemas/Workflow.WorkflowNodeId",
+            "$ref": "#/components/schemas/Workflow.WorkflowNodeCursor",
             "description": "Opaque node continuation. Reuse it unchanged from the preceding snapshot's next_node_cursor; do not parse, construct, or modify it."
           },
           "node_limit": {
@@ -16552,7 +16838,7 @@
             "default": 250
           },
           "edge_cursor": {
-            "$ref": "#/components/schemas/Workflow.WorkflowEdgeId",
+            "$ref": "#/components/schemas/Workflow.WorkflowEdgeCursor",
             "description": "Opaque edge continuation. Reuse it unchanged from the preceding snapshot's next_edge_cursor; do not parse, construct, or modify it."
           },
           "edge_limit": {
@@ -16673,7 +16959,7 @@
             "$ref": "#/components/schemas/Workflow.WorkflowRunStatus"
           },
           "cursor": {
-            "type": "string"
+            "$ref": "#/components/schemas/Workflow.WorkflowRunCursor"
           },
           "limit": {
             "type": "integer",
@@ -16703,7 +16989,7 @@
             }
           },
           "next_cursor": {
-            "type": "string"
+            "$ref": "#/components/schemas/Workflow.WorkflowRunCursor"
           },
           "has_more": {
             "type": "boolean"
@@ -20751,6 +21037,61 @@
         },
         "description": "Request to update mutable MCP workbench workspace metadata."
       },
+      "Workflow.CommittedWorkflowProjectionStatus": {
+        "type": "object",
+        "required": [
+          "state",
+          "generation",
+          "journal_position"
+        ],
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "committed"
+            ]
+          },
+          "generation": {
+            "$ref": "#/components/schemas/Workflow.WorkflowGeneration"
+          },
+          "journal_position": {
+            "$ref": "#/components/schemas/Workflow.WorkflowJournalPosition"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "A valid committed projection that can be served to readers."
+      },
+      "Workflow.CorruptWorkflowProjectionStatus": {
+        "type": "object",
+        "required": [
+          "state",
+          "reason"
+        ],
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "corrupt"
+            ]
+          },
+          "generation": {
+            "$ref": "#/components/schemas/Workflow.WorkflowGeneration"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "corrupt_derived_state",
+              "incompatible_derived_state"
+            ]
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Derived projection state is corrupt or incompatible and cannot currently be served."
+      },
       "Workflow.DerivedWorkflowEdgeProvenance": {
         "type": "object",
         "required": [
@@ -20785,6 +21126,38 @@
         },
         "description": "Derived edge provenance with explicit evidence and confidence."
       },
+      "Workflow.RebuildingWorkflowProjectionStatus": {
+        "type": "object",
+        "required": [
+          "state",
+          "generation",
+          "target_journal_position",
+          "retry_after_ms"
+        ],
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "rebuilding"
+            ]
+          },
+          "generation": {
+            "$ref": "#/components/schemas/Workflow.WorkflowGeneration"
+          },
+          "target_journal_position": {
+            "$ref": "#/components/schemas/Workflow.WorkflowJournalPosition"
+          },
+          "retry_after_ms": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "The requested generation is being reconstructed from its authoritative journal."
+      },
       "Workflow.RecordedWorkflowEdgeProvenance": {
         "type": "object",
         "required": [
@@ -20810,6 +21183,33 @@
           "not": {}
         },
         "description": "Recorded edge provenance directly observed from Codex."
+      },
+      "Workflow.UnavailableWorkflowProjectionStatus": {
+        "type": "object",
+        "required": [
+          "state",
+          "retry_after_ms"
+        ],
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "unavailable"
+            ]
+          },
+          "generation": {
+            "$ref": "#/components/schemas/Workflow.WorkflowGeneration"
+          },
+          "retry_after_ms": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Projection work is temporarily unavailable after a retryable storage failure."
       },
       "Workflow.WorkflowAgentId": {
         "type": "string",
@@ -21069,6 +21469,50 @@
         },
         "description": "Adapter acknowledgement or terminal result for one control command."
       },
+      "Workflow.WorkflowCursorError": {
+        "type": "object",
+        "required": [
+          "title",
+          "cursor_kind",
+          "reason"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "enum": [
+              "Invalid Workflow Cursor"
+            ]
+          },
+          "cursor_kind": {
+            "$ref": "#/components/schemas/Workflow.WorkflowCursorKind"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/Workflow.WorkflowCursorFailureReason"
+          },
+          "current_generation": {
+            "$ref": "#/components/schemas/Workflow.WorkflowGeneration"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Common.Errors.ProblemDetails"
+          }
+        ],
+        "description": "Opaque graph cursor is malformed, belongs to another run, or targets a stale generation."
+      },
+      "Workflow.WorkflowCursorFailureReason": {
+        "type": "string",
+        "enum": [
+          "invalid",
+          "wrong_run",
+          "wrong_generation",
+          "stale"
+        ],
+        "description": "Why an opaque graph cursor cannot be reused for this request."
+      },
       "Workflow.WorkflowCursorGapEvent": {
         "type": "object",
         "required": [
@@ -21085,10 +21529,10 @@
             ]
           },
           "oldest_available_sequence": {
-            "$ref": "#/components/schemas/Workflow.WorkflowSequence"
+            "$ref": "#/components/schemas/Workflow.WorkflowJournalPosition"
           },
           "high_water_mark": {
-            "$ref": "#/components/schemas/Workflow.WorkflowSequence"
+            "$ref": "#/components/schemas/Workflow.WorkflowJournalPosition"
           },
           "timestamp": {
             "type": "string",
@@ -21099,6 +21543,20 @@
           "not": {}
         },
         "description": "Signals that the requested cursor predates retained workflow history."
+      },
+      "Workflow.WorkflowCursorKind": {
+        "type": "string",
+        "enum": [
+          "node",
+          "edge"
+        ],
+        "description": "Which opaque graph cursor was rejected."
+      },
+      "Workflow.WorkflowEdgeCursor": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1536,
+        "description": "Opaque edge-page continuation scoped to one workflow run and generation. Reuse it unchanged; clients must not parse or construct it."
       },
       "Workflow.WorkflowEdgeId": {
         "type": "string",
@@ -21241,10 +21699,10 @@
             "$ref": "#/components/schemas/Workflow.WorkflowSequence"
           },
           "first_journal_sequence": {
-            "$ref": "#/components/schemas/Workflow.WorkflowSequence"
+            "$ref": "#/components/schemas/Workflow.WorkflowJournalPosition"
           },
           "last_journal_sequence": {
-            "$ref": "#/components/schemas/Workflow.WorkflowSequence"
+            "$ref": "#/components/schemas/Workflow.WorkflowJournalPosition"
           }
         },
         "unevaluatedProperties": {
@@ -21274,10 +21732,10 @@
             }
           },
           "next_sequence": {
-            "$ref": "#/components/schemas/Workflow.WorkflowSequence"
+            "$ref": "#/components/schemas/Workflow.WorkflowJournalPosition"
           },
           "high_water_mark": {
-            "$ref": "#/components/schemas/Workflow.WorkflowSequence"
+            "$ref": "#/components/schemas/Workflow.WorkflowJournalPosition"
           },
           "cursor_gap": {
             "type": "boolean"
@@ -21287,6 +21745,13 @@
           "not": {}
         },
         "description": "A bounded page of workflow journal events."
+      },
+      "Workflow.WorkflowGeneration": {
+        "type": "string",
+        "minLength": 32,
+        "maxLength": 32,
+        "pattern": "^[0-9a-f]{12}4[0-9a-f]{3}[89ab][0-9a-f]{15}$",
+        "description": "Opaque incarnation identifier for one workflow run's projected state."
       },
       "Workflow.WorkflowGraphEdge": {
         "type": "object",
@@ -21377,6 +21842,7 @@
         "type": "object",
         "required": [
           "run",
+          "projection_status",
           "nodes",
           "edges",
           "statistics",
@@ -21389,6 +21855,9 @@
         "properties": {
           "run": {
             "$ref": "#/components/schemas/Workflow.WorkflowRun"
+          },
+          "projection_status": {
+            "$ref": "#/components/schemas/Workflow.WorkflowProjectionStatus"
           },
           "nodes": {
             "type": "array",
@@ -21406,14 +21875,14 @@
             "$ref": "#/components/schemas/Workflow.WorkflowGraphStatistics"
           },
           "journal_sequence": {
-            "$ref": "#/components/schemas/Workflow.WorkflowSequence"
+            "$ref": "#/components/schemas/Workflow.WorkflowJournalPosition"
           },
           "next_node_cursor": {
-            "$ref": "#/components/schemas/Workflow.WorkflowNodeId",
+            "$ref": "#/components/schemas/Workflow.WorkflowNodeCursor",
             "description": "Opaque node continuation for the next page. Reuse it unchanged as node_cursor on the next graph request; do not parse, construct, or modify it."
           },
           "next_edge_cursor": {
-            "$ref": "#/components/schemas/Workflow.WorkflowEdgeId",
+            "$ref": "#/components/schemas/Workflow.WorkflowEdgeCursor",
             "description": "Opaque edge continuation for the next page. Reuse it unchanged as edge_cursor on the next graph request; do not parse, construct, or modify it."
           },
           "has_more_nodes": {
@@ -21499,7 +21968,7 @@
             ]
           },
           "high_water_mark": {
-            "$ref": "#/components/schemas/Workflow.WorkflowSequence"
+            "$ref": "#/components/schemas/Workflow.WorkflowJournalPosition"
           },
           "timestamp": {
             "type": "string",
@@ -21526,7 +21995,7 @@
             "type": "string"
           },
           "journal_sequence": {
-            "$ref": "#/components/schemas/Workflow.WorkflowSequence"
+            "$ref": "#/components/schemas/Workflow.WorkflowJournalPosition"
           }
         },
         "unevaluatedProperties": {
@@ -21575,6 +22044,18 @@
         ],
         "description": "Immutable journal event kinds accepted from a Codex observer."
       },
+      "Workflow.WorkflowJournalPosition": {
+        "type": "string",
+        "format": "uint64",
+        "minimum": 0,
+        "description": "Collector-assigned position in the authoritative workflow journal, encoded without JavaScript precision loss."
+      },
+      "Workflow.WorkflowNodeCursor": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1536,
+        "description": "Opaque node-page continuation scoped to one workflow run and generation. Reuse it unchanged; clients must not parse or construct it."
+      },
       "Workflow.WorkflowNodeId": {
         "type": "string",
         "minLength": 1,
@@ -21596,10 +22077,82 @@
         ],
         "description": "Kinds of execution node in the deterministic workflow graph."
       },
+      "Workflow.WorkflowProjectionCorruptError": {
+        "type": "object",
+        "required": [
+          "title",
+          "projection_status"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "enum": [
+              "Workflow Projection Corrupt"
+            ]
+          },
+          "projection_status": {
+            "$ref": "#/components/schemas/Workflow.WorkflowProjectionStatus"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Common.Errors.ProblemDetails"
+          }
+        ],
+        "description": "Workflow projection is non-retryably corrupt or incompatible. Internal storage details are intentionally omitted."
+      },
+      "Workflow.WorkflowProjectionStatus": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/Workflow.CommittedWorkflowProjectionStatus"
+          },
+          {
+            "$ref": "#/components/schemas/Workflow.RebuildingWorkflowProjectionStatus"
+          },
+          {
+            "$ref": "#/components/schemas/Workflow.UnavailableWorkflowProjectionStatus"
+          },
+          {
+            "$ref": "#/components/schemas/Workflow.CorruptWorkflowProjectionStatus"
+          }
+        ],
+        "description": "Closed public availability state for one workflow projection. Storage paths, hashes, fingerprints, and database errors remain private."
+      },
+      "Workflow.WorkflowProjectionUnavailableError": {
+        "type": "object",
+        "required": [
+          "title",
+          "projection_status"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "enum": [
+              "Workflow Projection Unavailable"
+            ]
+          },
+          "projection_status": {
+            "$ref": "#/components/schemas/Workflow.WorkflowProjectionStatus"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Common.Errors.ProblemDetails"
+          }
+        ],
+        "description": "Workflow projection is rebuilding or temporarily unavailable after a retryable storage failure."
+      },
       "Workflow.WorkflowRun": {
         "type": "object",
         "required": [
           "run_id",
+          "generation",
           "status",
           "started_at",
           "latest_journal_sequence"
@@ -21607,6 +22160,9 @@
         "properties": {
           "run_id": {
             "$ref": "#/components/schemas/Workflow.WorkflowRunId"
+          },
+          "generation": {
+            "$ref": "#/components/schemas/Workflow.WorkflowGeneration"
           },
           "thread_id": {
             "type": "string"
@@ -21626,7 +22182,7 @@
             "format": "date-time"
           },
           "latest_journal_sequence": {
-            "$ref": "#/components/schemas/Workflow.WorkflowSequence"
+            "$ref": "#/components/schemas/Workflow.WorkflowJournalPosition"
           },
           "active_attempt_id": {
             "$ref": "#/components/schemas/Workflow.WorkflowAttemptId"
@@ -21671,6 +22227,39 @@
         },
         "description": "Request to create an observed workflow run before appending journal events."
       },
+      "Workflow.WorkflowRunCursor": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 512,
+        "description": "Opaque workflow-run list continuation scoped to the project and status filter. Reuse it unchanged; clients must not parse or construct it."
+      },
+      "Workflow.WorkflowRunDeletedError": {
+        "type": "object",
+        "required": [
+          "title",
+          "run_id"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "enum": [
+              "Workflow Run Deleted"
+            ]
+          },
+          "run_id": {
+            "$ref": "#/components/schemas/Workflow.WorkflowRunId"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Common.Errors.ProblemDetails"
+          }
+        ],
+        "description": "Workflow run was durably deleted and can no longer accept events or publish projections."
+      },
       "Workflow.WorkflowRunId": {
         "type": "string",
         "minLength": 1,
@@ -21691,7 +22280,7 @@
             }
           },
           "next_cursor": {
-            "type": "string"
+            "$ref": "#/components/schemas/Workflow.WorkflowRunCursor"
           },
           "has_more": {
             "type": "boolean"

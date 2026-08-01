@@ -980,20 +980,38 @@ source.
 | Repository | Implementation commit | Published release | Publication evidence |
 | --- | --- | --- | --- |
 | `qyl-api-schema` | `f2addef63048ef554051d5c05a8fe6284ff4a084` | `v7.0.0` | This is the published contract implementation commit. GitHub Release `v7.0.0`; publish run `30666703788` succeeded; `Qyl.Api.Contracts` 7.0.0 and `@ancplua/qyl-api-schema` 7.0.0 are publicly indexed. |
-| `qyl` | `f1b96b9170614b1f79fc97ff89f955c667d6beb0` | `v1.1.5` | Main CI run `30670826247` and trusted-publishing run `30671215113` succeeded; GitHub Release `v1.1.5` targets this commit. |
+| `qyl` | `d38e903c8cb6458ab9a43b33894b085df2881306` | `v1.1.8` | Final main CI run `30694581242` and trusted-publishing run `30694871110` succeeded; GitHub Release `v1.1.8` targets this commit. |
 | `riderprojects-meta` | `cff4c6640ea5773b77a13308a7d1c23035bf8a18` | Documentation only | Workspace `AGENTS.md` and `README.md` record the repository map, authority split, and owner-first release order. |
 
 The first qyl publication attempt used tag `v1.1.4` at
 `8ca9fcc5a9b49468c652b9836e5318c5c8323288`. Its Windows consumer smoke correctly
 blocked publication because the inherited checkpoint filesystem rejected Windows.
 No `1.1.4` package or GitHub Release was produced. The tag was not rewritten; the
-platform correction advanced the immutable version to `1.1.5`.
+platform correction advanced the immutable version to `1.1.5`. That release published
+the workflow architecture and Windows correction, but a subsequent exact package audit
+found that ordinary managed/tool consumers on Unix could not load the checkpoint native
+shim. The final delivery statically links the shim into NativeAOT artifacts through
+`DirectPInvoke`/`NativeLibrary` and ships resolver-addressable sidecars only for managed
+tool packages.
+
+Tag `v1.1.6` at `3657953643d6ca3f403021c4631c75a5c221fa52` stopped before
+package construction because an `upload-artifact` action pin contained a one-character
+SHA typo; it produced no package or GitHub Release and was left immutable. Release
+`v1.1.7` at `5f50d1850286722c8f5277a58c1e1729ce6ec89b` then proved the corrected
+six-runner package pipeline and published a complete package set. Final main CI exposed
+a real runner-control startup race: the control listener could fail to bind after
+`BackgroundService.StartAsync` had already returned successfully. Commit
+`d38e903c8cb6458ab9a43b33894b085df2881306` makes listener binding part of startup,
+orders it before supervised child processes, and is the final `v1.1.8` release.
 
 The public qyl release contains `qyl`, `qyl.linux-x64`, `qyl.linux-arm64`,
-`qyl.osx-x64`, `qyl.osx-arm64`, `qyl.win-x64`, and `qyl.win-arm64` at 1.1.5. Every
-flat-container package URL returned HTTP 200 after publication. The release workflow
-also installed `qyl` 1.1.5 from public NuGet in a clean consumer, checked its version,
-and exercised the installed product.
+`qyl.osx-x64`, `qyl.osx-arm64`, `qyl.win-x64`, and `qyl.win-arm64` at 1.1.8. Every
+flat-container package URL returned HTTP 200 after publication. All six RID packages
+were built and exercised on matching GitHub-hosted operating-system/architecture
+runners before central assembly. The release workflow also installed `qyl` 1.1.8 from
+public NuGet in a clean consumer, checked its version, and exercised workflow checkpoint
+persistence through the installed product. Release `v1.1.7` remains valid historical
+evidence but is superseded by `v1.1.8`.
 
 ### 19.2 Numbered requirement ledger
 
@@ -1011,7 +1029,7 @@ and exercised the installed product.
 | 9. Schema generation | `satisfied` | `DuckDbSchemaEmitter.cs`, `DuckDbEmitter.cs`, and `DuckDbInsertGenerator.cs` share the metadata source for canonical DDL, stable column order/types, schema identities, appenders, Arrow readers, and verifier metadata. `qyl_schema_meta` stores authoritative and derived SHA-256 identities; derived mismatches drop/recreate and non-empty authoritative mismatches fail closed. |
 | 10. Reconciliation and recovery | `satisfied` | A single hosted reconciliation service validates manifests/files, records and schedules repair without clearing the committed manifest, publishes replacement through CAS, and sweeps only after publication and the temporary-file grace period. Linux/macOS use pinned no-follow handles; Windows uses rooted reparse-aware persistent operations. |
 | 11. Required deletions | `satisfied` | Persisted projection node/edge/state tables, replay-on-read, ALTER/backfill migration machinery, `qyl_storage_migrations`, `OmitDefaultFromMigration`, caller retry patches, duplicate public DTOs, and dead worker catch-all behavior are absent from active source. |
-| 12. Delivery sequence | `satisfied` | Contracts were validated and published first as 7.0.0, qyl consumed that public version, focused and broad validation followed, then qyl 1.1.5 was tagged and published. |
+| 12. Delivery sequence | `satisfied` | Contracts were validated and published first as 7.0.0, qyl consumed that public version, focused and broad validation followed, and the corrected implementation and package pipeline were published finally as qyl 1.1.8. Failed immutable attempts produced no release artifacts and were advanced rather than rewritten. |
 | 13. Required tests | `satisfied` | Contract compilation/probes, generator/appender/BLOB/Arrow tests, real DuckDB/filesystem recovery tests, runtime concurrency/CAS tests, typed failure tests, pagination/cursor tests, NativeAOT smokes, browser E2E, and all-platform package consumers passed. |
 | 14. Performance acceptance | `satisfied` | The owning architecture document records the identical 2,000-event workload: 3.338 s to 1.152 s, 599 to 1,736 events/s, 8.99 MB to 7.69 MB runtime allocation, and 494.9 MB to 177.5 MB peak RSS. The checkpoint was 1,168 bytes and missing-file rebuild was 58.8 ms. |
 | 15. Observability | `satisfied` | Owned structured logs cover journal commits, projection lifecycle/coalescing, processed positions, full/incremental reconstruction, checkpoint bytes/validation, CAS, repair/sweep, typed DuckDB classification, and Arrow batches/rows without payloads or secrets. The rejected handwritten metric was deleted rather than bypassing vocabulary ownership. |
@@ -1035,8 +1053,8 @@ and exercised the installed product.
 | Obsolete implementation removed | No active projection tables, migration framework, replay-on-read, duplicate public model, caller retry, or handwritten hot ingestion remains. |
 | No stale active prescription | Repository searches and build verifiers found no active source prescribing the retired migration/projection/caller-retry design. The failed 1.1.4 tag is immutable historical evidence, not active architecture. |
 | Durable architecture owner updated | `qyl/ARCHITECTURE-1.0.0.md` contains the final authority, checkpoint, runtime, schema, API-use, platform-filesystem, observability, and performance decisions. |
-| Behavioral and platform validation | `npm ci && timeout 300 ./build.sh Check` passed all 15 schema targets. The final local qyl `Ci` gate passed 237/237 tests plus NativeAOT and browser/product gates; after the Windows correction the collector suite passed 196/196 and a `win-x64` tool pack succeeded. Main CI `30670826247` and release consumers on Ubuntu, macOS, and Windows passed. |
-| NativeAOT delivery | The Linux image contains the native checkpoint sidecar, starts as the non-root qyl user, serves dashboard/API/OTLP, persists through restart, and passed all seven wire lanes. Runtime-native resolver layouts are present for regular builds. |
+| Behavioral and platform validation | `npm ci && timeout 300 ./build.sh Check` passed all 15 schema targets. The local qyl `Ci` gate passed 237/237 tests plus NativeAOT and browser/product gates; after the Windows correction the collector suite passed 196/196 and a `win-x64` tool pack succeeded. Final main CI `30694581242` passed 238 backend tests, packaging, NativeAOT, dependency, frontend, and browser jobs. Release run `30694871110` built and exercised all six RID packages on matching Linux, macOS, and Windows runners, validated the assembled release set, and exercised the public package from a clean consumer. |
+| NativeAOT delivery | The Linux image statically links the checkpoint shim into the NativeAOT executable, starts as the non-root qyl user, serves dashboard/API/OTLP, persists through restart, and passed all seven wire lanes. Managed and tool packages carry exact-RID sidecars loaded through an application-base resolver; matching-platform package smokes prove every published layout. |
 | Clean synchronized repositories | At final evidence collection, `qyl`, `qyl-api-schema`, and `riderprojects-meta` had clean worktrees and `HEAD...origin/main` equal to `0 0`; GitHub `main` matched each local `HEAD`. The final documentation commit is verified from Git rather than embedded self-referentially in its own contents. |
 
 ### 19.4 Remaining

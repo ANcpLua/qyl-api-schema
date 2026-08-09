@@ -11,6 +11,7 @@ using ModelContextProtocol;
 using ModelContextProtocol.Protocol;
 using Qyl.Api.Contracts;
 using Qyl.Api.Contracts.Common.Errors;
+using Qyl.Api.Contracts.Diagnostics;
 using System.Linq;
 using Qyl.Api.Contracts.Health;
 using Qyl.Api.Contracts.Mcp.Tools;
@@ -167,6 +168,52 @@ var workflowEvent = new WorkflowJournalEvent
 };
 var workflowFixtureWire = JsonSerializer.Serialize(workflowEvent);
 
+AgentDiagnosticVariable diagnosticVariable = new CapturedAgentDiagnosticVariable
+{
+    Name = new AgentDiagnosticVariableName("planner.candidates[0].score"),
+    Type = AgentDiagnosticValueType.Number,
+    Classification = AgentDiagnosticClassification.Internal,
+    Value = 0.875,
+};
+var diagnosticSnapshot = new AgentDiagnosticSnapshot
+{
+    ExtensionId = AgentDiagnosticExtensionId.Snapshot,
+    FormatVersion = 1,
+    SnapshotId = new AgentDiagnosticSnapshotId("snapshot:planner:0001"),
+    CaptureNonce = "0123456789abcdef0123456789abcdef",
+    ProbeId = new AgentDiagnosticProbeId("planner.selection"),
+    Phase = AgentDiagnosticPhase.Checkpoint,
+    Variables = [diagnosticVariable],
+    Checks =
+    [
+        new AgentDiagnosticCheckResult
+        {
+            CheckId = new AgentDiagnosticCheckId("planner.minimum_score"),
+            Operator = AgentDiagnosticOperator.GreaterThan,
+            Actual = new AgentDiagnosticVariableName("planner.candidates[0].score"),
+            Expected = new AgentDiagnosticVariableName("planner.minimum_score"),
+            Outcome = AgentDiagnosticCheckOutcome.Pass,
+        },
+    ],
+    Outcome = AgentDiagnosticOutcome.Pass,
+};
+var diagnosticSnapshotWire = JsonSerializer.Serialize(diagnosticSnapshot);
+var diagnosticSnapshotRoundTrip = JsonSerializer.Deserialize<AgentDiagnosticSnapshot>(diagnosticSnapshotWire);
+var diagnosticSummary = new AgentDiagnosticSnapshotSummary
+{
+    ExtensionId = AgentDiagnosticExtensionId.Snapshot,
+    FormatVersion = 1,
+    SnapshotId = diagnosticSnapshot.SnapshotId,
+    ProbeId = diagnosticSnapshot.ProbeId,
+    Phase = diagnosticSnapshot.Phase,
+    Outcome = diagnosticSnapshot.Outcome,
+    VariableCount = 1,
+    CheckCount = 1,
+    FailedCheckCount = 0,
+    ContentRef = new WorkflowContentRef($"sha256:{new string('b', 64)}"),
+};
+var diagnosticSummaryWire = JsonSerializer.Serialize(diagnosticSummary);
+
 var serverConfigurationWire = JsonSerializer.Serialize(serverConfiguration);
 var serverConfigurationRoundTrip = JsonSerializer.Deserialize<WorkbenchServerConfiguration>(serverConfigurationWire);
 var assertionWire = JsonSerializer.Serialize(assertion);
@@ -225,6 +272,13 @@ var checks = new (string Name, bool Ok)[]
         && type.Namespace == "Qyl.Api.Contracts.Mcp.Tools")),
     ("workflowGraphPresent", contractTypes.Any(type => type.Name == "WorkflowGraphSnapshot"
         && type.Namespace == "Qyl.Api.Contracts.Workflow")),
+    ("diagnosticSnapshotRoundTrip", diagnosticSnapshotRoundTrip?.Variables[0]
+        is CapturedAgentDiagnosticVariable),
+    ("diagnosticSnapshotWire", diagnosticSnapshotWire.Contains(
+        "\"extension_id\":\"qyl.agent.diagnostic.snapshot\"")
+        && diagnosticSnapshotWire.Contains("\"capture\":\"value\"")),
+    ("diagnosticSummaryValueFree", diagnosticSummaryWire.Contains("\"variable_count\":1")
+        && !diagnosticSummaryWire.Contains("\"variables\"")),
 };
 
 var failed = checks.Where(check => !check.Ok).Select(check => check.Name).ToArray();

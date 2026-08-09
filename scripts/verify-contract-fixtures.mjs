@@ -21,6 +21,10 @@ const csharpWorkflowRuntime = await readFile(
   "generated/contracts/Qyl/Api/Contracts/Workflow.cs",
   "utf8",
 );
+const csharpDiagnosticsRuntime = await readFile(
+  "generated/contracts/Qyl/Api/Contracts/Diagnostics.cs",
+  "utf8",
+);
 const defs = schema.$defs ?? {};
 const ajv = new Ajv2020({ allErrors: true, strict: true, validateFormats: false });
 ajv.addKeyword({ keyword: "x-csharp-struct", schemaType: "boolean" });
@@ -706,6 +710,208 @@ assertInvalid(
   { ...workflowEventFixture, content_refs: ["sha256:not-a-digest"] },
   "workflow journal event with an invalid content reference",
 );
+
+const capturedDiagnosticVariable = {
+  name: "planner.candidates[0].score",
+  type: "number",
+  classification: "internal",
+  capture: "value",
+  value: 0.875,
+};
+const redactedDiagnosticVariable = {
+  name: "tool.authorization",
+  type: "string",
+  classification: "secret",
+  capture: "redacted",
+};
+const omittedDiagnosticVariable = {
+  name: "retrieval.unavailable_context",
+  type: "json",
+  classification: "sensitive",
+  capture: "omitted",
+};
+const diagnosticCheck = {
+  check_id: "planner.minimum_score",
+  operator: "greater_than",
+  actual: "planner.candidates[0].score",
+  expected: "planner.minimum_score",
+  outcome: "pass",
+};
+const diagnosticSnapshotFixture = {
+  extension_id: "qyl.agent.diagnostic.snapshot",
+  format_version: 1,
+  snapshot_id: "snapshot:planner:0001",
+  capture_nonce: "0123456789abcdef0123456789abcdef",
+  probe_id: "planner.selection",
+  phase: "checkpoint",
+  variables: [
+    capturedDiagnosticVariable,
+    redactedDiagnosticVariable,
+    omittedDiagnosticVariable,
+    {
+      name: "planner.no_result",
+      type: "null",
+      classification: "public",
+      capture: "value",
+      value: null,
+    },
+  ],
+  checks: [diagnosticCheck],
+  outcome: "pass",
+};
+const validateDiagnosticSnapshot = validatorFor("Diagnostics.AgentDiagnosticSnapshot");
+assertValid(
+  validateDiagnosticSnapshot,
+  diagnosticSnapshotFixture,
+  "protected agent diagnostic snapshot",
+);
+assertInvalid(
+  validateDiagnosticSnapshot,
+  { ...diagnosticSnapshotFixture, extension_id: "qyl.agent.diagnostic.other" },
+  "agent diagnostic snapshot with an unknown extension discriminator",
+);
+assertInvalid(
+  validateDiagnosticSnapshot,
+  { ...diagnosticSnapshotFixture, format_version: 2 },
+  "agent diagnostic snapshot with an unsupported format version",
+);
+assertInvalid(
+  validateDiagnosticSnapshot,
+  { ...diagnosticSnapshotFixture, capture_nonce: "ABCDEF0123456789ABCDEF0123456789" },
+  "agent diagnostic snapshot with a non-canonical capture nonce",
+);
+assertInvalid(
+  validateDiagnosticSnapshot,
+  {
+    ...diagnosticSnapshotFixture,
+    variables: [{ ...redactedDiagnosticVariable, value: "must-not-leak" }],
+  },
+  "redacted diagnostic variable carrying a value",
+);
+const { value: _capturedValue, ...capturedWithoutValue } = capturedDiagnosticVariable;
+assertInvalid(
+  validateDiagnosticSnapshot,
+  { ...diagnosticSnapshotFixture, variables: [capturedWithoutValue] },
+  "captured diagnostic variable without a value",
+);
+assertInvalid(
+  validateDiagnosticSnapshot,
+  {
+    ...diagnosticSnapshotFixture,
+    variables: [{ ...capturedDiagnosticVariable, name: "dynamic telemetry key" }],
+  },
+  "diagnostic variable with a non-machine identifier",
+);
+assertInvalid(
+  validateDiagnosticSnapshot,
+  { ...diagnosticSnapshotFixture, variables: Array(65).fill(capturedDiagnosticVariable) },
+  "agent diagnostic snapshot with more than 64 variables",
+);
+assertInvalid(
+  validateDiagnosticSnapshot,
+  { ...diagnosticSnapshotFixture, checks: Array(65).fill(diagnosticCheck) },
+  "agent diagnostic snapshot with more than 64 checks",
+);
+assertInvalid(
+  validateDiagnosticSnapshot,
+  {
+    ...diagnosticSnapshotFixture,
+    checks: [{ ...diagnosticCheck, operator: "eval" }],
+  },
+  "agent diagnostic snapshot with an expression-like operator",
+);
+assertInvalid(
+  validateDiagnosticSnapshot,
+  {
+    ...diagnosticSnapshotFixture,
+    checks: [{ ...diagnosticCheck, outcome: "not_evaluated" }],
+  },
+  "agent diagnostic check with the aggregate-only not_evaluated outcome",
+);
+
+const diagnosticSummaryFixture = {
+  extension_id: "qyl.agent.diagnostic.snapshot",
+  format_version: 1,
+  snapshot_id: "snapshot:planner:0001",
+  probe_id: "planner.selection",
+  phase: "checkpoint",
+  outcome: "pass",
+  variable_count: 4,
+  check_count: 1,
+  failed_check_count: 0,
+  content_ref: `sha256:${"b".repeat(64)}`,
+};
+const validateDiagnosticSummary = validatorFor("Diagnostics.AgentDiagnosticSnapshotSummary");
+assertValid(validateDiagnosticSummary, diagnosticSummaryFixture, "value-free diagnostic event summary");
+assertInvalid(
+  validateDiagnosticSummary,
+  { ...diagnosticSummaryFixture, variables: [capturedDiagnosticVariable] },
+  "diagnostic event summary carrying variables",
+);
+assertInvalid(
+  validateDiagnosticSummary,
+  { ...diagnosticSummaryFixture, failed_check_count: 65 },
+  "diagnostic event summary with an out-of-bounds failed count",
+);
+assertInvalid(
+  validateDiagnosticSummary,
+  { ...diagnosticSummaryFixture, content_ref: "sha256:not-a-digest" },
+  "diagnostic event summary with an invalid content reference",
+);
+
+const diagnosticSummaryProperties = Object.keys(
+  defs["Diagnostics.AgentDiagnosticSnapshotSummary"]?.properties ?? {},
+).sort();
+const expectedDiagnosticSummaryProperties = [
+  "check_count",
+  "content_ref",
+  "extension_id",
+  "failed_check_count",
+  "format_version",
+  "outcome",
+  "phase",
+  "probe_id",
+  "snapshot_id",
+  "variable_count",
+].sort();
+if (JSON.stringify(diagnosticSummaryProperties) !== JSON.stringify(expectedDiagnosticSummaryProperties)) {
+  throw new Error(`Diagnostic event summary leaked or lost fields: ${diagnosticSummaryProperties.join(", ")}.`);
+}
+const diagnosticCheckProperties = defs["Diagnostics.AgentDiagnosticCheckResult"]?.properties ?? {};
+if ("expression" in diagnosticCheckProperties || "message" in diagnosticCheckProperties) {
+  throw new Error("Agent diagnostic checks must remain structural and machine-oriented.");
+}
+const journalEventKinds = defs["Workflow.WorkflowJournalEventKind"]?.enum ?? [];
+if (!journalEventKinds.includes("content_captured") ||
+    journalEventKinds.includes("qyl.agent.diagnostic.snapshot")) {
+  throw new Error("Agent diagnostics must reuse content_captured without changing the journal event enum.");
+}
+for (const id of [
+  "AgentDiagnosticSnapshotId",
+  "AgentDiagnosticProbeId",
+  "AgentDiagnosticCheckId",
+  "AgentDiagnosticVariableName",
+]) {
+  if (!tsRuntime.includes(`readonly __brand: "${id}"`)) {
+    throw new Error(`${id} must remain a branded TypeScript machine identifier.`);
+  }
+  if (!csharpDiagnosticsRuntime.includes(`public readonly record struct ${id}(string Value)`) ||
+      !csharpDiagnosticsRuntime.includes(`[JsonConverter(typeof(${id}JsonConverter))]`)) {
+    throw new Error(`${id} must remain a branded, JSON-converted C# machine identifier.`);
+  }
+}
+for (const marker of [
+  '[JsonPolymorphic(TypeDiscriminatorPropertyName = "capture")]',
+  '[JsonDerivedType(typeof(CapturedAgentDiagnosticVariable), "value")]',
+  '[JsonDerivedType(typeof(RedactedAgentDiagnosticVariable), "redacted")]',
+  '[JsonDerivedType(typeof(OmittedAgentDiagnosticVariable), "omitted")]',
+  "public interface AgentDiagnosticVariable",
+  "public required object? Value { get; init; }",
+]) {
+  if (!csharpDiagnosticsRuntime.includes(marker)) {
+    throw new Error(`C# agent diagnostic variable lost generated capture semantics: ${marker}.`);
+  }
+}
 for (const [definition, maximum] of [
   ["Workflow.WorkflowRunId", 128],
   ["Workflow.WorkflowAttemptId", 128],

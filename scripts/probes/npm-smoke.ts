@@ -11,6 +11,13 @@ import { CONTRACT_REVISION } from "@ancplua/qyl-api-schema/types";
 import type {
     Attribute,
     AttributeValue,
+    AgentDiagnosticCheckId,
+    AgentDiagnosticSnapshot,
+    AgentDiagnosticSnapshotId,
+    AgentDiagnosticSnapshotSummary,
+    AgentDiagnosticVariable,
+    AgentDiagnosticVariableName,
+    AgentDiagnosticProbeId,
     CiLogOutput,
     EntityRef,
     HealthReport,
@@ -104,6 +111,54 @@ const workflowEvent: WorkflowJournalEvent = {
     journal_sequence: "11" as WorkflowJournalPosition,
 };
 
+const diagnosticVariable: AgentDiagnosticVariable = {
+    name: "planner.candidates[0].score" as AgentDiagnosticVariableName,
+    type: "number",
+    classification: "internal",
+    capture: "value",
+    value: 0.875,
+};
+
+const diagnosticSnapshot: AgentDiagnosticSnapshot = {
+    extension_id: "qyl.agent.diagnostic.snapshot",
+    format_version: 1,
+    snapshot_id: "snapshot:planner:0001" as AgentDiagnosticSnapshotId,
+    capture_nonce: "0123456789abcdef0123456789abcdef",
+    probe_id: "planner.selection" as AgentDiagnosticProbeId,
+    phase: "checkpoint",
+    variables: [diagnosticVariable],
+    checks: [{
+        check_id: "planner.minimum_score" as AgentDiagnosticCheckId,
+        operator: "greater_than",
+        actual: "planner.candidates[0].score" as AgentDiagnosticVariableName,
+        expected: "planner.minimum_score" as AgentDiagnosticVariableName,
+        outcome: "pass",
+    }],
+    outcome: "pass",
+};
+
+const diagnosticSummary: AgentDiagnosticSnapshotSummary = {
+    extension_id: "qyl.agent.diagnostic.snapshot",
+    format_version: 1,
+    snapshot_id: diagnosticSnapshot.snapshot_id,
+    probe_id: diagnosticSnapshot.probe_id,
+    phase: diagnosticSnapshot.phase,
+    outcome: diagnosticSnapshot.outcome,
+    variable_count: 1,
+    check_count: 1,
+    failed_check_count: 0,
+    content_ref: `sha256:${"b".repeat(64)}` as WorkflowContentRef,
+};
+
+const invalidRedactedDiagnosticVariable: AgentDiagnosticVariable = {
+    name: "tool.authorization" as AgentDiagnosticVariableName,
+    type: "string",
+    classification: "secret",
+    capture: "redacted",
+    // @ts-expect-error Redacted variables are structurally forbidden from carrying values.
+    value: "must-not-leak",
+};
+
 void [
     eventLog,
     emptyAttribute,
@@ -116,4 +171,7 @@ void [
     healthReport,
     ciLog,
     workflowEvent,
+    diagnosticSnapshot,
+    diagnosticSummary,
+    invalidRedactedDiagnosticVariable,
 ];

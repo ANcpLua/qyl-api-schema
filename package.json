@@ -62,6 +62,7 @@
     "models/runner.tsp",
     "models/workbench.tsp",
     "models/workflow.tsp",
+    "models/diagnostics.tsp",
     "models/mcp-tools.tsp",
     "models/session.tsp",
     "otel/enums.tsp",

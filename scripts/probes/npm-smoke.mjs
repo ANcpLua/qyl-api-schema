@@ -8,6 +8,7 @@
 // outcome.
 import {
     CONTRACT_REVISION,
+    AgentDiagnosticExtensionIdValues,
     HealthStatusValues,
     ProblemDetailsMediaType,
     RunnerResourceKindValues,
@@ -175,6 +176,16 @@ const workflowFixture = {
 };
 const workflowFixtureWire = JSON.stringify(workflowFixture);
 
+const diagnosticSnapshot = schema.$defs["Diagnostics.AgentDiagnosticSnapshot"];
+const diagnosticSummary = schema.$defs["Diagnostics.AgentDiagnosticSnapshotSummary"];
+const diagnosticContractDefined =
+    AgentDiagnosticExtensionIdValues.snapshot === "qyl.agent.diagnostic.snapshot"
+    && diagnosticSnapshot?.properties?.variables?.maxItems === 64
+    && diagnosticSnapshot?.properties?.checks?.maxItems === 64
+    && diagnosticSnapshot?.properties?.capture_nonce?.pattern === "^[0-9a-f]{32}$"
+    && diagnosticSummary?.properties?.content_ref?.$ref === "#/$defs/Workflow.WorkflowContentRef"
+    && !("variables" in (diagnosticSummary?.properties ?? {}));
+
 // Each entry is reported by name when it fails. A single OR-chained exit code
 // tells a release operator that something is wrong and nothing about what.
 const checks = [
@@ -205,6 +216,7 @@ const checks = [
     ["healthAdvertisesRevision", healthAdvertisesRevision],
     ["workflowGraphDefined", Boolean(schema.$defs["Workflow.WorkflowGraphSnapshot"])],
     ["workflowJournalDefined", Boolean(schema.$defs["Workflow.WorkflowJournalEvent"])],
+    ["diagnosticContractDefined", diagnosticContractDefined],
 ];
 
 const failed = checks.filter(([, ok]) => !ok).map(([name]) => name);

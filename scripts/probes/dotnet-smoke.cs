@@ -12,6 +12,7 @@ using ModelContextProtocol.Protocol;
 using Qyl.Api.Contracts;
 using Qyl.Api.Contracts.Common.Errors;
 using Qyl.Api.Contracts.Diagnostics;
+using Qyl.Api.Contracts.Mcp;
 using System.Linq;
 using Qyl.Api.Contracts.Health;
 using Qyl.Api.Contracts.Mcp.Tools;
@@ -168,6 +169,49 @@ var workflowEvent = new WorkflowJournalEvent
 };
 var workflowFixtureWire = JsonSerializer.Serialize(workflowEvent);
 
+var getActiveWorkflowRunInput = new GetActiveWorkflowRunInput();
+var getActiveWorkflowRunOutput = new GetActiveWorkflowRunOutput
+{
+    Active = true,
+    LiveControlsAvailable = true,
+    RunId = workflowEvent.RunId,
+    ThreadId = workflowEvent.ThreadId,
+    StartedAt = workflowEvent.Timestamp,
+};
+var recordDiagnosticSnapshotVariable = new RecordDiagnosticSnapshotVariableInput
+{
+    Name = new AgentDiagnosticVariableName("planner.candidates[0].score"),
+    Classification = AgentDiagnosticClassification.Internal,
+    Value = 0.875,
+};
+var recordDiagnosticSnapshotCheck = new RecordDiagnosticSnapshotCheckInput
+{
+    CheckId = new AgentDiagnosticCheckId("planner.minimum_score"),
+    Operator = AgentDiagnosticOperator.GreaterThan,
+    Actual = recordDiagnosticSnapshotVariable.Name,
+    Expected = new AgentDiagnosticVariableName("planner.minimum_score"),
+};
+var recordDiagnosticSnapshotInput = new RecordDiagnosticSnapshotInput
+{
+    SnapshotId = new AgentDiagnosticSnapshotId("snapshot:planner:0001"),
+    ProbeId = new AgentDiagnosticProbeId("planner.selection"),
+    Phase = AgentDiagnosticPhase.Checkpoint,
+    Variables = [recordDiagnosticSnapshotVariable],
+    Checks = [recordDiagnosticSnapshotCheck],
+};
+var recordDiagnosticSnapshotOutput = new RecordDiagnosticSnapshotOutput
+{
+    Recorded = true,
+    Code = "recorded",
+    SnapshotId = recordDiagnosticSnapshotInput.SnapshotId,
+    EventId = workflowEvent.EventId,
+};
+var getActiveWorkflowRunOutputWire = JsonSerializer.Serialize(getActiveWorkflowRunOutput);
+var recordDiagnosticSnapshotInputWire = JsonSerializer.Serialize(recordDiagnosticSnapshotInput);
+var recordDiagnosticSnapshotOutputWire = JsonSerializer.Serialize(recordDiagnosticSnapshotOutput);
+using var getActiveWorkflowRunInputSchema = JsonDocument.Parse(ToolSchemas.GetActiveWorkflowRunInput);
+using var recordDiagnosticSnapshotInputSchema = JsonDocument.Parse(ToolSchemas.RecordDiagnosticSnapshotInput);
+
 var inspectWorkflowEventsInput = new InspectWorkflowEventsInput
 {
     RunId = workflowEvent.RunId,
@@ -301,6 +345,23 @@ var checks = new (string Name, bool Ok)[]
         && type.Namespace == "Qyl.Api.Contracts.Mcp.Tools")),
     ("workflowGraphPresent", contractTypes.Any(type => type.Name == "WorkflowGraphSnapshot"
         && type.Namespace == "Qyl.Api.Contracts.Workflow")),
+    ("observerBridgeInputTypePresent", typeof(GetActiveWorkflowRunInput).Namespace
+        == "Qyl.Api.Contracts.Mcp.Tools"),
+    ("observerBridgeOutputWire", getActiveWorkflowRunOutputWire.Contains("\"live_controls_available\":true")
+        && getActiveWorkflowRunOutputWire.Contains("\"run_id\":\"run-1\"")),
+    ("recordDiagnosticSnapshotWire", recordDiagnosticSnapshotInputWire.Contains(
+            "\"snapshot_id\":\"snapshot:planner:0001\"")
+        && recordDiagnosticSnapshotInputWire.Contains("\"check_id\":\"planner.minimum_score\"")
+        && !recordDiagnosticSnapshotInputWire.Contains("snapshotId")
+        && recordDiagnosticSnapshotOutputWire.Contains("\"event_id\":\"evt-0001\"")),
+    ("generatedToolSchemasPresent", getActiveWorkflowRunInputSchema.RootElement
+            .GetProperty("type").GetString() == "object"
+        && recordDiagnosticSnapshotInputSchema.RootElement.GetProperty("properties")
+            .GetProperty("variables").GetProperty("maxItems").GetInt32() == 64
+        && recordDiagnosticSnapshotInputSchema.RootElement.GetProperty("properties")
+            .GetProperty("checks").GetProperty("maxItems").GetInt32() == 64
+        && recordDiagnosticSnapshotInputSchema.RootElement.GetProperty("$defs")
+            .TryGetProperty("Diagnostics.AgentDiagnosticSnapshotId", out _)),
     ("diagnosticCaptureEnumAbsent", !contractTypes.Any(type => type.Name == "AgentDiagnosticCapture"
         && type.Namespace == "Qyl.Api.Contracts.Diagnostics")),
     ("inspectWorkflowEventsInputShape", string.Join(",", typeof(InspectWorkflowEventsInput)

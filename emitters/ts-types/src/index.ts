@@ -84,7 +84,8 @@ export async function $onEmit(context: EmitContext): Promise<void> {
         modelBlock.push(renderRecordInterface(program, m));
         return;
       }
-      if (!hasBodyProperties(program, m)) return;
+      const isExplicitEmptyModel = m.properties.size === 0 && !m.baseModel;
+      if (!hasBodyProperties(program, m) && !isExplicitEmptyModel) return;
       const name = emittedModelName(m);
       if (emittedModels.has(name)) return;
       emittedModels.add(name);

@@ -20,10 +20,16 @@ import type {
     AgentDiagnosticProbeId,
     CiLogOutput,
     EntityRef,
+    GetActiveWorkflowRunInput,
+    GetActiveWorkflowRunOutput,
     HealthReport,
     InspectWorkflowEventsInput,
     InspectWorkflowEventsOutput,
     LogRecord,
+    RecordDiagnosticSnapshotCheckInput,
+    RecordDiagnosticSnapshotInput,
+    RecordDiagnosticSnapshotOutput,
+    RecordDiagnosticSnapshotVariableInput,
     Resource,
     SessionId,
     WorkflowJournalEvent,
@@ -111,6 +117,47 @@ const workflowEvent: WorkflowJournalEvent = {
     run_id: "run-1" as WorkflowRunId,
     client_id: "qyl-codex",
     journal_sequence: "11" as WorkflowJournalPosition,
+};
+
+const getActiveWorkflowRunInput: GetActiveWorkflowRunInput = {};
+const getActiveWorkflowRunOutput: GetActiveWorkflowRunOutput = {
+    active: true,
+    live_controls_available: true,
+    run_id: workflowEvent.run_id,
+    thread_id: workflowEvent.thread_id,
+    started_at: workflowEvent.timestamp,
+};
+
+const recordDiagnosticSnapshotVariable: RecordDiagnosticSnapshotVariableInput = {
+    name: "planner.candidates[0].score" as AgentDiagnosticVariableName,
+    classification: "internal",
+    value: 0.875,
+};
+const recordDiagnosticSnapshotCheck: RecordDiagnosticSnapshotCheckInput = {
+    check_id: "planner.minimum_score" as AgentDiagnosticCheckId,
+    operator: "greater_than",
+    actual: recordDiagnosticSnapshotVariable.name,
+    expected: "planner.minimum_score" as AgentDiagnosticVariableName,
+};
+const recordDiagnosticSnapshotInput: RecordDiagnosticSnapshotInput = {
+    snapshot_id: "snapshot:planner:0001" as AgentDiagnosticSnapshotId,
+    probe_id: "planner.selection" as AgentDiagnosticProbeId,
+    phase: "checkpoint",
+    variables: [recordDiagnosticSnapshotVariable],
+    checks: [recordDiagnosticSnapshotCheck],
+};
+const recordDiagnosticSnapshotOutput: RecordDiagnosticSnapshotOutput = {
+    recorded: true,
+    code: "recorded",
+    snapshot_id: recordDiagnosticSnapshotInput.snapshot_id,
+    event_id: workflowEvent.event_id,
+};
+const invalidRecordDiagnosticSnapshotInput: RecordDiagnosticSnapshotInput = {
+    // @ts-expect-error Named qyl MCP-tool contracts use the canonical snake_case wire name.
+    snapshotId: "snapshot:planner:0001" as AgentDiagnosticSnapshotId,
+    probe_id: "planner.selection" as AgentDiagnosticProbeId,
+    phase: "checkpoint",
+    variables: [],
 };
 
 const inspectWorkflowEventsInput: InspectWorkflowEventsInput = {
@@ -211,6 +258,11 @@ void [
     healthReport,
     ciLog,
     workflowEvent,
+    getActiveWorkflowRunInput,
+    getActiveWorkflowRunOutput,
+    recordDiagnosticSnapshotInput,
+    recordDiagnosticSnapshotOutput,
+    invalidRecordDiagnosticSnapshotInput,
     inspectWorkflowEventsInput,
     inspectWorkflowEventsOutput,
     invalidInspectWorkflowEventsInput,

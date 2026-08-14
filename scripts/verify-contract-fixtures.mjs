@@ -25,6 +25,14 @@ const csharpDiagnosticsRuntime = await readFile(
   "generated/contracts/Qyl/Api/Contracts/Diagnostics.cs",
   "utf8",
 );
+const csharpMcpRuntime = await readFile(
+  "generated/contracts/Qyl/Api/Contracts/Mcp/Tools.cs",
+  "utf8",
+);
+const csharpToolSchemasRuntime = await readFile(
+  "generated/contracts/Qyl/Api/Mcp/ToolSchemas.cs",
+  "utf8",
+);
 const defs = schema.$defs ?? {};
 const ajv = new Ajv2020({ allErrors: true, strict: true, validateFormats: false });
 ajv.addKeyword({ keyword: "x-csharp-struct", schemaType: "boolean" });
@@ -54,6 +62,16 @@ function assertReferences(definition, expected) {
   if (JSON.stringify(actual) !== JSON.stringify(expected)) {
     throw new Error(`${definition} oneOf variants drifted: ${JSON.stringify(actual)}.`);
   }
+}
+
+function generatedCsharpToolSchema(name) {
+  const prefix = `public const string ${name} = \"\"\"`;
+  const start = csharpToolSchemasRuntime.indexOf(prefix);
+  if (start === -1) throw new Error(`Generated C# ToolSchemas.${name} is missing.`);
+  const jsonStart = start + prefix.length;
+  const jsonEnd = csharpToolSchemasRuntime.indexOf('\"\"\";', jsonStart);
+  if (jsonEnd === -1) throw new Error(`Generated C# ToolSchemas.${name} is unterminated.`);
+  return JSON.parse(csharpToolSchemasRuntime.slice(jsonStart, jsonEnd));
 }
 
 const httpMethods = new Set(["delete", "get", "head", "options", "patch", "post", "put", "trace"]);
@@ -886,6 +904,130 @@ if (defs["Diagnostics.AgentDiagnosticCapture"] ||
     csharpDiagnosticsRuntime.includes("enum AgentDiagnosticCapture")) {
   throw new Error("The unused AgentDiagnosticCapture enum must not re-enter the public contract.");
 }
+
+const validateGetActiveWorkflowRunInput = validatorFor("Mcp.Tools.GetActiveWorkflowRunInput");
+assertValid(validateGetActiveWorkflowRunInput, {}, "empty active-workflow input");
+assertInvalid(
+  validateGetActiveWorkflowRunInput,
+  { run_id: "run-1" },
+  "active-workflow input with undeclared state",
+);
+const getActiveWorkflowRunOutputFixture = {
+  active: true,
+  live_controls_available: true,
+  run_id: "run-1",
+  thread_id: "thread-root",
+  started_at: "2026-08-14T12:00:00Z",
+};
+const validateGetActiveWorkflowRunOutput = validatorFor("Mcp.Tools.GetActiveWorkflowRunOutput");
+assertValid(
+  validateGetActiveWorkflowRunOutput,
+  getActiveWorkflowRunOutputFixture,
+  "active-workflow output",
+);
+assertInvalid(
+  validateGetActiveWorkflowRunOutput,
+  { ...getActiveWorkflowRunOutputFixture, liveControlsAvailable: true },
+  "active-workflow output with a shadow camelCase field",
+);
+
+const recordDiagnosticSnapshotInputFixture = {
+  snapshot_id: "snapshot:planner:0001",
+  probe_id: "planner.selection",
+  phase: "checkpoint",
+  variables: [{
+    name: "planner.candidates[0].score",
+    classification: "internal",
+    value: 0.875,
+  }],
+  checks: [{
+    check_id: "planner.minimum_score",
+    operator: "greater_than",
+    actual: "planner.candidates[0].score",
+    expected: "planner.minimum_score",
+  }],
+};
+const validateRecordDiagnosticSnapshotInput = validatorFor("Mcp.Tools.RecordDiagnosticSnapshotInput");
+assertValid(
+  validateRecordDiagnosticSnapshotInput,
+  recordDiagnosticSnapshotInputFixture,
+  "diagnostic snapshot recording input",
+);
+assertValid(
+  validateRecordDiagnosticSnapshotInput,
+  { ...recordDiagnosticSnapshotInputFixture, checks: undefined },
+  "diagnostic snapshot recording input using the empty-check default",
+);
+assertInvalid(
+  validateRecordDiagnosticSnapshotInput,
+  { ...recordDiagnosticSnapshotInputFixture, snapshotId: "shadow" },
+  "diagnostic snapshot recording input with a shadow camelCase field",
+);
+assertInvalid(
+  validateRecordDiagnosticSnapshotInput,
+  {
+    ...recordDiagnosticSnapshotInputFixture,
+    variables: Array(65).fill(recordDiagnosticSnapshotInputFixture.variables[0]),
+  },
+  "diagnostic snapshot recording input with more than 64 variables",
+);
+assertInvalid(
+  validateRecordDiagnosticSnapshotInput,
+  {
+    ...recordDiagnosticSnapshotInputFixture,
+    checks: Array(65).fill(recordDiagnosticSnapshotInputFixture.checks[0]),
+  },
+  "diagnostic snapshot recording input with more than 64 checks",
+);
+assertInvalid(
+  validateRecordDiagnosticSnapshotInput,
+  {
+    ...recordDiagnosticSnapshotInputFixture,
+    variables: [{ ...recordDiagnosticSnapshotInputFixture.variables[0], type: "number" }],
+  },
+  "diagnostic snapshot recording variable with a producer-derived field",
+);
+const recordDiagnosticSnapshotOutputFixture = {
+  recorded: true,
+  code: "recorded",
+  snapshot_id: "snapshot:planner:0001",
+  event_id: "evt-0001",
+};
+const validateRecordDiagnosticSnapshotOutput = validatorFor("Mcp.Tools.RecordDiagnosticSnapshotOutput");
+assertValid(
+  validateRecordDiagnosticSnapshotOutput,
+  recordDiagnosticSnapshotOutputFixture,
+  "diagnostic snapshot recording output",
+);
+
+for (const [constant, definition, fixture] of [
+  ["GetActiveWorkflowRunInput", "Mcp.Tools.GetActiveWorkflowRunInput", {}],
+  ["GetActiveWorkflowRunOutput", "Mcp.Tools.GetActiveWorkflowRunOutput", getActiveWorkflowRunOutputFixture],
+  ["RecordDiagnosticSnapshotInput", "Mcp.Tools.RecordDiagnosticSnapshotInput", recordDiagnosticSnapshotInputFixture],
+  ["RecordDiagnosticSnapshotOutput", "Mcp.Tools.RecordDiagnosticSnapshotOutput", recordDiagnosticSnapshotOutputFixture],
+]) {
+  const standalone = generatedCsharpToolSchema(constant);
+  const { $schema: schemaDialect, $defs: _standaloneDefinitions, ...rootDefinition } = standalone;
+  if (schemaDialect !== schema.$schema ||
+      JSON.stringify(rootDefinition) !== JSON.stringify(defs[definition])) {
+    throw new Error(`Generated C# ToolSchemas.${constant} drifted from ${definition}.`);
+  }
+  const validateStandalone = ajv.compile(standalone);
+  assertValid(validateStandalone, fixture, `standalone C# ToolSchemas.${constant}`);
+}
+
+for (const marker of [
+  "public sealed class GetActiveWorkflowRunInput",
+  "public sealed class GetActiveWorkflowRunOutput",
+  "public sealed class RecordDiagnosticSnapshotVariableInput",
+  "public sealed class RecordDiagnosticSnapshotCheckInput",
+  "public sealed class RecordDiagnosticSnapshotInput",
+  "public sealed class RecordDiagnosticSnapshotOutput",
+]) {
+  if (!csharpMcpRuntime.includes(marker)) {
+    throw new Error(`C# named MCP-tool contract is missing: ${marker}.`);
+  }
+}
 const journalEventKinds = defs["Workflow.WorkflowJournalEventKind"]?.enum ?? [];
 if (!journalEventKinds.includes("content_captured") ||
     journalEventKinds.includes("qyl.agent.diagnostic.snapshot")) {
@@ -1116,6 +1258,12 @@ for (const semantic of [
 }
 
 for (const toolShape of [
+  "GetActiveWorkflowRunInput",
+  "GetActiveWorkflowRunOutput",
+  "RecordDiagnosticSnapshotVariableInput",
+  "RecordDiagnosticSnapshotCheckInput",
+  "RecordDiagnosticSnapshotInput",
+  "RecordDiagnosticSnapshotOutput",
   "ListWorkflowRunsInput",
   "ListWorkflowRunsOutput",
   "GetWorkflowGraphInput",

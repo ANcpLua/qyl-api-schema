@@ -178,8 +178,12 @@ const workflowFixtureWire = JSON.stringify(workflowFixture);
 
 const diagnosticSnapshot = schema.$defs["Diagnostics.AgentDiagnosticSnapshot"];
 const diagnosticSummary = schema.$defs["Diagnostics.AgentDiagnosticSnapshotSummary"];
+const getActiveWorkflowRunInput = schema.$defs["Mcp.Tools.GetActiveWorkflowRunInput"];
+const getActiveWorkflowRunOutput = schema.$defs["Mcp.Tools.GetActiveWorkflowRunOutput"];
 const inspectWorkflowEventsInput = schema.$defs["Mcp.Tools.InspectWorkflowEventsInput"];
 const inspectWorkflowEventsOutput = schema.$defs["Mcp.Tools.InspectWorkflowEventsOutput"];
+const recordDiagnosticSnapshotInput = schema.$defs["Mcp.Tools.RecordDiagnosticSnapshotInput"];
+const recordDiagnosticSnapshotOutput = schema.$defs["Mcp.Tools.RecordDiagnosticSnapshotOutput"];
 const diagnosticContractDefined =
     AgentDiagnosticExtensionIdValues.snapshot === "qyl.agent.diagnostic.snapshot"
     && diagnosticSnapshot?.properties?.variables?.maxItems === 64
@@ -196,6 +200,17 @@ const inspectWorkflowEventsContractDefined =
     && inspectWorkflowEventsInput?.required?.includes("run_id")
     && inspectWorkflowEventsInput.required.includes("after_sequence")
     && inspectWorkflowEventsInput.properties?.limit?.maximum === 1000;
+const observerBridgeToolContractsDefined =
+    JSON.stringify(Object.keys(getActiveWorkflowRunInput?.properties ?? {})) === "[]"
+    && JSON.stringify(Object.keys(getActiveWorkflowRunOutput?.properties ?? {}).sort())
+        === JSON.stringify(["active", "live_controls_available", "run_id", "started_at", "thread_id"])
+    && JSON.stringify(Object.keys(recordDiagnosticSnapshotInput?.properties ?? {}).sort())
+        === JSON.stringify(["checks", "phase", "probe_id", "snapshot_id", "variables"])
+    && recordDiagnosticSnapshotInput?.properties?.variables?.maxItems === 64
+    && recordDiagnosticSnapshotInput.properties?.checks?.maxItems === 64
+    && JSON.stringify(recordDiagnosticSnapshotInput.properties.checks.default) === "[]"
+    && JSON.stringify(Object.keys(recordDiagnosticSnapshotOutput?.properties ?? {}).sort())
+        === JSON.stringify(["code", "event_id", "field", "recorded", "snapshot_id"]);
 
 // Each entry is reported by name when it fails. A single OR-chained exit code
 // tells a release operator that something is wrong and nothing about what.
@@ -230,6 +245,7 @@ const checks = [
     ["diagnosticContractDefined", diagnosticContractDefined],
     ["diagnosticCaptureEnumAbsent", diagnosticCaptureEnumAbsent],
     ["inspectWorkflowEventsContractDefined", inspectWorkflowEventsContractDefined],
+    ["observerBridgeToolContractsDefined", observerBridgeToolContractsDefined],
 ];
 
 const failed = checks.filter(([, ok]) => !ok).map(([name]) => name);

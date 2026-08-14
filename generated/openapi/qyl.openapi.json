@@ -17153,6 +17153,42 @@
         },
         "description": "Structured output for the app-only fetch_workflow_graph_updates tool."
       },
+      "Mcp.Tools.GetActiveWorkflowRunInput": {
+        "type": "object",
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Input for get_active_workflow_run."
+      },
+      "Mcp.Tools.GetActiveWorkflowRunOutput": {
+        "type": "object",
+        "required": [
+          "active",
+          "live_controls_available"
+        ],
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "live_controls_available": {
+            "type": "boolean"
+          },
+          "run_id": {
+            "$ref": "#/components/schemas/Workflow.WorkflowRunId"
+          },
+          "thread_id": {
+            "type": "string"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Structured output for get_active_workflow_run."
+      },
       "Mcp.Tools.GetTraceInput": {
         "type": "object",
         "required": [
@@ -17647,6 +17683,131 @@
         "unevaluatedProperties": {
           "not": {}
         }
+      },
+      "Mcp.Tools.RecordDiagnosticSnapshotCheckInput": {
+        "type": "object",
+        "required": [
+          "check_id",
+          "operator",
+          "actual"
+        ],
+        "properties": {
+          "check_id": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticCheckId"
+          },
+          "operator": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticOperator"
+          },
+          "actual": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticVariableName"
+          },
+          "expected": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticVariableName"
+          },
+          "expected_type": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticValueType"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "One structural diagnostic check submitted for evaluation. equal, not_equal, contains, less_than, and greater_than require expected and forbid expected_type; type_is requires expected_type and forbids expected; exists forbids both."
+      },
+      "Mcp.Tools.RecordDiagnosticSnapshotInput": {
+        "type": "object",
+        "required": [
+          "snapshot_id",
+          "probe_id",
+          "phase",
+          "variables"
+        ],
+        "properties": {
+          "snapshot_id": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticSnapshotId"
+          },
+          "probe_id": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticProbeId"
+          },
+          "phase": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticPhase"
+          },
+          "variables": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Mcp.Tools.RecordDiagnosticSnapshotVariableInput"
+            },
+            "maxItems": 64
+          },
+          "checks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Mcp.Tools.RecordDiagnosticSnapshotCheckInput"
+            },
+            "maxItems": 64,
+            "default": []
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Input for record_diagnostic_snapshot. Reuse the same snapshot_id and semantic payload when retrying; changing the payload under an existing snapshot_id is a conflict."
+      },
+      "Mcp.Tools.RecordDiagnosticSnapshotOutput": {
+        "type": "object",
+        "required": [
+          "recorded",
+          "code",
+          "snapshot_id"
+        ],
+        "properties": {
+          "recorded": {
+            "type": "boolean"
+          },
+          "code": {
+            "type": "string"
+          },
+          "snapshot_id": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticSnapshotId"
+          },
+          "event_id": {
+            "$ref": "#/components/schemas/Workflow.WorkflowEventId"
+          },
+          "field": {
+            "type": "string"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Structured output for record_diagnostic_snapshot."
+      },
+      "Mcp.Tools.RecordDiagnosticSnapshotVariableInput": {
+        "type": "object",
+        "required": [
+          "name",
+          "classification",
+          "value"
+        ],
+        "properties": {
+          "name": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticVariableName"
+          },
+          "classification": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticClassification"
+          },
+          "value": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "One dynamically named JSON value submitted for protected diagnostic capture. Classification is applied before the frame leaves the observer bridge."
       },
       "Mcp.Tools.SearchLogsInput": {
         "type": "object",

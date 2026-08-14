@@ -1,10 +1,12 @@
 import "../common/types.tsp";
 import "../otel/logs.tsp";
 import "../otel/span.tsp";
+import "./diagnostics.tsp";
 import "./session.tsp";
 import "./workflow.tsp";
 
 using Qyl.Api.Contracts.Common;
+using Qyl.Api.Contracts.Diagnostics;
 using Qyl.Api.Contracts.Domains.Observe.Session;
 using Qyl.Api.Contracts.OTel.Logs;
 using Qyl.Api.Contracts.OTel.Traces;
@@ -216,6 +218,77 @@ model FetchTelemetryOutput {
   logs?: LogRecord[];
   stats?: McpDashboardStats;
   mode: McpDataMode;
+}
+
+@doc("Input for get_active_workflow_run.")
+model GetActiveWorkflowRunInput {}
+
+@doc("Structured output for get_active_workflow_run.")
+model GetActiveWorkflowRunOutput {
+  active: boolean;
+
+  @encodedName("application/json", "live_controls_available")
+  liveControlsAvailable: boolean;
+
+  @encodedName("application/json", "run_id")
+  runId?: WorkflowRunId;
+
+  @encodedName("application/json", "thread_id")
+  threadId?: string;
+
+  @encodedName("application/json", "started_at")
+  startedAt?: utcDateTime;
+}
+
+@doc("One dynamically named JSON value submitted for protected diagnostic capture. Classification is applied before the frame leaves the observer bridge.")
+model RecordDiagnosticSnapshotVariableInput {
+  name: AgentDiagnosticVariableName;
+  classification: AgentDiagnosticClassification;
+  value: unknown | null;
+}
+
+@doc("One structural diagnostic check submitted for evaluation. equal, not_equal, contains, less_than, and greater_than require expected and forbid expected_type; type_is requires expected_type and forbids expected; exists forbids both.")
+model RecordDiagnosticSnapshotCheckInput {
+  @encodedName("application/json", "check_id")
+  checkId: AgentDiagnosticCheckId;
+
+  operator: AgentDiagnosticOperator;
+  actual: AgentDiagnosticVariableName;
+  expected?: AgentDiagnosticVariableName;
+
+  @encodedName("application/json", "expected_type")
+  expectedType?: AgentDiagnosticValueType;
+}
+
+@doc("Input for record_diagnostic_snapshot. Reuse the same snapshot_id and semantic payload when retrying; changing the payload under an existing snapshot_id is a conflict.")
+model RecordDiagnosticSnapshotInput {
+  @encodedName("application/json", "snapshot_id")
+  snapshotId: AgentDiagnosticSnapshotId;
+
+  @encodedName("application/json", "probe_id")
+  probeId: AgentDiagnosticProbeId;
+
+  phase: AgentDiagnosticPhase;
+
+  @maxItems(64)
+  variables: RecordDiagnosticSnapshotVariableInput[];
+
+  @maxItems(64)
+  checks?: RecordDiagnosticSnapshotCheckInput[] = #[];
+}
+
+@doc("Structured output for record_diagnostic_snapshot.")
+model RecordDiagnosticSnapshotOutput {
+  recorded: boolean;
+  code: string;
+
+  @encodedName("application/json", "snapshot_id")
+  snapshotId: AgentDiagnosticSnapshotId;
+
+  @encodedName("application/json", "event_id")
+  eventId?: WorkflowEventId;
+
+  field?: string;
 }
 
 @doc("Input for list_workflow_runs.")

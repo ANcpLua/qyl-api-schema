@@ -366,6 +366,11 @@ sealed class Build : NukeBuild
             // empty-emitter guard by itself.
             ProcessTasks.StartProcess("node", "scripts/emit-contract-revision.mjs --csharp", DomainSpecRoot)
                 .AssertZeroExitCode();
+            NpmRun(s => s
+                .SetCommand("build:json-schema")
+                .SetProcessWorkingDirectory(DomainSpecRoot));
+            ProcessTasks.StartProcess("node", "scripts/emit-mcp-tool-schemas.mjs", DomainSpecRoot)
+                .AssertZeroExitCode();
 
             NugetOutputDir.CreateOrCleanDirectory();
             DotNetPack(s => s

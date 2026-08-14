@@ -35,7 +35,10 @@ export async function $onEmit(context: EmitContext): Promise<void> {
       const ns = resolveNamespace(program, m);
       if (!ns) return;
       collectMediaType(program, m, getBucket(buckets, ns));
-      if (!inheritedProperties(m).some((property) => !isHttpMetadata(program, property))) return;
+      const hasBodyProperty = inheritedProperties(m)
+        .some((property) => !isHttpMetadata(program, property));
+      const isExplicitEmptyModel = m.properties.size === 0 && !m.baseModel;
+      if (!hasBodyProperty && !isExplicitEmptyModel) return;
       // Template instantiations share the base name (`CursorPage`); use the instantiated
       // form `CursorPageTrace` so each instantiation produces a distinct type. Template
       // DEFINITIONS are not navigated, so this only fires on concrete instantiations.

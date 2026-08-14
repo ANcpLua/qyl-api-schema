@@ -14,6 +14,10 @@ using Qyl.Api.Schema.Emit.TsTypes;
 @@csharpNamespace(Qyl.Api.Contracts.Runner, "Qyl.Api.Contracts.Runner");
 @@csharpNamespace(Qyl.Api.Contracts.Workbench, "Qyl.Api.Contracts.Workbench");
 @@csharpNamespace(Qyl.Api.Contracts.Workflow, "Qyl.Api.Contracts.Workflow");
+@@csharpNamespace(
+  Qyl.Api.Contracts.Diagnostics,
+  "Qyl.Api.Contracts.Diagnostics"
+);
 @@csharpPolymorphic(
   Qyl.Api.Contracts.Workbench.WorkbenchServerConfiguration,
   "transport"
@@ -33,6 +37,10 @@ using Qyl.Api.Schema.Emit.TsTypes;
 @@csharpPolymorphic(
   Qyl.Api.Contracts.Workflow.WorkflowProjectionStatus,
   "state"
+);
+@@csharpPolymorphic(
+  Qyl.Api.Contracts.Diagnostics.AgentDiagnosticVariable,
+  "capture"
 );
 
 @@csharpNamespace(Qyl.Api.Contracts.Common, "Qyl.Api.Contracts.Common");
@@ -88,6 +96,10 @@ using Qyl.Api.Schema.Emit.TsTypes;
 @@tsBrand(Qyl.Api.Contracts.Workflow.WorkflowEdgeCursor);
 @@tsBrand(Qyl.Api.Contracts.Workflow.WorkflowJournalPosition);
 @@tsBrand(Qyl.Api.Contracts.Workflow.WorkflowContentRef);
+@@tsBrand(Qyl.Api.Contracts.Diagnostics.AgentDiagnosticSnapshotId);
+@@tsBrand(Qyl.Api.Contracts.Diagnostics.AgentDiagnosticProbeId);
+@@tsBrand(Qyl.Api.Contracts.Diagnostics.AgentDiagnosticCheckId);
+@@tsBrand(Qyl.Api.Contracts.Diagnostics.AgentDiagnosticVariableName);
 
 @@csharpBrand(Qyl.Api.Contracts.Workflow.WorkflowRunId);
 @@csharpBrand(Qyl.Api.Contracts.Workflow.WorkflowGeneration);
@@ -102,3 +114,7 @@ using Qyl.Api.Schema.Emit.TsTypes;
 @@csharpBrand(Qyl.Api.Contracts.Workflow.WorkflowNodeCursor);
 @@csharpBrand(Qyl.Api.Contracts.Workflow.WorkflowEdgeCursor);
 @@csharpBrand(Qyl.Api.Contracts.Workflow.WorkflowContentRef);
+@@csharpBrand(Qyl.Api.Contracts.Diagnostics.AgentDiagnosticSnapshotId);
+@@csharpBrand(Qyl.Api.Contracts.Diagnostics.AgentDiagnosticProbeId);
+@@csharpBrand(Qyl.Api.Contracts.Diagnostics.AgentDiagnosticCheckId);
+@@csharpBrand(Qyl.Api.Contracts.Diagnostics.AgentDiagnosticVariableName);

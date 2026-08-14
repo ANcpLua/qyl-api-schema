@@ -11,6 +11,8 @@ using ModelContextProtocol;
 using ModelContextProtocol.Protocol;
 using Qyl.Api.Contracts;
 using Qyl.Api.Contracts.Common.Errors;
+using Qyl.Api.Contracts.Diagnostics;
+using Qyl.Api.Contracts.Mcp;
 using System.Linq;
 using Qyl.Api.Contracts.Health;
 using Qyl.Api.Contracts.Mcp.Tools;
@@ -167,6 +169,124 @@ var workflowEvent = new WorkflowJournalEvent
 };
 var workflowFixtureWire = JsonSerializer.Serialize(workflowEvent);
 
+var getActiveWorkflowRunInput = new GetActiveWorkflowRunInput();
+var getActiveWorkflowRunOutput = new GetActiveWorkflowRunOutput
+{
+    Active = true,
+    LiveControlsAvailable = true,
+    RunId = workflowEvent.RunId,
+    ThreadId = workflowEvent.ThreadId,
+    StartedAt = workflowEvent.Timestamp,
+};
+var recordDiagnosticSnapshotVariable = new RecordDiagnosticSnapshotVariableInput
+{
+    Name = new AgentDiagnosticVariableName("planner.candidates[0].score"),
+    Classification = AgentDiagnosticClassification.Internal,
+    Value = 0.875,
+};
+var recordDiagnosticSnapshotCheck = new RecordDiagnosticSnapshotCheckInput
+{
+    CheckId = new AgentDiagnosticCheckId("planner.minimum_score"),
+    Operator = AgentDiagnosticOperator.GreaterThan,
+    Actual = recordDiagnosticSnapshotVariable.Name,
+    Expected = new AgentDiagnosticVariableName("planner.minimum_score"),
+};
+var recordDiagnosticSnapshotInput = new RecordDiagnosticSnapshotInput
+{
+    SnapshotId = new AgentDiagnosticSnapshotId("snapshot:planner:0001"),
+    ProbeId = new AgentDiagnosticProbeId("planner.selection"),
+    Phase = AgentDiagnosticPhase.Checkpoint,
+    Variables = [recordDiagnosticSnapshotVariable],
+    Checks = [recordDiagnosticSnapshotCheck],
+};
+var recordDiagnosticSnapshotOutput = new RecordDiagnosticSnapshotOutput
+{
+    Recorded = true,
+    Code = "recorded",
+    SnapshotId = recordDiagnosticSnapshotInput.SnapshotId,
+    EventId = workflowEvent.EventId,
+};
+var getActiveWorkflowRunOutputWire = JsonSerializer.Serialize(getActiveWorkflowRunOutput);
+var recordDiagnosticSnapshotInputWire = JsonSerializer.Serialize(recordDiagnosticSnapshotInput);
+var recordDiagnosticSnapshotOutputWire = JsonSerializer.Serialize(recordDiagnosticSnapshotOutput);
+using var getActiveWorkflowRunInputSchema = JsonDocument.Parse(ToolSchemas.GetActiveWorkflowRunInput);
+using var recordDiagnosticSnapshotInputSchema = JsonDocument.Parse(ToolSchemas.RecordDiagnosticSnapshotInput);
+
+var inspectWorkflowEventsInput = new InspectWorkflowEventsInput
+{
+    RunId = workflowEvent.RunId,
+    AfterSequence = workflowEvent.JournalSequence,
+    Limit = 250,
+    ContentRef = workflowEvent.ContentRefs?[0],
+};
+var inspectWorkflowEventsOutput = new InspectWorkflowEventsOutput
+{
+    Page = new WorkflowEventPage
+    {
+        Events = [workflowEvent],
+        NextSequence = 12,
+        HighWaterMark = 12,
+        CursorGap = false,
+    },
+    Content = new WorkflowContent
+    {
+        ContentRef = workflowEvent.ContentRefs![0],
+        ContentType = "application/json",
+        Encoding = WorkflowContentEncoding.Utf8,
+        Content = "{}",
+        SizeBytes = 2,
+    },
+    Mode = McpDataMode.Live,
+};
+var inspectWorkflowEventsInputWire = JsonSerializer.Serialize(inspectWorkflowEventsInput);
+var inspectWorkflowEventsOutputWire = JsonSerializer.Serialize(inspectWorkflowEventsOutput);
+
+AgentDiagnosticVariable diagnosticVariable = new CapturedAgentDiagnosticVariable
+{
+    Name = new AgentDiagnosticVariableName("planner.candidates[0].score"),
+    Type = AgentDiagnosticValueType.Number,
+    Classification = AgentDiagnosticClassification.Internal,
+    Value = 0.875,
+};
+var diagnosticSnapshot = new AgentDiagnosticSnapshot
+{
+    ExtensionId = AgentDiagnosticExtensionId.Snapshot,
+    FormatVersion = 1,
+    SnapshotId = new AgentDiagnosticSnapshotId("snapshot:planner:0001"),
+    CaptureNonce = "0123456789abcdef0123456789abcdef",
+    ProbeId = new AgentDiagnosticProbeId("planner.selection"),
+    Phase = AgentDiagnosticPhase.Checkpoint,
+    Variables = [diagnosticVariable],
+    Checks =
+    [
+        new AgentDiagnosticCheckResult
+        {
+            CheckId = new AgentDiagnosticCheckId("planner.minimum_score"),
+            Operator = AgentDiagnosticOperator.GreaterThan,
+            Actual = new AgentDiagnosticVariableName("planner.candidates[0].score"),
+            Expected = new AgentDiagnosticVariableName("planner.minimum_score"),
+            Outcome = AgentDiagnosticCheckOutcome.Pass,
+        },
+    ],
+    Outcome = AgentDiagnosticOutcome.Pass,
+};
+var diagnosticSnapshotWire = JsonSerializer.Serialize(diagnosticSnapshot);
+var diagnosticSnapshotRoundTrip = JsonSerializer.Deserialize<AgentDiagnosticSnapshot>(diagnosticSnapshotWire);
+var diagnosticSummary = new AgentDiagnosticSnapshotSummary
+{
+    ExtensionId = AgentDiagnosticExtensionId.Snapshot,
+    FormatVersion = 1,
+    SnapshotId = diagnosticSnapshot.SnapshotId,
+    ProbeId = diagnosticSnapshot.ProbeId,
+    Phase = diagnosticSnapshot.Phase,
+    Outcome = diagnosticSnapshot.Outcome,
+    VariableCount = 1,
+    CheckCount = 1,
+    FailedCheckCount = 0,
+    ContentRef = new WorkflowContentRef($"sha256:{new string('b', 64)}"),
+};
+var diagnosticSummaryWire = JsonSerializer.Serialize(diagnosticSummary);
+
 var serverConfigurationWire = JsonSerializer.Serialize(serverConfiguration);
 var serverConfigurationRoundTrip = JsonSerializer.Deserialize<WorkbenchServerConfiguration>(serverConfigurationWire);
 var assertionWire = JsonSerializer.Serialize(assertion);
@@ -225,6 +345,40 @@ var checks = new (string Name, bool Ok)[]
         && type.Namespace == "Qyl.Api.Contracts.Mcp.Tools")),
     ("workflowGraphPresent", contractTypes.Any(type => type.Name == "WorkflowGraphSnapshot"
         && type.Namespace == "Qyl.Api.Contracts.Workflow")),
+    ("observerBridgeInputTypePresent", typeof(GetActiveWorkflowRunInput).Namespace
+        == "Qyl.Api.Contracts.Mcp.Tools"),
+    ("observerBridgeOutputWire", getActiveWorkflowRunOutputWire.Contains("\"live_controls_available\":true")
+        && getActiveWorkflowRunOutputWire.Contains("\"run_id\":\"run-1\"")),
+    ("recordDiagnosticSnapshotWire", recordDiagnosticSnapshotInputWire.Contains(
+            "\"snapshot_id\":\"snapshot:planner:0001\"")
+        && recordDiagnosticSnapshotInputWire.Contains("\"check_id\":\"planner.minimum_score\"")
+        && !recordDiagnosticSnapshotInputWire.Contains("snapshotId")
+        && recordDiagnosticSnapshotOutputWire.Contains("\"event_id\":\"evt-0001\"")),
+    ("generatedToolSchemasPresent", getActiveWorkflowRunInputSchema.RootElement
+            .GetProperty("type").GetString() == "object"
+        && recordDiagnosticSnapshotInputSchema.RootElement.GetProperty("properties")
+            .GetProperty("variables").GetProperty("maxItems").GetInt32() == 64
+        && recordDiagnosticSnapshotInputSchema.RootElement.GetProperty("properties")
+            .GetProperty("checks").GetProperty("maxItems").GetInt32() == 64
+        && recordDiagnosticSnapshotInputSchema.RootElement.GetProperty("$defs")
+            .TryGetProperty("Diagnostics.AgentDiagnosticSnapshotId", out _)),
+    ("diagnosticCaptureEnumAbsent", !contractTypes.Any(type => type.Name == "AgentDiagnosticCapture"
+        && type.Namespace == "Qyl.Api.Contracts.Diagnostics")),
+    ("inspectWorkflowEventsInputShape", string.Join(",", typeof(InspectWorkflowEventsInput)
+        .GetProperties().Select(property => property.Name).Order()) == "AfterSequence,ContentRef,Limit,RunId"),
+    ("inspectWorkflowEventsOutputShape", string.Join(",", typeof(InspectWorkflowEventsOutput)
+        .GetProperties().Select(property => property.Name).Order()) == "Content,Mode,Page"),
+    ("inspectWorkflowEventsWire", inspectWorkflowEventsInputWire.Contains("\"after_sequence\":\"11\"")
+        && inspectWorkflowEventsInputWire.Contains("\"content_ref\":\"sha256:")
+        && !inspectWorkflowEventsInputWire.Contains("wait_ms")
+        && !inspectWorkflowEventsOutputWire.Contains("graph")),
+    ("diagnosticSnapshotRoundTrip", diagnosticSnapshotRoundTrip?.Variables[0]
+        is CapturedAgentDiagnosticVariable),
+    ("diagnosticSnapshotWire", diagnosticSnapshotWire.Contains(
+        "\"extension_id\":\"qyl.agent.diagnostic.snapshot\"")
+        && diagnosticSnapshotWire.Contains("\"capture\":\"value\"")),
+    ("diagnosticSummaryValueFree", diagnosticSummaryWire.Contains("\"variable_count\":1")
+        && !diagnosticSummaryWire.Contains("\"variables\"")),
 };
 
 var failed = checks.Where(check => !check.Ok).Select(check => check.Name).ToArray();

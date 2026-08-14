@@ -62,6 +62,7 @@
     "models/runner.tsp",
     "models/workbench.tsp",
     "models/workflow.tsp",
+    "models/diagnostics.tsp",
     "models/mcp-tools.tsp",
     "models/session.tsp",
     "otel/enums.tsp",
@@ -87,10 +88,11 @@
     "build:emitters": "tsc -p emitters/csharp && tsc -p emitters/ts-types && tsc -p emitters/qyl-lint",
     "build:ts-runtime": "tsc -p tsconfig.contracts.json",
     "build:json-schema": "node scripts/openapi-to-json-schema.mjs",
+    "emit:mcp-tool-schemas": "node scripts/emit-mcp-tool-schemas.mjs",
     "emit:contract-revision": "node scripts/emit-contract-revision.mjs",
     "prepare": "npm run build:emitters",
     "prepack": "npm run compile",
-    "compile": "npm run clean:generated && npm run build:emitters && tsp compile main.tsp && npm run emit:contract-revision && npm run build:json-schema && npm run build:ts-runtime",
+    "compile": "npm run clean:generated && npm run build:emitters && tsp compile main.tsp && npm run emit:contract-revision && npm run build:json-schema && npm run emit:mcp-tool-schemas && npm run build:ts-runtime",
     "format": "tsp format **/*.tsp",
     "lint": "npm run build:emitters && tsp compile main.tsp --no-emit --warn-as-error",
     "lint:public": "npm run build:emitters && tsp compile index.tsp --no-emit --warn-as-error",
@@ -100,11 +102,11 @@
   },
   "peerDependencies": {
     "@typespec/compiler": "^1.13.0 || >=1.13.0-dev.0",
-    "@typespec/events": "^0.83.0 || ^0.84.0",
+    "@typespec/events": "^0.83.0 || ^0.84.0 || ^0.85.0",
     "@typespec/http": "^1.13.0",
     "@typespec/openapi": "^1.13.0",
     "@typespec/openapi3": "^1.13.0",
-    "@typespec/sse": ">=0.83.0 <0.85.0"
+    "@typespec/sse": ">=0.83.0 <0.86.0"
   },
   "peerDependenciesMeta": {
     "@typespec/compiler": {

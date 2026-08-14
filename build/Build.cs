@@ -27,7 +27,7 @@ sealed class Build : NukeBuild
     // The GenAI registry is pinned by commit, not by version: it is a dev registry that
     // moves freely, and it is the pin that actually moves between regenerations. A core
     // version bump is visible in the version string; a GenAI bump is only visible here.
-    const string OtelKeysGenAiCommit = "64cfaa612a1af8472b2f063374fbe3c9e6cea2ab";
+    const string OtelKeysGenAiCommit = "f77b9235f2ad49fe95b61e9809ca82bb08ef9d47";
     static readonly string[] Emitters = ["csharp", "ts-types"];
     AbsolutePath DomainSpecRoot => RootDirectory;
     AbsolutePath EmitOutputDir => RootDirectory / "Artifacts" / "emit";
@@ -365,6 +365,11 @@ sealed class Build : NukeBuild
             // produced contract types; the revision file must never satisfy the
             // empty-emitter guard by itself.
             ProcessTasks.StartProcess("node", "scripts/emit-contract-revision.mjs --csharp", DomainSpecRoot)
+                .AssertZeroExitCode();
+            NpmRun(s => s
+                .SetCommand("build:json-schema")
+                .SetProcessWorkingDirectory(DomainSpecRoot));
+            ProcessTasks.StartProcess("node", "scripts/emit-mcp-tool-schemas.mjs", DomainSpecRoot)
                 .AssertZeroExitCode();
 
             NugetOutputDir.CreateOrCleanDirectory();

@@ -21,6 +21,18 @@ const csharpWorkflowRuntime = await readFile(
   "generated/contracts/Qyl/Api/Contracts/Workflow.cs",
   "utf8",
 );
+const csharpDiagnosticsRuntime = await readFile(
+  "generated/contracts/Qyl/Api/Contracts/Diagnostics.cs",
+  "utf8",
+);
+const csharpMcpRuntime = await readFile(
+  "generated/contracts/Qyl/Api/Contracts/Mcp/Tools.cs",
+  "utf8",
+);
+const csharpToolSchemasRuntime = await readFile(
+  "generated/contracts/Qyl/Api/Mcp/ToolSchemas.cs",
+  "utf8",
+);
 const defs = schema.$defs ?? {};
 const ajv = new Ajv2020({ allErrors: true, strict: true, validateFormats: false });
 ajv.addKeyword({ keyword: "x-csharp-struct", schemaType: "boolean" });
@@ -50,6 +62,16 @@ function assertReferences(definition, expected) {
   if (JSON.stringify(actual) !== JSON.stringify(expected)) {
     throw new Error(`${definition} oneOf variants drifted: ${JSON.stringify(actual)}.`);
   }
+}
+
+function generatedCsharpToolSchema(name) {
+  const prefix = `public const string ${name} = \"\"\"`;
+  const start = csharpToolSchemasRuntime.indexOf(prefix);
+  if (start === -1) throw new Error(`Generated C# ToolSchemas.${name} is missing.`);
+  const jsonStart = start + prefix.length;
+  const jsonEnd = csharpToolSchemasRuntime.indexOf('\"\"\";', jsonStart);
+  if (jsonEnd === -1) throw new Error(`Generated C# ToolSchemas.${name} is unterminated.`);
+  return JSON.parse(csharpToolSchemasRuntime.slice(jsonStart, jsonEnd));
 }
 
 const httpMethods = new Set(["delete", "get", "head", "options", "patch", "post", "put", "trace"]);
@@ -706,6 +728,337 @@ assertInvalid(
   { ...workflowEventFixture, content_refs: ["sha256:not-a-digest"] },
   "workflow journal event with an invalid content reference",
 );
+
+const capturedDiagnosticVariable = {
+  name: "planner.candidates[0].score",
+  type: "number",
+  classification: "internal",
+  capture: "value",
+  value: 0.875,
+};
+const redactedDiagnosticVariable = {
+  name: "tool.authorization",
+  type: "string",
+  classification: "secret",
+  capture: "redacted",
+};
+const omittedDiagnosticVariable = {
+  name: "retrieval.unavailable_context",
+  type: "json",
+  classification: "sensitive",
+  capture: "omitted",
+};
+const diagnosticCheck = {
+  check_id: "planner.minimum_score",
+  operator: "greater_than",
+  actual: "planner.candidates[0].score",
+  expected: "planner.minimum_score",
+  outcome: "pass",
+};
+const diagnosticSnapshotFixture = {
+  extension_id: "qyl.agent.diagnostic.snapshot",
+  format_version: 1,
+  snapshot_id: "snapshot:planner:0001",
+  capture_nonce: "0123456789abcdef0123456789abcdef",
+  probe_id: "planner.selection",
+  phase: "checkpoint",
+  variables: [
+    capturedDiagnosticVariable,
+    redactedDiagnosticVariable,
+    omittedDiagnosticVariable,
+    {
+      name: "planner.no_result",
+      type: "null",
+      classification: "public",
+      capture: "value",
+      value: null,
+    },
+  ],
+  checks: [diagnosticCheck],
+  outcome: "pass",
+};
+const validateDiagnosticSnapshot = validatorFor("Diagnostics.AgentDiagnosticSnapshot");
+assertValid(
+  validateDiagnosticSnapshot,
+  diagnosticSnapshotFixture,
+  "protected agent diagnostic snapshot",
+);
+assertInvalid(
+  validateDiagnosticSnapshot,
+  { ...diagnosticSnapshotFixture, extension_id: "qyl.agent.diagnostic.other" },
+  "agent diagnostic snapshot with an unknown extension discriminator",
+);
+assertInvalid(
+  validateDiagnosticSnapshot,
+  { ...diagnosticSnapshotFixture, format_version: 2 },
+  "agent diagnostic snapshot with an unsupported format version",
+);
+assertInvalid(
+  validateDiagnosticSnapshot,
+  { ...diagnosticSnapshotFixture, capture_nonce: "ABCDEF0123456789ABCDEF0123456789" },
+  "agent diagnostic snapshot with a non-canonical capture nonce",
+);
+assertInvalid(
+  validateDiagnosticSnapshot,
+  {
+    ...diagnosticSnapshotFixture,
+    variables: [{ ...redactedDiagnosticVariable, value: "must-not-leak" }],
+  },
+  "redacted diagnostic variable carrying a value",
+);
+const { value: _capturedValue, ...capturedWithoutValue } = capturedDiagnosticVariable;
+assertInvalid(
+  validateDiagnosticSnapshot,
+  { ...diagnosticSnapshotFixture, variables: [capturedWithoutValue] },
+  "captured diagnostic variable without a value",
+);
+assertInvalid(
+  validateDiagnosticSnapshot,
+  {
+    ...diagnosticSnapshotFixture,
+    variables: [{ ...capturedDiagnosticVariable, name: "dynamic telemetry key" }],
+  },
+  "diagnostic variable with a non-machine identifier",
+);
+assertInvalid(
+  validateDiagnosticSnapshot,
+  { ...diagnosticSnapshotFixture, variables: Array(65).fill(capturedDiagnosticVariable) },
+  "agent diagnostic snapshot with more than 64 variables",
+);
+assertInvalid(
+  validateDiagnosticSnapshot,
+  { ...diagnosticSnapshotFixture, checks: Array(65).fill(diagnosticCheck) },
+  "agent diagnostic snapshot with more than 64 checks",
+);
+assertInvalid(
+  validateDiagnosticSnapshot,
+  {
+    ...diagnosticSnapshotFixture,
+    checks: [{ ...diagnosticCheck, operator: "eval" }],
+  },
+  "agent diagnostic snapshot with an expression-like operator",
+);
+assertInvalid(
+  validateDiagnosticSnapshot,
+  {
+    ...diagnosticSnapshotFixture,
+    checks: [{ ...diagnosticCheck, outcome: "not_evaluated" }],
+  },
+  "agent diagnostic check with the aggregate-only not_evaluated outcome",
+);
+
+const diagnosticSummaryFixture = {
+  extension_id: "qyl.agent.diagnostic.snapshot",
+  format_version: 1,
+  snapshot_id: "snapshot:planner:0001",
+  probe_id: "planner.selection",
+  phase: "checkpoint",
+  outcome: "pass",
+  variable_count: 4,
+  check_count: 1,
+  failed_check_count: 0,
+  content_ref: `sha256:${"b".repeat(64)}`,
+};
+const validateDiagnosticSummary = validatorFor("Diagnostics.AgentDiagnosticSnapshotSummary");
+assertValid(validateDiagnosticSummary, diagnosticSummaryFixture, "value-free diagnostic event summary");
+assertInvalid(
+  validateDiagnosticSummary,
+  { ...diagnosticSummaryFixture, variables: [capturedDiagnosticVariable] },
+  "diagnostic event summary carrying variables",
+);
+assertInvalid(
+  validateDiagnosticSummary,
+  { ...diagnosticSummaryFixture, failed_check_count: 65 },
+  "diagnostic event summary with an out-of-bounds failed count",
+);
+assertInvalid(
+  validateDiagnosticSummary,
+  { ...diagnosticSummaryFixture, content_ref: "sha256:not-a-digest" },
+  "diagnostic event summary with an invalid content reference",
+);
+
+const diagnosticSummaryProperties = Object.keys(
+  defs["Diagnostics.AgentDiagnosticSnapshotSummary"]?.properties ?? {},
+).sort();
+const expectedDiagnosticSummaryProperties = [
+  "check_count",
+  "content_ref",
+  "extension_id",
+  "failed_check_count",
+  "format_version",
+  "outcome",
+  "phase",
+  "probe_id",
+  "snapshot_id",
+  "variable_count",
+].sort();
+if (JSON.stringify(diagnosticSummaryProperties) !== JSON.stringify(expectedDiagnosticSummaryProperties)) {
+  throw new Error(`Diagnostic event summary leaked or lost fields: ${diagnosticSummaryProperties.join(", ")}.`);
+}
+const diagnosticCheckProperties = defs["Diagnostics.AgentDiagnosticCheckResult"]?.properties ?? {};
+if ("expression" in diagnosticCheckProperties || "message" in diagnosticCheckProperties) {
+  throw new Error("Agent diagnostic checks must remain structural and machine-oriented.");
+}
+if (defs["Diagnostics.AgentDiagnosticCapture"] ||
+    tsRuntime.includes("AgentDiagnosticCapture") ||
+    csharpDiagnosticsRuntime.includes("enum AgentDiagnosticCapture")) {
+  throw new Error("The unused AgentDiagnosticCapture enum must not re-enter the public contract.");
+}
+
+const validateGetActiveWorkflowRunInput = validatorFor("Mcp.Tools.GetActiveWorkflowRunInput");
+assertValid(validateGetActiveWorkflowRunInput, {}, "empty active-workflow input");
+assertInvalid(
+  validateGetActiveWorkflowRunInput,
+  { run_id: "run-1" },
+  "active-workflow input with undeclared state",
+);
+const getActiveWorkflowRunOutputFixture = {
+  active: true,
+  live_controls_available: true,
+  run_id: "run-1",
+  thread_id: "thread-root",
+  started_at: "2026-08-14T12:00:00Z",
+};
+const validateGetActiveWorkflowRunOutput = validatorFor("Mcp.Tools.GetActiveWorkflowRunOutput");
+assertValid(
+  validateGetActiveWorkflowRunOutput,
+  getActiveWorkflowRunOutputFixture,
+  "active-workflow output",
+);
+assertInvalid(
+  validateGetActiveWorkflowRunOutput,
+  { ...getActiveWorkflowRunOutputFixture, liveControlsAvailable: true },
+  "active-workflow output with a shadow camelCase field",
+);
+
+const recordDiagnosticSnapshotInputFixture = {
+  snapshot_id: "snapshot:planner:0001",
+  probe_id: "planner.selection",
+  phase: "checkpoint",
+  variables: [{
+    name: "planner.candidates[0].score",
+    classification: "internal",
+    value: 0.875,
+  }],
+  checks: [{
+    check_id: "planner.minimum_score",
+    operator: "greater_than",
+    actual: "planner.candidates[0].score",
+    expected: "planner.minimum_score",
+  }],
+};
+const validateRecordDiagnosticSnapshotInput = validatorFor("Mcp.Tools.RecordDiagnosticSnapshotInput");
+assertValid(
+  validateRecordDiagnosticSnapshotInput,
+  recordDiagnosticSnapshotInputFixture,
+  "diagnostic snapshot recording input",
+);
+assertValid(
+  validateRecordDiagnosticSnapshotInput,
+  { ...recordDiagnosticSnapshotInputFixture, checks: undefined },
+  "diagnostic snapshot recording input using the empty-check default",
+);
+assertInvalid(
+  validateRecordDiagnosticSnapshotInput,
+  { ...recordDiagnosticSnapshotInputFixture, snapshotId: "shadow" },
+  "diagnostic snapshot recording input with a shadow camelCase field",
+);
+assertInvalid(
+  validateRecordDiagnosticSnapshotInput,
+  {
+    ...recordDiagnosticSnapshotInputFixture,
+    variables: Array(65).fill(recordDiagnosticSnapshotInputFixture.variables[0]),
+  },
+  "diagnostic snapshot recording input with more than 64 variables",
+);
+assertInvalid(
+  validateRecordDiagnosticSnapshotInput,
+  {
+    ...recordDiagnosticSnapshotInputFixture,
+    checks: Array(65).fill(recordDiagnosticSnapshotInputFixture.checks[0]),
+  },
+  "diagnostic snapshot recording input with more than 64 checks",
+);
+assertInvalid(
+  validateRecordDiagnosticSnapshotInput,
+  {
+    ...recordDiagnosticSnapshotInputFixture,
+    variables: [{ ...recordDiagnosticSnapshotInputFixture.variables[0], type: "number" }],
+  },
+  "diagnostic snapshot recording variable with a producer-derived field",
+);
+const recordDiagnosticSnapshotOutputFixture = {
+  recorded: true,
+  code: "recorded",
+  snapshot_id: "snapshot:planner:0001",
+  event_id: "evt-0001",
+};
+const validateRecordDiagnosticSnapshotOutput = validatorFor("Mcp.Tools.RecordDiagnosticSnapshotOutput");
+assertValid(
+  validateRecordDiagnosticSnapshotOutput,
+  recordDiagnosticSnapshotOutputFixture,
+  "diagnostic snapshot recording output",
+);
+
+for (const [constant, definition, fixture] of [
+  ["GetActiveWorkflowRunInput", "Mcp.Tools.GetActiveWorkflowRunInput", {}],
+  ["GetActiveWorkflowRunOutput", "Mcp.Tools.GetActiveWorkflowRunOutput", getActiveWorkflowRunOutputFixture],
+  ["RecordDiagnosticSnapshotInput", "Mcp.Tools.RecordDiagnosticSnapshotInput", recordDiagnosticSnapshotInputFixture],
+  ["RecordDiagnosticSnapshotOutput", "Mcp.Tools.RecordDiagnosticSnapshotOutput", recordDiagnosticSnapshotOutputFixture],
+]) {
+  const standalone = generatedCsharpToolSchema(constant);
+  const { $schema: schemaDialect, $defs: _standaloneDefinitions, ...rootDefinition } = standalone;
+  if (schemaDialect !== schema.$schema ||
+      JSON.stringify(rootDefinition) !== JSON.stringify(defs[definition])) {
+    throw new Error(`Generated C# ToolSchemas.${constant} drifted from ${definition}.`);
+  }
+  const validateStandalone = ajv.compile(standalone);
+  assertValid(validateStandalone, fixture, `standalone C# ToolSchemas.${constant}`);
+}
+
+for (const marker of [
+  "public sealed class GetActiveWorkflowRunInput",
+  "public sealed class GetActiveWorkflowRunOutput",
+  "public sealed class RecordDiagnosticSnapshotVariableInput",
+  "public sealed class RecordDiagnosticSnapshotCheckInput",
+  "public sealed class RecordDiagnosticSnapshotInput",
+  "public sealed class RecordDiagnosticSnapshotOutput",
+]) {
+  if (!csharpMcpRuntime.includes(marker)) {
+    throw new Error(`C# named MCP-tool contract is missing: ${marker}.`);
+  }
+}
+const journalEventKinds = defs["Workflow.WorkflowJournalEventKind"]?.enum ?? [];
+if (!journalEventKinds.includes("content_captured") ||
+    journalEventKinds.includes("qyl.agent.diagnostic.snapshot")) {
+  throw new Error("Agent diagnostics must reuse content_captured without changing the journal event enum.");
+}
+for (const id of [
+  "AgentDiagnosticSnapshotId",
+  "AgentDiagnosticProbeId",
+  "AgentDiagnosticCheckId",
+  "AgentDiagnosticVariableName",
+]) {
+  if (!tsRuntime.includes(`readonly __brand: "${id}"`)) {
+    throw new Error(`${id} must remain a branded TypeScript machine identifier.`);
+  }
+  if (!csharpDiagnosticsRuntime.includes(`public readonly record struct ${id}(string Value)`) ||
+      !csharpDiagnosticsRuntime.includes(`[JsonConverter(typeof(${id}JsonConverter))]`)) {
+    throw new Error(`${id} must remain a branded, JSON-converted C# machine identifier.`);
+  }
+}
+for (const marker of [
+  '[JsonPolymorphic(TypeDiscriminatorPropertyName = "capture")]',
+  '[JsonDerivedType(typeof(CapturedAgentDiagnosticVariable), "value")]',
+  '[JsonDerivedType(typeof(RedactedAgentDiagnosticVariable), "redacted")]',
+  '[JsonDerivedType(typeof(OmittedAgentDiagnosticVariable), "omitted")]',
+  "public interface AgentDiagnosticVariable",
+  "public required object? Value { get; init; }",
+]) {
+  if (!csharpDiagnosticsRuntime.includes(marker)) {
+    throw new Error(`C# agent diagnostic variable lost generated capture semantics: ${marker}.`);
+  }
+}
 for (const [definition, maximum] of [
   ["Workflow.WorkflowRunId", 128],
   ["Workflow.WorkflowAttemptId", 128],
@@ -789,6 +1142,52 @@ assertInvalid(
   "workflow graph input with an oversized edge cursor",
 );
 
+const validateInspectWorkflowEventsInput = validatorFor("Mcp.Tools.InspectWorkflowEventsInput");
+const inspectWorkflowEventsInput = {
+  run_id: "run-1",
+  after_sequence: "11",
+  limit: 250,
+  content_ref: `sha256:${"b".repeat(64)}`,
+};
+assertValid(
+  validateInspectWorkflowEventsInput,
+  inspectWorkflowEventsInput,
+  "workflow event inspection input",
+);
+assertInvalid(
+  validateInspectWorkflowEventsInput,
+  { ...inspectWorkflowEventsInput, limit: 1001 },
+  "workflow event inspection input over its page bound",
+);
+assertInvalid(
+  validateInspectWorkflowEventsInput,
+  { ...inspectWorkflowEventsInput, wait_ms: 20000 },
+  "workflow event inspection input with app-only long-poll controls",
+);
+assertInvalid(
+  validateInspectWorkflowEventsInput,
+  { ...inspectWorkflowEventsInput, node_cursor: "opaque" },
+  "workflow event inspection input with graph controls",
+);
+const inspectWorkflowEventsInputProperties = Object.keys(
+  defs["Mcp.Tools.InspectWorkflowEventsInput"]?.properties ?? {},
+).sort();
+if (JSON.stringify(inspectWorkflowEventsInputProperties) !==
+    JSON.stringify(["after_sequence", "content_ref", "limit", "run_id"])) {
+  throw new Error(
+    `inspect_workflow_events input leaked or lost fields: ${inspectWorkflowEventsInputProperties.join(", ")}.`,
+  );
+}
+const inspectWorkflowEventsOutputProperties = Object.keys(
+  defs["Mcp.Tools.InspectWorkflowEventsOutput"]?.properties ?? {},
+).sort();
+if (JSON.stringify(inspectWorkflowEventsOutputProperties) !==
+    JSON.stringify(["content", "mode", "page"])) {
+  throw new Error(
+    `inspect_workflow_events output leaked or lost fields: ${inspectWorkflowEventsOutputProperties.join(", ")}.`,
+  );
+}
+
 const nodeCursorInputDescription =
   "Opaque node continuation. Reuse it unchanged from the preceding snapshot's next_node_cursor; " +
   "do not parse, construct, or modify it.";
@@ -859,6 +1258,12 @@ for (const semantic of [
 }
 
 for (const toolShape of [
+  "GetActiveWorkflowRunInput",
+  "GetActiveWorkflowRunOutput",
+  "RecordDiagnosticSnapshotVariableInput",
+  "RecordDiagnosticSnapshotCheckInput",
+  "RecordDiagnosticSnapshotInput",
+  "RecordDiagnosticSnapshotOutput",
   "ListWorkflowRunsInput",
   "ListWorkflowRunsOutput",
   "GetWorkflowGraphInput",
@@ -867,6 +1272,8 @@ for (const toolShape of [
   "DisplayWorkflowGraphOutput",
   "FetchWorkflowGraphUpdatesInput",
   "FetchWorkflowGraphUpdatesOutput",
+  "InspectWorkflowEventsInput",
+  "InspectWorkflowEventsOutput",
   "ControlWorkflowRunInput",
   "ControlWorkflowRunOutput",
 ]) {

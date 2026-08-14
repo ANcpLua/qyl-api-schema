@@ -15913,6 +15913,376 @@
         "maxLength": 256,
         "description": "User identifier (pseudonymized for privacy)"
       },
+      "Diagnostics.AgentDiagnosticCheckId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "pattern": "^[A-Za-z0-9_][A-Za-z0-9._:/\\[\\]-]{0,127}$",
+        "description": "Stable machine identifier of one diagnostic check. This identifier is a value and must never be promoted to a telemetry key."
+      },
+      "Diagnostics.AgentDiagnosticCheckOutcome": {
+        "type": "string",
+        "enum": [
+          "pass",
+          "fail",
+          "unknown"
+        ],
+        "description": "Machine-computed result of one diagnostic check. For exists, an absent or null actual variable produces fail. For every other operator, missing required operands produce unknown; incompatible operand types also produce unknown. not_evaluated is deliberately not a check outcome."
+      },
+      "Diagnostics.AgentDiagnosticCheckResult": {
+        "type": "object",
+        "required": [
+          "check_id",
+          "operator",
+          "actual",
+          "outcome"
+        ],
+        "properties": {
+          "check_id": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticCheckId"
+          },
+          "operator": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticOperator"
+          },
+          "actual": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticVariableName"
+          },
+          "expected": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticVariableName"
+          },
+          "expected_type": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticValueType"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticCheckOutcome"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "One structural, machine-computed check result. actual and expected reference variable names only. For equal, not_equal, contains, less_than, and greater_than, expected is required and expected_type is omitted. For exists, both are omitted and an absent or null actual variable produces fail. For type_is, expected is omitted and expected_type is required. For operators other than exists, missing required operands produce unknown; incompatible operand types also produce unknown. not_evaluated is reserved for the snapshot aggregate when checks is empty and is not emitted for an individual check."
+      },
+      "Diagnostics.AgentDiagnosticClassification": {
+        "type": "string",
+        "enum": [
+          "public",
+          "internal",
+          "sensitive",
+          "secret"
+        ],
+        "description": "Data-handling classification assigned before a diagnostic variable is captured."
+      },
+      "Diagnostics.AgentDiagnosticExtensionId": {
+        "type": "string",
+        "enum": [
+          "qyl.agent.diagnostic.snapshot"
+        ],
+        "description": "The versioned extension discriminator for a protected agent diagnostic snapshot."
+      },
+      "Diagnostics.AgentDiagnosticFormatVersion": {
+        "type": "integer",
+        "format": "int32",
+        "minimum": 1,
+        "maximum": 1,
+        "description": "Wire-format version of an agent diagnostic snapshot. Version 1 is the only accepted format."
+      },
+      "Diagnostics.AgentDiagnosticOperator": {
+        "type": "string",
+        "enum": [
+          "equal",
+          "not_equal",
+          "exists",
+          "type_is",
+          "contains",
+          "less_than",
+          "greater_than"
+        ],
+        "description": "Closed operation evaluated by a diagnostic check. Checks are structural and never carry expression strings."
+      },
+      "Diagnostics.AgentDiagnosticOutcome": {
+        "type": "string",
+        "enum": [
+          "pass",
+          "fail",
+          "unknown",
+          "not_evaluated"
+        ],
+        "description": "Machine-computed aggregate result of a diagnostic snapshot. unknown reports one or more unknown check outcomes. not_evaluated is reserved for a snapshot whose checks array is empty."
+      },
+      "Diagnostics.AgentDiagnosticPhase": {
+        "type": "string",
+        "enum": [
+          "input",
+          "output",
+          "error",
+          "checkpoint"
+        ],
+        "description": "Execution boundary at which the state frame was captured."
+      },
+      "Diagnostics.AgentDiagnosticProbeId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "pattern": "^[A-Za-z0-9_][A-Za-z0-9._:/\\[\\]-]{0,127}$",
+        "description": "Stable machine identifier of the probe that captured a diagnostic snapshot. This identifier is a value and must never be promoted to a telemetry key."
+      },
+      "Diagnostics.AgentDiagnosticSnapshot": {
+        "type": "object",
+        "required": [
+          "extension_id",
+          "format_version",
+          "snapshot_id",
+          "capture_nonce",
+          "probe_id",
+          "phase",
+          "variables",
+          "checks",
+          "outcome"
+        ],
+        "properties": {
+          "extension_id": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticExtensionId"
+          },
+          "format_version": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticFormatVersion"
+          },
+          "snapshot_id": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticSnapshotId"
+          },
+          "capture_nonce": {
+            "type": "string",
+            "minLength": 32,
+            "maxLength": 32,
+            "pattern": "^[0-9a-f]{32}$",
+            "description": "Fresh 128-bit random nonce encoded as exactly 32 lowercase hexadecimal characters. It prevents equality inference across otherwise identical protected captures and must not be used as an identity key."
+          },
+          "probe_id": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticProbeId"
+          },
+          "phase": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticPhase"
+          },
+          "variables": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticVariable"
+            },
+            "maxItems": 64
+          },
+          "checks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticCheckResult"
+            },
+            "maxItems": 64
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticOutcome"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Version 1 protected JSON state frame captured for an artificial-intelligence agent. extension_id and format_version are its schema identity. capture_nonce is fresh entropy and is not a stable identifier. Variables and checks are bounded, dynamic names remain values, and no human-oriented message or expression text is part of the contract. Overall outcome is not_evaluated only when checks is empty. For a non-empty checks array it is fail if any check fails, otherwise unknown if any check is unknown, otherwise pass."
+      },
+      "Diagnostics.AgentDiagnosticSnapshotId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "pattern": "^[A-Za-z0-9_][A-Za-z0-9._:/\\[\\]-]{0,127}$",
+        "description": "Stable machine identifier of one diagnostic snapshot. This identifier is a value and must never be promoted to a telemetry key."
+      },
+      "Diagnostics.AgentDiagnosticSnapshotSummary": {
+        "type": "object",
+        "required": [
+          "extension_id",
+          "format_version",
+          "snapshot_id",
+          "probe_id",
+          "phase",
+          "outcome",
+          "variable_count",
+          "check_count",
+          "failed_check_count",
+          "content_ref"
+        ],
+        "properties": {
+          "extension_id": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticExtensionId"
+          },
+          "format_version": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticFormatVersion"
+          },
+          "snapshot_id": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticSnapshotId"
+          },
+          "probe_id": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticProbeId"
+          },
+          "phase": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticPhase"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticOutcome"
+          },
+          "variable_count": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "maximum": 64
+          },
+          "check_count": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "maximum": 64
+          },
+          "failed_check_count": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0,
+            "maximum": 64
+          },
+          "content_ref": {
+            "$ref": "#/components/schemas/Workflow.WorkflowContentRef"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Value-free event-data projection for a protected agent diagnostic snapshot. Encode this shape in WorkflowEventAppend.data on the existing content_captured event kind. content_ref must also occur in that event's content_refs and identifies UTF-8 JSON conforming to AgentDiagnosticSnapshot. Counts are computed from the referenced snapshot; failed_check_count counts checks whose outcome is fail. No variable names, values, human messages, expressions, nonce, or classifications may appear in this summary."
+      },
+      "Diagnostics.AgentDiagnosticValueType": {
+        "type": "string",
+        "enum": [
+          "null",
+          "boolean",
+          "integer",
+          "number",
+          "string",
+          "json"
+        ],
+        "description": "Declared JSON-level type of a diagnostic variable."
+      },
+      "Diagnostics.AgentDiagnosticVariable": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/Diagnostics.CapturedAgentDiagnosticVariable"
+          },
+          {
+            "$ref": "#/components/schemas/Diagnostics.RedactedAgentDiagnosticVariable"
+          },
+          {
+            "$ref": "#/components/schemas/Diagnostics.OmittedAgentDiagnosticVariable"
+          }
+        ],
+        "description": "One dynamically named variable in a protected diagnostic snapshot. Capture is the discriminator and makes value presence unambiguous."
+      },
+      "Diagnostics.AgentDiagnosticVariableBase": {
+        "type": "object",
+        "required": [
+          "name",
+          "type",
+          "classification"
+        ],
+        "properties": {
+          "name": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticVariableName"
+          },
+          "type": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticValueType"
+          },
+          "classification": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticClassification"
+          }
+        },
+        "description": "Common identity and policy fields for one dynamic diagnostic variable."
+      },
+      "Diagnostics.AgentDiagnosticVariableName": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "pattern": "^[A-Za-z0-9_][A-Za-z0-9._:/\\[\\]-]{0,127}$",
+        "description": "Stable machine name of one dynamically captured variable. Names are data values, never telemetry attribute keys, event names, or span names."
+      },
+      "Diagnostics.CapturedAgentDiagnosticVariable": {
+        "type": "object",
+        "required": [
+          "capture",
+          "value"
+        ],
+        "properties": {
+          "capture": {
+            "type": "string",
+            "enum": [
+              "value"
+            ]
+          },
+          "value": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticVariableBase"
+          }
+        ],
+        "description": "A variable whose typed JSON value is present in protected snapshot content. The value is required and must match type: null is JSON null; boolean is a JSON boolean; integer is a signed 64-bit JSON integer; number is a finite JSON number; string is a JSON string; json is a JSON object or array. The protected content boundary, not this model, controls access to all captured values."
+      },
+      "Diagnostics.OmittedAgentDiagnosticVariable": {
+        "type": "object",
+        "required": [
+          "capture"
+        ],
+        "properties": {
+          "capture": {
+            "type": "string",
+            "enum": [
+              "omitted"
+            ]
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticVariableBase"
+          }
+        ],
+        "description": "A variable whose value was unavailable or deliberately not captured. A value field is forbidden."
+      },
+      "Diagnostics.RedactedAgentDiagnosticVariable": {
+        "type": "object",
+        "required": [
+          "capture"
+        ],
+        "properties": {
+          "capture": {
+            "type": "string",
+            "enum": [
+              "redacted"
+            ]
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticVariableBase"
+          }
+        ],
+        "description": "A variable observed by the probe whose value was replaced by policy. A value field is forbidden."
+      },
       "Domains.Observe.Session.DeviceType": {
         "type": "string",
         "enum": [
@@ -16783,6 +17153,42 @@
         },
         "description": "Structured output for the app-only fetch_workflow_graph_updates tool."
       },
+      "Mcp.Tools.GetActiveWorkflowRunInput": {
+        "type": "object",
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Input for get_active_workflow_run."
+      },
+      "Mcp.Tools.GetActiveWorkflowRunOutput": {
+        "type": "object",
+        "required": [
+          "active",
+          "live_controls_available"
+        ],
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "live_controls_available": {
+            "type": "boolean"
+          },
+          "run_id": {
+            "$ref": "#/components/schemas/Workflow.WorkflowRunId"
+          },
+          "thread_id": {
+            "type": "string"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Structured output for get_active_workflow_run."
+      },
       "Mcp.Tools.GetTraceInput": {
         "type": "object",
         "required": [
@@ -16872,6 +17278,58 @@
           "not": {}
         },
         "description": "Structured output for get_workflow_graph."
+      },
+      "Mcp.Tools.InspectWorkflowEventsInput": {
+        "type": "object",
+        "required": [
+          "run_id",
+          "after_sequence"
+        ],
+        "properties": {
+          "run_id": {
+            "$ref": "#/components/schemas/Workflow.WorkflowRunId"
+          },
+          "after_sequence": {
+            "$ref": "#/components/schemas/Workflow.WorkflowJournalPosition"
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 1000,
+            "default": 250
+          },
+          "content_ref": {
+            "$ref": "#/components/schemas/Workflow.WorkflowContentRef",
+            "description": "Optional captured payload to retrieve lazily for the selected run."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Input for inspect_workflow_events."
+      },
+      "Mcp.Tools.InspectWorkflowEventsOutput": {
+        "type": "object",
+        "required": [
+          "page",
+          "mode"
+        ],
+        "properties": {
+          "page": {
+            "$ref": "#/components/schemas/Workflow.WorkflowEventPage"
+          },
+          "content": {
+            "$ref": "#/components/schemas/Workflow.WorkflowContent"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/Mcp.Tools.McpDataMode"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Structured output for inspect_workflow_events."
       },
       "Mcp.Tools.ListSessionsInput": {
         "type": "object",
@@ -17225,6 +17683,131 @@
         "unevaluatedProperties": {
           "not": {}
         }
+      },
+      "Mcp.Tools.RecordDiagnosticSnapshotCheckInput": {
+        "type": "object",
+        "required": [
+          "check_id",
+          "operator",
+          "actual"
+        ],
+        "properties": {
+          "check_id": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticCheckId"
+          },
+          "operator": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticOperator"
+          },
+          "actual": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticVariableName"
+          },
+          "expected": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticVariableName"
+          },
+          "expected_type": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticValueType"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "One structural diagnostic check submitted for evaluation. equal, not_equal, contains, less_than, and greater_than require expected and forbid expected_type; type_is requires expected_type and forbids expected; exists forbids both."
+      },
+      "Mcp.Tools.RecordDiagnosticSnapshotInput": {
+        "type": "object",
+        "required": [
+          "snapshot_id",
+          "probe_id",
+          "phase",
+          "variables"
+        ],
+        "properties": {
+          "snapshot_id": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticSnapshotId"
+          },
+          "probe_id": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticProbeId"
+          },
+          "phase": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticPhase"
+          },
+          "variables": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Mcp.Tools.RecordDiagnosticSnapshotVariableInput"
+            },
+            "maxItems": 64
+          },
+          "checks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Mcp.Tools.RecordDiagnosticSnapshotCheckInput"
+            },
+            "maxItems": 64,
+            "default": []
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Input for record_diagnostic_snapshot. Reuse the same snapshot_id and semantic payload when retrying; changing the payload under an existing snapshot_id is a conflict."
+      },
+      "Mcp.Tools.RecordDiagnosticSnapshotOutput": {
+        "type": "object",
+        "required": [
+          "recorded",
+          "code",
+          "snapshot_id"
+        ],
+        "properties": {
+          "recorded": {
+            "type": "boolean"
+          },
+          "code": {
+            "type": "string"
+          },
+          "snapshot_id": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticSnapshotId"
+          },
+          "event_id": {
+            "$ref": "#/components/schemas/Workflow.WorkflowEventId"
+          },
+          "field": {
+            "type": "string"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Structured output for record_diagnostic_snapshot."
+      },
+      "Mcp.Tools.RecordDiagnosticSnapshotVariableInput": {
+        "type": "object",
+        "required": [
+          "name",
+          "classification",
+          "value"
+        ],
+        "properties": {
+          "name": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticVariableName"
+          },
+          "classification": {
+            "$ref": "#/components/schemas/Diagnostics.AgentDiagnosticClassification"
+          },
+          "value": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "One dynamically named JSON value submitted for protected diagnostic capture. Classification is applied before the frame leaves the observer bridge."
       },
       "Mcp.Tools.SearchLogsInput": {
         "type": "object",

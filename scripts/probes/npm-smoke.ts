@@ -21,6 +21,8 @@ import type {
     CiLogOutput,
     EntityRef,
     HealthReport,
+    InspectWorkflowEventsInput,
+    InspectWorkflowEventsOutput,
     LogRecord,
     Resource,
     SessionId,
@@ -111,6 +113,44 @@ const workflowEvent: WorkflowJournalEvent = {
     journal_sequence: "11" as WorkflowJournalPosition,
 };
 
+const inspectWorkflowEventsInput: InspectWorkflowEventsInput = {
+    run_id: workflowEvent.run_id,
+    after_sequence: workflowEvent.journal_sequence,
+    limit: 250,
+    content_ref: workflowEvent.content_refs?.[0],
+};
+
+const inspectWorkflowEventsOutput: InspectWorkflowEventsOutput = {
+    page: {
+        events: [workflowEvent],
+        next_sequence: "12" as WorkflowJournalPosition,
+        high_water_mark: "12" as WorkflowJournalPosition,
+        cursor_gap: false,
+    },
+    content: {
+        content_ref: workflowEvent.content_refs![0],
+        content_type: "application/json",
+        encoding: "utf8",
+        content: "{}",
+        size_bytes: 2,
+    },
+    mode: "live",
+};
+
+const invalidInspectWorkflowEventsInput: InspectWorkflowEventsInput = {
+    run_id: workflowEvent.run_id,
+    after_sequence: workflowEvent.journal_sequence,
+    // @ts-expect-error Long-poll controls belong only to the app-only graph update tool.
+    wait_ms: 20000,
+};
+
+const invalidInspectWorkflowEventsOutput: InspectWorkflowEventsOutput = {
+    page: inspectWorkflowEventsOutput.page,
+    mode: "live",
+    // @ts-expect-error Event inspection must not expose the graph projection.
+    graph: {},
+};
+
 const diagnosticVariable: AgentDiagnosticVariable = {
     name: "planner.candidates[0].score" as AgentDiagnosticVariableName,
     type: "number",
@@ -171,6 +211,10 @@ void [
     healthReport,
     ciLog,
     workflowEvent,
+    inspectWorkflowEventsInput,
+    inspectWorkflowEventsOutput,
+    invalidInspectWorkflowEventsInput,
+    invalidInspectWorkflowEventsOutput,
     diagnosticSnapshot,
     diagnosticSummary,
     invalidRedactedDiagnosticVariable,

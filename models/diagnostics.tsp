@@ -79,13 +79,6 @@ enum AgentDiagnosticClassification {
   secret: "secret",
 }
 
-@doc("How a diagnostic variable was represented in protected snapshot content.")
-enum AgentDiagnosticCapture {
-  value: "value",
-  redacted: "redacted",
-  omitted: "omitted",
-}
-
 @doc("Closed operation evaluated by a diagnostic check. Checks are structural and never carry expression strings.")
 enum AgentDiagnosticOperator {
   equal: "equal",

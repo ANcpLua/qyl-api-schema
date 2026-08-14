@@ -178,6 +178,8 @@ const workflowFixtureWire = JSON.stringify(workflowFixture);
 
 const diagnosticSnapshot = schema.$defs["Diagnostics.AgentDiagnosticSnapshot"];
 const diagnosticSummary = schema.$defs["Diagnostics.AgentDiagnosticSnapshotSummary"];
+const inspectWorkflowEventsInput = schema.$defs["Mcp.Tools.InspectWorkflowEventsInput"];
+const inspectWorkflowEventsOutput = schema.$defs["Mcp.Tools.InspectWorkflowEventsOutput"];
 const diagnosticContractDefined =
     AgentDiagnosticExtensionIdValues.snapshot === "qyl.agent.diagnostic.snapshot"
     && diagnosticSnapshot?.properties?.variables?.maxItems === 64
@@ -185,6 +187,15 @@ const diagnosticContractDefined =
     && diagnosticSnapshot?.properties?.capture_nonce?.pattern === "^[0-9a-f]{32}$"
     && diagnosticSummary?.properties?.content_ref?.$ref === "#/$defs/Workflow.WorkflowContentRef"
     && !("variables" in (diagnosticSummary?.properties ?? {}));
+const diagnosticCaptureEnumAbsent = !schema.$defs["Diagnostics.AgentDiagnosticCapture"];
+const inspectWorkflowEventsContractDefined =
+    JSON.stringify(Object.keys(inspectWorkflowEventsInput?.properties ?? {}).sort())
+        === JSON.stringify(["after_sequence", "content_ref", "limit", "run_id"])
+    && JSON.stringify(Object.keys(inspectWorkflowEventsOutput?.properties ?? {}).sort())
+        === JSON.stringify(["content", "mode", "page"])
+    && inspectWorkflowEventsInput?.required?.includes("run_id")
+    && inspectWorkflowEventsInput.required.includes("after_sequence")
+    && inspectWorkflowEventsInput.properties?.limit?.maximum === 1000;
 
 // Each entry is reported by name when it fails. A single OR-chained exit code
 // tells a release operator that something is wrong and nothing about what.
@@ -217,6 +228,8 @@ const checks = [
     ["workflowGraphDefined", Boolean(schema.$defs["Workflow.WorkflowGraphSnapshot"])],
     ["workflowJournalDefined", Boolean(schema.$defs["Workflow.WorkflowJournalEvent"])],
     ["diagnosticContractDefined", diagnosticContractDefined],
+    ["diagnosticCaptureEnumAbsent", diagnosticCaptureEnumAbsent],
+    ["inspectWorkflowEventsContractDefined", inspectWorkflowEventsContractDefined],
 ];
 
 const failed = checks.filter(([, ok]) => !ok).map(([name]) => name);

@@ -168,6 +168,35 @@ var workflowEvent = new WorkflowJournalEvent
 };
 var workflowFixtureWire = JsonSerializer.Serialize(workflowEvent);
 
+var inspectWorkflowEventsInput = new InspectWorkflowEventsInput
+{
+    RunId = workflowEvent.RunId,
+    AfterSequence = workflowEvent.JournalSequence,
+    Limit = 250,
+    ContentRef = workflowEvent.ContentRefs?[0],
+};
+var inspectWorkflowEventsOutput = new InspectWorkflowEventsOutput
+{
+    Page = new WorkflowEventPage
+    {
+        Events = [workflowEvent],
+        NextSequence = 12,
+        HighWaterMark = 12,
+        CursorGap = false,
+    },
+    Content = new WorkflowContent
+    {
+        ContentRef = workflowEvent.ContentRefs![0],
+        ContentType = "application/json",
+        Encoding = WorkflowContentEncoding.Utf8,
+        Content = "{}",
+        SizeBytes = 2,
+    },
+    Mode = McpDataMode.Live,
+};
+var inspectWorkflowEventsInputWire = JsonSerializer.Serialize(inspectWorkflowEventsInput);
+var inspectWorkflowEventsOutputWire = JsonSerializer.Serialize(inspectWorkflowEventsOutput);
+
 AgentDiagnosticVariable diagnosticVariable = new CapturedAgentDiagnosticVariable
 {
     Name = new AgentDiagnosticVariableName("planner.candidates[0].score"),
@@ -272,6 +301,16 @@ var checks = new (string Name, bool Ok)[]
         && type.Namespace == "Qyl.Api.Contracts.Mcp.Tools")),
     ("workflowGraphPresent", contractTypes.Any(type => type.Name == "WorkflowGraphSnapshot"
         && type.Namespace == "Qyl.Api.Contracts.Workflow")),
+    ("diagnosticCaptureEnumAbsent", !contractTypes.Any(type => type.Name == "AgentDiagnosticCapture"
+        && type.Namespace == "Qyl.Api.Contracts.Diagnostics")),
+    ("inspectWorkflowEventsInputShape", string.Join(",", typeof(InspectWorkflowEventsInput)
+        .GetProperties().Select(property => property.Name).Order()) == "AfterSequence,ContentRef,Limit,RunId"),
+    ("inspectWorkflowEventsOutputShape", string.Join(",", typeof(InspectWorkflowEventsOutput)
+        .GetProperties().Select(property => property.Name).Order()) == "Content,Mode,Page"),
+    ("inspectWorkflowEventsWire", inspectWorkflowEventsInputWire.Contains("\"after_sequence\":\"11\"")
+        && inspectWorkflowEventsInputWire.Contains("\"content_ref\":\"sha256:")
+        && !inspectWorkflowEventsInputWire.Contains("wait_ms")
+        && !inspectWorkflowEventsOutputWire.Contains("graph")),
     ("diagnosticSnapshotRoundTrip", diagnosticSnapshotRoundTrip?.Variables[0]
         is CapturedAgentDiagnosticVariable),
     ("diagnosticSnapshotWire", diagnosticSnapshotWire.Contains(

@@ -354,6 +354,30 @@ model FetchWorkflowGraphUpdatesOutput {
   mode: McpDataMode;
 }
 
+@doc("Input for inspect_workflow_events.")
+model InspectWorkflowEventsInput {
+  @encodedName("application/json", "run_id")
+  runId: WorkflowRunId;
+
+  @encodedName("application/json", "after_sequence")
+  afterSequence: WorkflowJournalPosition;
+
+  @minValue(1)
+  @maxValue(1000)
+  limit?: int32 = 250;
+
+  @doc("Optional captured payload to retrieve lazily for the selected run.")
+  @encodedName("application/json", "content_ref")
+  contentRef?: WorkflowContentRef;
+}
+
+@doc("Structured output for inspect_workflow_events.")
+model InspectWorkflowEventsOutput {
+  page: WorkflowEventPage;
+  content?: WorkflowContent;
+  mode: McpDataMode;
+}
+
 @doc("Input for control_workflow_run.")
 model ControlWorkflowRunInput {
   @encodedName("application/json", "run_id")

@@ -881,6 +881,11 @@ const diagnosticCheckProperties = defs["Diagnostics.AgentDiagnosticCheckResult"]
 if ("expression" in diagnosticCheckProperties || "message" in diagnosticCheckProperties) {
   throw new Error("Agent diagnostic checks must remain structural and machine-oriented.");
 }
+if (defs["Diagnostics.AgentDiagnosticCapture"] ||
+    tsRuntime.includes("AgentDiagnosticCapture") ||
+    csharpDiagnosticsRuntime.includes("enum AgentDiagnosticCapture")) {
+  throw new Error("The unused AgentDiagnosticCapture enum must not re-enter the public contract.");
+}
 const journalEventKinds = defs["Workflow.WorkflowJournalEventKind"]?.enum ?? [];
 if (!journalEventKinds.includes("content_captured") ||
     journalEventKinds.includes("qyl.agent.diagnostic.snapshot")) {
@@ -995,6 +1000,52 @@ assertInvalid(
   "workflow graph input with an oversized edge cursor",
 );
 
+const validateInspectWorkflowEventsInput = validatorFor("Mcp.Tools.InspectWorkflowEventsInput");
+const inspectWorkflowEventsInput = {
+  run_id: "run-1",
+  after_sequence: "11",
+  limit: 250,
+  content_ref: `sha256:${"b".repeat(64)}`,
+};
+assertValid(
+  validateInspectWorkflowEventsInput,
+  inspectWorkflowEventsInput,
+  "workflow event inspection input",
+);
+assertInvalid(
+  validateInspectWorkflowEventsInput,
+  { ...inspectWorkflowEventsInput, limit: 1001 },
+  "workflow event inspection input over its page bound",
+);
+assertInvalid(
+  validateInspectWorkflowEventsInput,
+  { ...inspectWorkflowEventsInput, wait_ms: 20000 },
+  "workflow event inspection input with app-only long-poll controls",
+);
+assertInvalid(
+  validateInspectWorkflowEventsInput,
+  { ...inspectWorkflowEventsInput, node_cursor: "opaque" },
+  "workflow event inspection input with graph controls",
+);
+const inspectWorkflowEventsInputProperties = Object.keys(
+  defs["Mcp.Tools.InspectWorkflowEventsInput"]?.properties ?? {},
+).sort();
+if (JSON.stringify(inspectWorkflowEventsInputProperties) !==
+    JSON.stringify(["after_sequence", "content_ref", "limit", "run_id"])) {
+  throw new Error(
+    `inspect_workflow_events input leaked or lost fields: ${inspectWorkflowEventsInputProperties.join(", ")}.`,
+  );
+}
+const inspectWorkflowEventsOutputProperties = Object.keys(
+  defs["Mcp.Tools.InspectWorkflowEventsOutput"]?.properties ?? {},
+).sort();
+if (JSON.stringify(inspectWorkflowEventsOutputProperties) !==
+    JSON.stringify(["content", "mode", "page"])) {
+  throw new Error(
+    `inspect_workflow_events output leaked or lost fields: ${inspectWorkflowEventsOutputProperties.join(", ")}.`,
+  );
+}
+
 const nodeCursorInputDescription =
   "Opaque node continuation. Reuse it unchanged from the preceding snapshot's next_node_cursor; " +
   "do not parse, construct, or modify it.";
@@ -1073,6 +1124,8 @@ for (const toolShape of [
   "DisplayWorkflowGraphOutput",
   "FetchWorkflowGraphUpdatesInput",
   "FetchWorkflowGraphUpdatesOutput",
+  "InspectWorkflowEventsInput",
+  "InspectWorkflowEventsOutput",
   "ControlWorkflowRunInput",
   "ControlWorkflowRunOutput",
 ]) {

@@ -286,7 +286,7 @@ const entityResource = {
     { key: "service.version", value: "1.2.3" },
   ],
   entity_refs: [{
-    schema_url: "https://opentelemetry.io/schemas/1.43.0",
+    schema_url: "https://opentelemetry.io/schemas/1.44.0",
     type: "service",
     id_keys: ["service.instance.id"],
     description_keys: ["service.version"],

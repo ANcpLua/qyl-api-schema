@@ -68,7 +68,7 @@ var kvlistAttribute = new OTelAttribute
 
 var entityRef = new EntityRef
 {
-    SchemaUrl = "https://opentelemetry.io/schemas/1.43.0",
+    SchemaUrl = "https://opentelemetry.io/schemas/1.44.0",
     Type = "service",
     IdKeys = ["service.instance.id"],
     DescriptionKeys = ["service.version"],

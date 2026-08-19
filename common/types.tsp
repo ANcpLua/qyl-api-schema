@@ -2,8 +2,7 @@
 // qyl common types and scalars
 // =============================================================================
 // Foundational types used across qyl API contracts and OTel-compatible models.
-// OpenTelemetry semantic-convention references are pinned to core v1.43.0
-// (GenAI keys come from the dedicated GenAI registry since the 1.42 split).
+// OpenTelemetry registry provenance is owned by generated/otel-keys.gen.tsp.
 // =============================================================================
 
 import "@typespec/openapi";

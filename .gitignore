@@ -19,3 +19,4 @@ Artifacts/
 
 # npm pack tarballs.
 *.tgz
+artifacts/

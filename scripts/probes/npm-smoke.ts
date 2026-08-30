@@ -8,6 +8,8 @@
 // by compiling — including the @ts-expect-error, which fails the build if the
 // contract ever starts accepting a bare number as an attribute value.
 import { CONTRACT_REVISION } from "@ancplua/qyl-api-schema/types";
+import { publishedContractSchema } from "@ancplua/qyl-api-schema/zod";
+import type { z } from "zod";
 import type {
     Attribute,
     AttributeValue,
@@ -95,6 +97,14 @@ const healthReport: HealthReport = {
     entries: {},
     contract_revision: CONTRACT_REVISION,
 };
+
+// The runtime validator is typed by the contract type it is asked for, so a
+// consumer gets the published DTO out of `parse` rather than `unknown`. Both
+// annotations are the assertion: neither compiles if the ./zod export stops
+// carrying the type through.
+const healthReportSchema: z.ZodType<HealthReport> =
+    publishedContractSchema<HealthReport>("Health.HealthReport");
+const parsedHealthReport: HealthReport = healthReportSchema.parse(healthReport);
 
 const ciLog: CiLogOutput = {
     // A CI run id is the session identity, so it keeps that scalar rather than
@@ -256,6 +266,7 @@ void [
     resource,
     invalidAttribute,
     healthReport,
+    parsedHealthReport,
     ciLog,
     workflowEvent,
     getActiveWorkflowRunInput,

@@ -267,6 +267,19 @@ sealed class Build : NukeBuild
                 .SetProcessWorkingDirectory(DomainSpecRoot));
         });
 
+    // `verify:zod-contracts` rebuilds generated/zod-runtime first: the runtime is
+    // compiled from tracked src/zod, so unlike the emitter outputs it has no
+    // upstream Nuke target to depend on.
+    Target VerifyZodContracts => _ => _
+        .Description("Build the ./zod runtime and assert its validators agree with the published JSON Schema on every definition and fixture.")
+        .DependsOn(VerifyContractFixtures)
+        .Executes(() =>
+        {
+            NpmRun(s => s
+                .SetCommand("verify:zod-contracts")
+                .SetProcessWorkingDirectory(DomainSpecRoot));
+        });
+
     Target VerifyLintRules => _ => _
         .Description("Assert the qyl contract invariants actually reject a negative fixture; a rule that matches nothing passes like a clean tree.")
         .DependsOn(RestoreTypeSpecDeps)
@@ -420,6 +433,7 @@ sealed class Build : NukeBuild
             VerifyGeneratedArtifactsCurrent,
             VerifyRouteContracts,
             VerifyContractFixtures,
+            VerifyZodContracts,
             VerifyLintRules,
             EmitAll,
             VerifyEmitDeterministic,

@@ -22,6 +22,10 @@ import {
 } from "@ancplua/qyl-api-schema/types";
 import openapi from "@ancplua/qyl-api-schema/openapi" with { type: "json" };
 import schema from "@ancplua/qyl-api-schema/json-schema" with { type: "json" };
+// zod is an optional peer, so this import also proves the subpath resolves and
+// the published runtime loads under a consumer's own zod rather than one hoisted
+// out of this repository.
+import { contractDefinitionNames, publishedContractSchema } from "@ancplua/qyl-api-schema/zod";
 
 const workbenchRef = (name) => `#/$defs/Workbench.${name}`;
 
@@ -160,6 +164,15 @@ const healthAdvertisesRevision = healthReport?.required?.includes("contract_revi
     && healthReport.properties?.contract_revision?.$ref === "#/$defs/Common.ContractRevision"
     && schema.$defs["Common.ContractRevision"]?.pattern === "^sha256:[a-f0-9]{16}$";
 
+// The runtime builds its validators from the package's own JSON Schema, so a
+// definition count that matches the schema imported above proves the installed
+// copy is validating the installed contract and not a bundled snapshot.
+const zodProblemDetails = publishedContractSchema("Common.Errors.ProblemDetails");
+const zodExportValidatesContracts =
+    zodProblemDetails.safeParse({ type: "about:blank", title: "x", status: 500 }).success
+    && !zodProblemDetails.safeParse({ type: "about:blank", title: "x", status: "500" }).success
+    && contractDefinitionNames().length === Object.keys(schema.$defs).length;
+
 const workflowFixture = {
     event_id: "evt-0001",
     source_sequence: "7",
@@ -239,6 +252,7 @@ const checks = [
     ["ciLogShapesDefined", Boolean(schema.$defs["Mcp.Tools.CiLogInput"])
         && Boolean(schema.$defs["Mcp.Tools.CiLogOutput"])],
     ["contractRevisionExported", /^sha256:[a-f0-9]{16}$/.test(CONTRACT_REVISION)],
+    ["zodExportValidatesContracts", zodExportValidatesContracts],
     ["healthAdvertisesRevision", healthAdvertisesRevision],
     ["workflowGraphDefined", Boolean(schema.$defs["Workflow.WorkflowGraphSnapshot"])],
     ["workflowJournalDefined", Boolean(schema.$defs["Workflow.WorkflowJournalEvent"])],

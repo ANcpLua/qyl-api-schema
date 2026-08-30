@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": false,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "generated/zod-runtime",
+    "resolveJsonModule": true,
+    "rootDir": "src/zod",
+    "sourceMap": false,
+    "strict": true,
+    "target": "ES2022"
+  },
+  "include": [
+    "src/zod/index.ts"
+  ]
+}

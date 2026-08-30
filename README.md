@@ -59,6 +59,28 @@ rather than from prose here; this line moves faster than a README is revised.
 `main.tsp` is the local compile entry point and includes emitter routing. `index.tsp`
 is the published TypeSpec entry point and contains only the client-facing contract.
 
+## Runtime validation
+
+`@ancplua/qyl-api-schema/zod` builds Zod validators from the bundled JSON Schema at
+runtime. It is a translation layer over `z.fromJSONSchema` — authored in `src/zod/`
+and compiled to `generated/zod-runtime/` — not a second hand-written schema, so a
+contract change cannot leave a validator describing the previous shape.
+
+```ts
+import { publishedContractSchema } from "@ancplua/qyl-api-schema/zod";
+import type { Span } from "@ancplua/qyl-api-schema/types";
+
+const SpanSchema = publishedContractSchema<Span>("OTel.Traces.Span");
+const span = SpanSchema.parse(await response.json());
+```
+
+`zod` is an optional peer dependency (`>=4.5.0 <5`): a consumer that does not
+install it simply never imports this subpath, and the other subpaths do not depend
+on it. Definition names are the published `$defs` keys — the same names the OpenAPI
+components and the generated C# and TypeScript DTOs carry — and
+`contractDefinitionNames()` lists all of them. The type argument is not checked
+against the schema, so pair it with the matching type from `./types`.
+
 ## Contract revision
 
 `scripts/emit-contract-revision.mjs` stamps a deterministic revision — `sha256:` plus

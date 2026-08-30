@@ -1,8 +1,12 @@
 import { readFile } from "node:fs/promises";
-import Ajv2020 from "ajv/dist/2020.js";
+import {
+  assertInvalid,
+  assertValid,
+  compileStandalone,
+  contractSchema as schema,
+  validatorFor,
+} from "./lib/contract-fixtures.mjs";
 
-const schemaPath = "generated/json-schema/qyl-api-schema.json";
-const schema = JSON.parse(await readFile(schemaPath, "utf8"));
 const openapi = JSON.parse(await readFile("generated/openapi/qyl.openapi.json", "utf8"));
 const tsRuntime = await readFile("generated/ts-runtime/api.d.ts", "utf8");
 const csharpRuntime = await readFile(
@@ -34,28 +38,6 @@ const csharpToolSchemasRuntime = await readFile(
   "utf8",
 );
 const defs = schema.$defs ?? {};
-const ajv = new Ajv2020({ allErrors: true, strict: true, validateFormats: false });
-ajv.addKeyword({ keyword: "x-csharp-struct", schemaType: "boolean" });
-ajv.addKeyword({ keyword: "x-csharp-type", schemaType: "string" });
-ajv.addKeyword({ keyword: "discriminator", schemaType: "object" });
-
-function validatorFor(definition) {
-  return ajv.compile({
-    $schema: schema.$schema,
-    $defs: defs,
-    $ref: `#/$defs/${definition}`,
-  });
-}
-
-function assertValid(validate, fixture, label) {
-  if (!validate(fixture)) {
-    throw new Error(`${label} must validate: ${ajv.errorsText(validate.errors, { separator: "\n" })}`);
-  }
-}
-
-function assertInvalid(validate, fixture, label) {
-  if (validate(fixture)) throw new Error(`${label} must be rejected.`);
-}
 
 function assertReferences(definition, expected) {
   const actual = (defs[definition]?.oneOf ?? []).map((variant) => variant.$ref);
@@ -1012,7 +994,7 @@ for (const [constant, definition, fixture] of [
       JSON.stringify(rootDefinition) !== JSON.stringify(defs[definition])) {
     throw new Error(`Generated C# ToolSchemas.${constant} drifted from ${definition}.`);
   }
-  const validateStandalone = ajv.compile(standalone);
+  const validateStandalone = compileStandalone(standalone);
   assertValid(validateStandalone, fixture, `standalone C# ToolSchemas.${constant}`);
 }
 

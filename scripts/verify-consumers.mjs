@@ -1,4 +1,4 @@
-import { access, copyFile, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { access, copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -22,6 +22,15 @@ const typeSpecToolchainPackages = [
 // compiled there: in-repo they would resolve to this repository's own output
 // instead of the published artifact, which is the thing under test.
 const probesDir = fileURLToPath(new URL("probes/", import.meta.url));
+
+// zod is an optional peer of the ./zod export, so a consumer that wants runtime
+// validators installs it itself. The probe installs the exact version this
+// repository validates against, otherwise a consumer failure could just as
+// easily be an unpinned zod release as a contract regression.
+const packageManifest = JSON.parse(
+  await readFile(fileURLToPath(new URL("../package.json", import.meta.url)), "utf8"),
+);
+const zodSpec = `zod@${packageManifest.devDependencies.zod}`;
 
 async function exists(path) {
   try {
@@ -70,7 +79,7 @@ export async function verifyConsumers({ version, npmSpec, npmInstallArgs = [], n
     run("npm", ["init", "--yes"], npmDir);
     run(
       "npm",
-      ["install", "--save-exact", npmSpec, ...npmInstallArgs, "--ignore-scripts"],
+      ["install", "--save-exact", npmSpec, zodSpec, ...npmInstallArgs, "--ignore-scripts"],
       npmDir,
       { NPM_CONFIG_CACHE: join(root, "npm-cache") },
     );

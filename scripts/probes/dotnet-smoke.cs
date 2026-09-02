@@ -304,11 +304,15 @@ var otlpFidelityValid = resourceRoundTrip is not null
     && resourceWire.Contains("\"type\":\"kvlist\"");
 
 var contractTypes = typeof(FetchTelemetryInput).Assembly.GetTypes();
+// The named enums mirrored raw OTLP wire vocabulary no route ever exposed;
+// OTel.Metrics now models qyl's own storage and query vocabulary and must ship.
 var removedSignalContractsAbsent = !contractTypes.Any(type =>
-    type.Namespace?.StartsWith("Qyl.Api.Contracts.OTel.Metrics") == true
-    || type.Namespace?.StartsWith("Qyl.Api.Contracts.OTel.Profiles") == true
+    type.Namespace?.StartsWith("Qyl.Api.Contracts.OTel.Profiles") == true
     || type.Name is "MetricType" or "AggregationTemporality" or "DataPointFlags"
         or "InstrumentKind" or "OriginalPayloadFormat" or "ProfileFrameType");
+var metricContractsPresent = new[] { "MetricDescriptor", "MetricSeries", "MetricQueryResult" }
+    .All(name => contractTypes.Any(type =>
+        type.Namespace == "Qyl.Api.Contracts.OTel.Metrics" && type.Name == name));
 
 // Each entry is reported by name when it fails. A single OR-chained exit code
 // tells a release operator that something is wrong and nothing about what.
@@ -318,6 +322,7 @@ var checks = new (string Name, bool Ok)[]
     ("eventLogWireEventName", eventLogWire.Contains("\"event_name\":\"gen_ai.evaluation.result\"")),
     ("otlpFidelityValid", otlpFidelityValid),
     ("removedSignalContractsAbsent", removedSignalContractsAbsent),
+    ("metricContractsPresent", metricContractsPresent),
     ("fetchTelemetryInputNamespace", typeof(FetchTelemetryInput).Namespace == "Qyl.Api.Contracts.Mcp.Tools"),
     ("costSurfaceAbsent", !contractTypes.Any(type =>
         type.Namespace is not null && type.Namespace.StartsWith("Qyl.Api.Contracts.Cost"))),

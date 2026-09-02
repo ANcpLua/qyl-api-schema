@@ -10,6 +10,10 @@ using Qyl.Api.Schema.Emit.TsTypes;
 @@csharpNamespace(Qyl.Api.Contracts, "Qyl.Api.Contracts");
 @@csharpNamespace(Qyl.Api.Contracts.Streaming, "Qyl.Api.Contracts.Streaming");
 @@csharpNamespace(Qyl.Api.Contracts.Health, "Qyl.Api.Contracts.Health");
+@@csharpNamespace(
+  Qyl.Api.Contracts.OTel.Metrics,
+  "Qyl.Api.Contracts.OTel.Metrics"
+);
 @@csharpNamespace(Qyl.Api.Contracts.Mcp.Tools, "Qyl.Api.Contracts.Mcp.Tools");
 @@csharpNamespace(Qyl.Api.Contracts.Runner, "Qyl.Api.Contracts.Runner");
 @@csharpNamespace(Qyl.Api.Contracts.Workbench, "Qyl.Api.Contracts.Workbench");

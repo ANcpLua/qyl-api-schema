@@ -661,8 +661,12 @@ for (const removedDefinition of [
   if (removedDefinition in defs) throw new Error(`${removedDefinition} must not survive the direct cutover.`);
 }
 
+// Profiles are still out of scope, and these enums mirrored raw OTLP wire
+// vocabulary no route ever exposed. OTel.Metrics is no longer on this list:
+// the collector stores metrics, and the query surface below is asserted
+// present rather than absent.
 const removedSignalDefinitions = Object.keys(defs).filter((definition) =>
-  definition.startsWith("OTel.Metrics.") || definition.startsWith("OTel.Profiles.")
+  definition.startsWith("OTel.Profiles.")
 );
 for (const definition of [
   "OTel.Enums.MetricType",
@@ -675,13 +679,26 @@ for (const definition of [
   if (definition in defs) removedSignalDefinitions.push(definition);
 }
 const removedSignalPaths = Object.keys(openapi.paths ?? {}).filter((path) =>
-  path === "/api/v1/metrics" || path.startsWith("/api/v1/profiles")
+  path.startsWith("/api/v1/profiles")
 );
 if (removedSignalDefinitions.length > 0 || removedSignalPaths.length > 0) {
   throw new Error(
     `Removed signal contract survived. Definitions: ${removedSignalDefinitions.join(", ") || "none"}. ` +
     `Paths: ${removedSignalPaths.join(", ") || "none"}.`,
   );
+}
+
+const missingMetricSurface = [
+  "OTel.Metrics.MetricDescriptor",
+  "OTel.Metrics.MetricSeries",
+  "OTel.Metrics.MetricQueryResult",
+  "OTel.Metrics.MetricAggregation",
+].filter((definition) => !(definition in defs)).concat(
+  ["/api/v1/metrics", "/api/v1/metrics/{metric_name}/series", "/api/v1/metrics/{metric_name}/query"]
+    .filter((path) => openapi.paths?.[path]?.get === undefined),
+);
+if (missingMetricSurface.length > 0) {
+  throw new Error(`Metric query contract is incomplete: ${missingMetricSurface.join(", ")}.`);
 }
 
 const workflowEventFixture = {

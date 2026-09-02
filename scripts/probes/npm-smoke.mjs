@@ -136,6 +136,9 @@ const typedQueryValidationResponsesDeclared = typedQueryPaths.every((path) => {
             === "#/components/schemas/Common.Errors.ValidationError";
 });
 
+// These enums mirrored raw OTLP wire vocabulary that no route ever exposed.
+// The metrics surface below models qyl's own storage and query vocabulary
+// instead, so their absence still holds and is still worth asserting.
 const removedSignalEnums = new Set([
     "OTel.Enums.MetricType",
     "OTel.Enums.AggregationTemporality",
@@ -146,12 +149,22 @@ const removedSignalEnums = new Set([
 ]);
 const telemetryResponse = schema.$defs["Workbench.WorkbenchExecutionTelemetryResponse"];
 const telemetrySignals = schema.$defs["Workbench.WorkbenchTelemetrySignalSummary"];
-const signalSurfaceAbsent = Object.keys(schema.$defs).every((name) =>
-    !name.startsWith("OTel.Metrics.") && !name.startsWith("OTel.Profiles.") && !removedSignalEnums.has(name))
-    && Object.keys(openapi.paths).every((path) =>
-        path !== "/api/v1/metrics" && !path.startsWith("/api/v1/profiles"))
+const profileSurfaceAbsent = Object.keys(schema.$defs).every((name) =>
+    !name.startsWith("OTel.Profiles.") && !removedSignalEnums.has(name))
+    && Object.keys(openapi.paths).every((path) => !path.startsWith("/api/v1/profiles"))
     && !("metrics" in (telemetryResponse?.properties ?? {}))
     && !("metrics" in (telemetrySignals?.properties ?? {}));
+
+// The collector stores and serves metrics, so the query surface must ship: the
+// catalog, the series listing, and the range query the whole design turns on.
+const metricSurfacePresent = [
+    "OTel.Metrics.MetricDescriptor",
+    "OTel.Metrics.MetricSeries",
+    "OTel.Metrics.MetricQueryResult",
+    "OTel.Metrics.MetricAggregation",
+].every((name) => name in schema.$defs)
+    && ["/api/v1/metrics", "/api/v1/metrics/{metric_name}/series", "/api/v1/metrics/{metric_name}/query"]
+        .every((path) => openapi.paths[path]?.get !== undefined);
 
 const costSurfaceAbsent = Object.keys(schema.$defs).every((name) => !name.startsWith("Cost."))
     && Object.keys(openapi.paths).every((path) => !path.startsWith("/api/v1/cost"));
@@ -234,7 +247,8 @@ const checks = [
     ["typedBootstrapCookie", typedBootstrapCookie],
     ["logStreamCapacityResponseDeclared", logStreamCapacityResponseDeclared],
     ["typedQueryValidationResponsesDeclared", typedQueryValidationResponsesDeclared],
-    ["signalSurfaceAbsent", signalSurfaceAbsent],
+    ["profileSurfaceAbsent", profileSurfaceAbsent],
+    ["metricSurfacePresent", metricSurfacePresent],
     ["eventLogContract", eventLogContract],
     ["losslessAttributeValue", losslessAttributeValue],
     ["exactEntityRef", exactEntityRef],

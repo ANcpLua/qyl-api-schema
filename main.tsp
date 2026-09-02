@@ -19,6 +19,7 @@ import "./otel/logs.tsp";
 
 import "./models/session.tsp";
 import "./models/health.tsp";
+import "./models/metrics.tsp";
 import "./models/runner.tsp";
 import "./models/workbench.tsp";
 import "./models/workflow.tsp";

@@ -8,6 +8,7 @@ import "../otel/span.tsp";
 import "../otel/logs.tsp";
 import "../models/session.tsp";
 import "../models/health.tsp";
+import "../models/metrics.tsp";
 
 using TypeSpec.Http;
 using TypeSpec.OpenAPI;
@@ -17,6 +18,7 @@ using Qyl.Api.Contracts.Common.Errors;
 using Qyl.Api.Contracts.Common.Pagination;
 using Qyl.Api.Contracts.OTel.Traces;
 using Qyl.Api.Contracts.OTel.Logs;
+using Qyl.Api.Contracts.OTel.Metrics;
 using Qyl.Api.Contracts.OTel.Enums;
 using Qyl.Api.Contracts.Domains.Observe.Session;
 using Qyl.Api.Contracts.Health;
@@ -100,6 +102,113 @@ interface LogsApi {
   ):
     | CursorPage<LogRecord>
     | ValidationError
+    | UnauthorizedError
+    | InternalServerError;
+}
+
+// -----------------------------------------------------------------------------
+// Metrics
+//
+// Modelled on the Grafana/Prometheus range query — metric, label matchers,
+// range, step — because the primary consumer is a coding agent over MCP. The
+// collector aggregates server-side and returns buckets; raw points are never
+// served, so a payload stays small no matter how dense the underlying stream.
+// -----------------------------------------------------------------------------
+
+@route("/api/v1/metrics")
+@tag("Metrics")
+@useAuth(QylApiKeyHeaderAuth)
+interface MetricsApi {
+  @doc("List the metric names recorded for a project.")
+  @get
+  list(
+    ...ProjectScopeHeader,
+
+    @doc("Return only names starting with this prefix.")
+    @query("name_prefix")
+    namePrefix?: string,
+
+    @query
+    @minValue(1)
+    @maxValue(1000)
+    limit?: int32 = 200,
+  ):
+    | CursorPage<MetricDescriptor>
+    | ValidationError
+    | UnauthorizedError
+    | InternalServerError;
+
+  @doc("List the distinct attribute streams recorded under one metric name.")
+  @get
+  @route("/{metric_name}/series")
+  listSeries(
+    ...ProjectScopeHeader,
+    @path("metric_name") metricName: string,
+
+    @doc("""
+      Exact attribute match, repeatable, as `key=value`. A series must match
+      every matcher given.
+      """)
+    @query(#{ explode: true })
+    attr?: string[],
+
+    @doc("Attribute prefix match, repeatable, as `key=prefix`.")
+    @query(#{ name: "attr_prefix", explode: true })
+    attrPrefix?: string[],
+
+    @query
+    @minValue(1)
+    @maxValue(1000)
+    limit?: int32 = 200,
+  ):
+    | CursorPage<MetricSeries>
+    | ValidationError
+    | NotFoundError
+    | UnauthorizedError
+    | InternalServerError;
+
+  @doc("""
+    Aggregate one metric over a time range into buckets of `step_ms`.
+    Percentile aggregations require a histogram kind.
+    """)
+  @get
+  @route("/{metric_name}/query")
+  query(
+    ...ProjectScopeHeader,
+    @path("metric_name") metricName: string,
+
+    @query("start_time") startTime: utcDateTime,
+    @query("end_time") endTime: utcDateTime,
+
+    @doc("Bucket width in milliseconds. One bucket spanning the range collapses the query to a single value.")
+    @query("step_ms")
+    @minValue(1)
+    @maxValue(86400000)
+    stepMs?: int64 = 60000,
+
+    @query aggregation?: MetricAggregation = MetricAggregation.avg,
+
+    @doc("Attribute keys to split the result by, repeatable. Omitted, every matching series collapses into one stream.")
+    @query(#{ name: "group_by", explode: true })
+    groupBy?: string[],
+
+    @doc("Exact attribute match, repeatable, as `key=value`.")
+    @query(#{ explode: true })
+    attr?: string[],
+
+    @doc("Attribute prefix match, repeatable, as `key=prefix`.")
+    @query(#{ name: "attr_prefix", explode: true })
+    attrPrefix?: string[],
+
+    @doc("Maximum result streams. A grouping that exceeds this is truncated, not refused.")
+    @query("series_limit")
+    @minValue(1)
+    @maxValue(500)
+    seriesLimit?: int32 = 50,
+  ):
+    | MetricQueryResult
+    | ValidationError
+    | NotFoundError
     | UnauthorizedError
     | InternalServerError;
 }

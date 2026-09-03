@@ -8,14 +8,13 @@
 // outcome.
 import {
     CONTRACT_REVISION,
-    AgentDiagnosticExtensionIdValues,
     HealthStatusValues,
     ProblemDetailsMediaType,
     RunnerResourceKindValues,
     RunnerResourceLifecycleValues,
+    SessionEventNameValues,
     WorkbenchEvaluationExportFormatValues,
     WorkbenchExecutionStatusValues,
-    WorkflowJournalEventKindValues,
     // Unused below on purpose: a named ESM import of a missing binding is a
     // link-time error, so the import itself asserts the export survives.
     WorkbenchTransportKindValues,
@@ -186,57 +185,18 @@ const zodExportValidatesContracts =
     && !zodProblemDetails.safeParse({ type: "about:blank", title: "x", status: "500" }).success
     && contractDefinitionNames().length === Object.keys(schema.$defs).length;
 
-const workflowFixture = {
-    event_id: "evt-0001",
-    source_sequence: "7",
+// The npm and NuGet faces of one contract have to agree on bytes, not just on
+// field names. SessionEvent is the fixture because every field is required and
+// scalar: there is no optional to omit on one side and write as null on the
+// other, so a byte difference can only be a real wire divergence — a renamed
+// property, a reordered member, or a changed date-time or enum encoding.
+const sessionEventFixture = {
+    event_name: SessionEventNameValues.sessionStart,
+    session_id: "sess-0001",
     timestamp: "2026-07-28T12:34:56+00:00",
-    kind: WorkflowJournalEventKindValues.agentSpawned,
-    thread_id: "thr-1",
-    attempt_id: "attempt-1",
-    agent_id: "agent-child",
-    parent_agent_id: "agent-root",
-    content_refs: [`sha256:${"a".repeat(64)}`],
-    run_id: "run-1",
-    client_id: "qyl-codex",
-    journal_sequence: "11",
+    event_domain: "session",
 };
-const workflowFixtureWire = JSON.stringify(workflowFixture);
-
-const diagnosticSnapshot = schema.$defs["Diagnostics.AgentDiagnosticSnapshot"];
-const diagnosticSummary = schema.$defs["Diagnostics.AgentDiagnosticSnapshotSummary"];
-const getActiveWorkflowRunInput = schema.$defs["Mcp.Tools.GetActiveWorkflowRunInput"];
-const getActiveWorkflowRunOutput = schema.$defs["Mcp.Tools.GetActiveWorkflowRunOutput"];
-const inspectWorkflowEventsInput = schema.$defs["Mcp.Tools.InspectWorkflowEventsInput"];
-const inspectWorkflowEventsOutput = schema.$defs["Mcp.Tools.InspectWorkflowEventsOutput"];
-const recordDiagnosticSnapshotInput = schema.$defs["Mcp.Tools.RecordDiagnosticSnapshotInput"];
-const recordDiagnosticSnapshotOutput = schema.$defs["Mcp.Tools.RecordDiagnosticSnapshotOutput"];
-const diagnosticContractDefined =
-    AgentDiagnosticExtensionIdValues.snapshot === "qyl.agent.diagnostic.snapshot"
-    && diagnosticSnapshot?.properties?.variables?.maxItems === 64
-    && diagnosticSnapshot?.properties?.checks?.maxItems === 64
-    && diagnosticSnapshot?.properties?.capture_nonce?.pattern === "^[0-9a-f]{32}$"
-    && diagnosticSummary?.properties?.content_ref?.$ref === "#/$defs/Workflow.WorkflowContentRef"
-    && !("variables" in (diagnosticSummary?.properties ?? {}));
-const diagnosticCaptureEnumAbsent = !schema.$defs["Diagnostics.AgentDiagnosticCapture"];
-const inspectWorkflowEventsContractDefined =
-    JSON.stringify(Object.keys(inspectWorkflowEventsInput?.properties ?? {}).sort())
-        === JSON.stringify(["after_sequence", "content_ref", "limit", "run_id"])
-    && JSON.stringify(Object.keys(inspectWorkflowEventsOutput?.properties ?? {}).sort())
-        === JSON.stringify(["content", "mode", "page"])
-    && inspectWorkflowEventsInput?.required?.includes("run_id")
-    && inspectWorkflowEventsInput.required.includes("after_sequence")
-    && inspectWorkflowEventsInput.properties?.limit?.maximum === 1000;
-const observerBridgeToolContractsDefined =
-    JSON.stringify(Object.keys(getActiveWorkflowRunInput?.properties ?? {})) === "[]"
-    && JSON.stringify(Object.keys(getActiveWorkflowRunOutput?.properties ?? {}).sort())
-        === JSON.stringify(["active", "live_controls_available", "run_id", "started_at", "thread_id"])
-    && JSON.stringify(Object.keys(recordDiagnosticSnapshotInput?.properties ?? {}).sort())
-        === JSON.stringify(["checks", "phase", "probe_id", "snapshot_id", "variables"])
-    && recordDiagnosticSnapshotInput?.properties?.variables?.maxItems === 64
-    && recordDiagnosticSnapshotInput.properties?.checks?.maxItems === 64
-    && JSON.stringify(recordDiagnosticSnapshotInput.properties.checks.default) === "[]"
-    && JSON.stringify(Object.keys(recordDiagnosticSnapshotOutput?.properties ?? {}).sort())
-        === JSON.stringify(["code", "event_id", "field", "recorded", "snapshot_id"]);
+const sessionEventFixtureWire = JSON.stringify(sessionEventFixture);
 
 // Each entry is reported by name when it fails. A single OR-chained exit code
 // tells a release operator that something is wrong and nothing about what.
@@ -268,12 +228,6 @@ const checks = [
     ["contractRevisionExported", /^sha256:[a-f0-9]{16}$/.test(CONTRACT_REVISION)],
     ["zodExportValidatesContracts", zodExportValidatesContracts],
     ["healthAdvertisesRevision", healthAdvertisesRevision],
-    ["workflowGraphDefined", Boolean(schema.$defs["Workflow.WorkflowGraphSnapshot"])],
-    ["workflowJournalDefined", Boolean(schema.$defs["Workflow.WorkflowJournalEvent"])],
-    ["diagnosticContractDefined", diagnosticContractDefined],
-    ["diagnosticCaptureEnumAbsent", diagnosticCaptureEnumAbsent],
-    ["inspectWorkflowEventsContractDefined", inspectWorkflowEventsContractDefined],
-    ["observerBridgeToolContractsDefined", observerBridgeToolContractsDefined],
 ];
 
 const failed = checks.filter(([, ok]) => !ok).map(([name]) => name);
@@ -283,5 +237,5 @@ if (failed.length > 0) {
     process.exit(1);
 }
 console.log(`contract-revision=${CONTRACT_REVISION}`);
-console.log(`workflow-fixture=${Buffer.from(workflowFixtureWire).toString("base64")}`);
+console.log(`session-event-fixture=${Buffer.from(sessionEventFixtureWire).toString("base64")}`);
 console.log(`npm consumer probe passed ${checks.length} checks`);

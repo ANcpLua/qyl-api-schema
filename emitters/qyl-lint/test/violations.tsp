@@ -60,10 +60,10 @@ model UntypedIdentities {
 @doc("An identity edge that must be rejected for its type.")
 model UntypedIdentityEdge {
   // identity-edge-typed: `runId` is a registered SessionId edge but is not
-  // reserved, and cannot be — the same edge names a WorkflowRunId on the
-  // workflow graph and a WorkbenchEvaluationRunId on an evaluation export, so no
-  // reserved entry can pin it to one scalar. This is the only rule that rejects
-  // the built-in, which drops the identity's length validation entirely.
+  // reserved, and cannot be — the same edge names a WorkbenchEvaluationRunId on
+  // an evaluation export, so no reserved entry can pin it to one scalar. This is
+  // the only rule that rejects the built-in, which drops the identity's length
+  // validation entirely.
   @encodedName("application/json", "run_id")
   runId?: string;
 }

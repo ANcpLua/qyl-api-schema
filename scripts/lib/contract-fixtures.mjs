@@ -31,11 +31,6 @@ const definitionOfValidator = new WeakMap();
  */
 export const exercisedFixtures = [];
 
-/** Compile a self-contained schema document that is not a published definition. */
-export function compileStandalone(schema) {
-  return ajv.compile(schema);
-}
-
 export function validatorFor(definition) {
   const validate = ajv.compile({
     $schema: contractSchema.$schema,
@@ -48,10 +43,6 @@ export function validatorFor(definition) {
 
 function record(validate, fixture, label, valid) {
   const definition = definitionOfValidator.get(validate);
-  // A standalone document has no published definition name, so a replaying
-  // checker has nothing to look the fixture up by. Those cases stay local to the
-  // corpus.
-  if (definition === undefined) return;
   // Several fixtures are mutated after being asserted to build the next case;
   // the recording must keep the shape that was actually judged.
   exercisedFixtures.push({ definition, fixture: structuredClone(fixture), valid, label });

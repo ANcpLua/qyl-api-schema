@@ -171,10 +171,9 @@ for (const identity of IDENTITIES) {
  * load-bearing. `previousSessionId` is in both: it can only ever be a
  * `SessionId`, so the reserved check pins the exact scalar. `runId` is an edge
  * only, because the same edge legitimately qualifies different identities —
- * `SessionId` on the ci_log shapes, `WorkflowRunId` on the workflow graph,
- * `WorkbenchEvaluationRunId` on an evaluation export. Which of those is right is
- * a modelling decision no lint rule can make; that it is a validated scalar at
- * all is not.
+ * `SessionId` on the ci_log shapes, `WorkbenchEvaluationRunId` on an evaluation
+ * export. Which of those is right is a modelling decision no lint rule can make;
+ * that it is a validated scalar at all is not.
  */
 export function edgeNameFor(propertyName: string): IdentityBinding | undefined {
   return EDGE_NAMES.get(propertyName);

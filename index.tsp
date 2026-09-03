@@ -22,12 +22,9 @@ import "./models/health.tsp";
 import "./models/metrics.tsp";
 import "./models/runner.tsp";
 import "./models/workbench.tsp";
-import "./models/workflow.tsp";
-import "./models/diagnostics.tsp";
 import "./models/mcp-tools.tsp";
 
 import "./api/routes.tsp";
 import "./api/streaming.tsp";
 import "./api/runner.tsp";
 import "./api/workbench.tsp";
-import "./api/workflow.tsp";

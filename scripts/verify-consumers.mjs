@@ -165,10 +165,12 @@ export async function verifyConsumers({ version, npmSpec, npmInstallArgs = [], n
       );
     }
 
-    const npmWorkflowFixture = probeValue(npmProbeOutput, "workflow-fixture");
-    const dotnetWorkflowFixture = probeValue(dotnetProbeOutput, "workflow-fixture");
-    if (npmWorkflowFixture !== dotnetWorkflowFixture) {
-      throw new Error("packed TypeScript and .NET workflow fixtures are not wire-equivalent");
+    const npmSessionEventFixture = probeValue(npmProbeOutput, "session-event-fixture");
+    const dotnetSessionEventFixture = probeValue(dotnetProbeOutput, "session-event-fixture");
+    if (npmSessionEventFixture !== dotnetSessionEventFixture) {
+      throw new Error(
+        "packed TypeScript and .NET session-event fixtures are not wire-equivalent",
+      );
     }
 
     succeeded = true;

@@ -13,34 +13,13 @@ import type { z } from "zod";
 import type {
     Attribute,
     AttributeValue,
-    AgentDiagnosticCheckId,
-    AgentDiagnosticSnapshot,
-    AgentDiagnosticSnapshotId,
-    AgentDiagnosticSnapshotSummary,
-    AgentDiagnosticVariable,
-    AgentDiagnosticVariableName,
-    AgentDiagnosticProbeId,
     CiLogOutput,
     EntityRef,
-    GetActiveWorkflowRunInput,
-    GetActiveWorkflowRunOutput,
     HealthReport,
-    InspectWorkflowEventsInput,
-    InspectWorkflowEventsOutput,
     LogRecord,
-    RecordDiagnosticSnapshotCheckInput,
-    RecordDiagnosticSnapshotInput,
-    RecordDiagnosticSnapshotOutput,
-    RecordDiagnosticSnapshotVariableInput,
     Resource,
+    SessionEvent,
     SessionId,
-    WorkflowJournalEvent,
-    WorkflowAgentId,
-    WorkflowAttemptId,
-    WorkflowContentRef,
-    WorkflowEventId,
-    WorkflowJournalPosition,
-    WorkflowRunId,
 } from "@ancplua/qyl-api-schema/types";
 
 const eventLog: LogRecord = {
@@ -114,146 +93,11 @@ const ciLog: CiLogOutput = {
     mode: "live",
 };
 
-const workflowEvent: WorkflowJournalEvent = {
-    event_id: "evt-0001" as WorkflowEventId,
-    source_sequence: "7",
+const sessionEvent: SessionEvent = {
+    event_name: "session.start",
+    session_id: "sess-0001" as SessionId,
     timestamp: "2026-07-28T12:34:56+00:00",
-    kind: "agent_spawned",
-    thread_id: "thr-1",
-    attempt_id: "attempt-1" as WorkflowAttemptId,
-    agent_id: "agent-child" as WorkflowAgentId,
-    parent_agent_id: "agent-root" as WorkflowAgentId,
-    content_refs: [`sha256:${"a".repeat(64)}` as WorkflowContentRef],
-    run_id: "run-1" as WorkflowRunId,
-    client_id: "qyl-codex",
-    journal_sequence: "11" as WorkflowJournalPosition,
-};
-
-const getActiveWorkflowRunInput: GetActiveWorkflowRunInput = {};
-const getActiveWorkflowRunOutput: GetActiveWorkflowRunOutput = {
-    active: true,
-    live_controls_available: true,
-    run_id: workflowEvent.run_id,
-    thread_id: workflowEvent.thread_id,
-    started_at: workflowEvent.timestamp,
-};
-
-const recordDiagnosticSnapshotVariable: RecordDiagnosticSnapshotVariableInput = {
-    name: "planner.candidates[0].score" as AgentDiagnosticVariableName,
-    classification: "internal",
-    value: 0.875,
-};
-const recordDiagnosticSnapshotCheck: RecordDiagnosticSnapshotCheckInput = {
-    check_id: "planner.minimum_score" as AgentDiagnosticCheckId,
-    operator: "greater_than",
-    actual: recordDiagnosticSnapshotVariable.name,
-    expected: "planner.minimum_score" as AgentDiagnosticVariableName,
-};
-const recordDiagnosticSnapshotInput: RecordDiagnosticSnapshotInput = {
-    snapshot_id: "snapshot:planner:0001" as AgentDiagnosticSnapshotId,
-    probe_id: "planner.selection" as AgentDiagnosticProbeId,
-    phase: "checkpoint",
-    variables: [recordDiagnosticSnapshotVariable],
-    checks: [recordDiagnosticSnapshotCheck],
-};
-const recordDiagnosticSnapshotOutput: RecordDiagnosticSnapshotOutput = {
-    recorded: true,
-    code: "recorded",
-    snapshot_id: recordDiagnosticSnapshotInput.snapshot_id,
-    event_id: workflowEvent.event_id,
-};
-const invalidRecordDiagnosticSnapshotInput: RecordDiagnosticSnapshotInput = {
-    // @ts-expect-error Named qyl MCP-tool contracts use the canonical snake_case wire name.
-    snapshotId: "snapshot:planner:0001" as AgentDiagnosticSnapshotId,
-    probe_id: "planner.selection" as AgentDiagnosticProbeId,
-    phase: "checkpoint",
-    variables: [],
-};
-
-const inspectWorkflowEventsInput: InspectWorkflowEventsInput = {
-    run_id: workflowEvent.run_id,
-    after_sequence: workflowEvent.journal_sequence,
-    limit: 250,
-    content_ref: workflowEvent.content_refs?.[0],
-};
-
-const inspectWorkflowEventsOutput: InspectWorkflowEventsOutput = {
-    page: {
-        events: [workflowEvent],
-        next_sequence: "12" as WorkflowJournalPosition,
-        high_water_mark: "12" as WorkflowJournalPosition,
-        cursor_gap: false,
-    },
-    content: {
-        content_ref: workflowEvent.content_refs![0],
-        content_type: "application/json",
-        encoding: "utf8",
-        content: "{}",
-        size_bytes: 2,
-    },
-    mode: "live",
-};
-
-const invalidInspectWorkflowEventsInput: InspectWorkflowEventsInput = {
-    run_id: workflowEvent.run_id,
-    after_sequence: workflowEvent.journal_sequence,
-    // @ts-expect-error Long-poll controls belong only to the app-only graph update tool.
-    wait_ms: 20000,
-};
-
-const invalidInspectWorkflowEventsOutput: InspectWorkflowEventsOutput = {
-    page: inspectWorkflowEventsOutput.page,
-    mode: "live",
-    // @ts-expect-error Event inspection must not expose the graph projection.
-    graph: {},
-};
-
-const diagnosticVariable: AgentDiagnosticVariable = {
-    name: "planner.candidates[0].score" as AgentDiagnosticVariableName,
-    type: "number",
-    classification: "internal",
-    capture: "value",
-    value: 0.875,
-};
-
-const diagnosticSnapshot: AgentDiagnosticSnapshot = {
-    extension_id: "qyl.agent.diagnostic.snapshot",
-    format_version: 1,
-    snapshot_id: "snapshot:planner:0001" as AgentDiagnosticSnapshotId,
-    capture_nonce: "0123456789abcdef0123456789abcdef",
-    probe_id: "planner.selection" as AgentDiagnosticProbeId,
-    phase: "checkpoint",
-    variables: [diagnosticVariable],
-    checks: [{
-        check_id: "planner.minimum_score" as AgentDiagnosticCheckId,
-        operator: "greater_than",
-        actual: "planner.candidates[0].score" as AgentDiagnosticVariableName,
-        expected: "planner.minimum_score" as AgentDiagnosticVariableName,
-        outcome: "pass",
-    }],
-    outcome: "pass",
-};
-
-const diagnosticSummary: AgentDiagnosticSnapshotSummary = {
-    extension_id: "qyl.agent.diagnostic.snapshot",
-    format_version: 1,
-    snapshot_id: diagnosticSnapshot.snapshot_id,
-    probe_id: diagnosticSnapshot.probe_id,
-    phase: diagnosticSnapshot.phase,
-    outcome: diagnosticSnapshot.outcome,
-    variable_count: 1,
-    check_count: 1,
-    failed_check_count: 0,
-    content_ref: `sha256:${"b".repeat(64)}` as WorkflowContentRef,
-};
-
-const invalidRedactedDiagnosticVariable: AgentDiagnosticVariable = {
-    name: "tool.authorization" as AgentDiagnosticVariableName,
-    type: "string",
-    classification: "secret",
-    capture: "redacted",
-    // @ts-expect-error Redacted variables are structurally forbidden from carrying values.
-    value: "must-not-leak",
+    event_domain: "session",
 };
 
 void [
@@ -268,17 +112,5 @@ void [
     healthReport,
     parsedHealthReport,
     ciLog,
-    workflowEvent,
-    getActiveWorkflowRunInput,
-    getActiveWorkflowRunOutput,
-    recordDiagnosticSnapshotInput,
-    recordDiagnosticSnapshotOutput,
-    invalidRecordDiagnosticSnapshotInput,
-    inspectWorkflowEventsInput,
-    inspectWorkflowEventsOutput,
-    invalidInspectWorkflowEventsInput,
-    invalidInspectWorkflowEventsOutput,
-    diagnosticSnapshot,
-    diagnosticSummary,
-    invalidRedactedDiagnosticVariable,
+    sessionEvent,
 ];

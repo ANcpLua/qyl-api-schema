@@ -2,9 +2,8 @@
 //
 // `identity-binding` checks the exactly-listed `reserved` names and pins each to
 // one scalar. Most edge names are not reserved, and cannot be: `runId` is a
-// `SessionId` on the ci_log shapes, a `WorkflowRunId` on the workflow graph, and
-// a `WorkbenchEvaluationRunId` on an evaluation export. Reserving it for any one
-// of those would reject the other two.
+// `SessionId` on the ci_log shapes and a `WorkbenchEvaluationRunId` on an
+// evaluation export. Reserving it for either would reject the other.
 //
 // So `runId: string` was legal — the name is registered as an identity edge, the
 // reserved lookup misses it, and nothing else looks at the type. That is a run

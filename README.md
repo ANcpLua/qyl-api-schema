@@ -4,9 +4,12 @@ The TypeSpec source of truth for Qyl's client-visible product API. This reposito
 emits the public schema and contract artifacts; it does not implement the server,
 storage engine, or OTLP receiver.
 
-Qyl stores and exposes traces and logs. Metrics are accepted and discarded only by
-the collector's OTLP wire-compatibility handlers, so this product contract exposes
-no metric DTOs or routes. Profiles are not supported.
+Qyl stores and exposes traces, logs, and metrics. The metric surface is read-only.
+`GET /api/v1/metrics` lists the metric descriptors recorded for a project,
+`GET /api/v1/metrics/{metric_name}/series` lists the distinct attribute streams
+under one metric name, and `GET /api/v1/metrics/{metric_name}/query` aggregates one
+metric over a time range into buckets. Metric points are written over OTLP, which
+this contract does not describe. Profiles are not supported.
 
 ## Contract pipeline
 

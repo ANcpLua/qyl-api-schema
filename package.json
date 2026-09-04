@@ -141,7 +141,7 @@
     "@ancplua/typespec-emit-csharp": "file:./emitters/csharp",
     "@ancplua/typespec-emit-ts-types": "file:./emitters/ts-types",
     "@ancplua/typespec-qyl-lint": "file:./emitters/qyl-lint",
-    "@types/node": "26.3.0",
+    "@types/node": "26.4.1",
     "@typespec/compiler": "1.15.0",
     "@typespec/events": "0.85.0",
     "@typespec/http": "1.15.0",

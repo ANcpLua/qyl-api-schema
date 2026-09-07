@@ -14,7 +14,7 @@ this contract does not describe. Profiles are not supported.
 ## Contract pipeline
 
 ```text
-Qyl.Telemetry.SemanticConventions
+Qyl.Telemetry.SemanticConventions (Weaver registry -> typespec template)
         |
         | generated semantic key projection
         v
@@ -28,9 +28,12 @@ authored Qyl TypeSpec
         +----> generated TypeScript contracts
 ```
 
-The semantic-key projection is generated from the sibling conventions repository's
-pinned core and GenAI registries. It supplies typed names for telemetry attributes;
-Qyl domain models, routes, responses, stream events, and errors are authored here.
+The semantic-key projection is not authored or regenerated here. Weaver resolves the
+sibling conventions repository's registry — pinned core, pinned GenAI, and the Qyl
+overlay — and its `typespec` template emits the file, which is copied in verbatim; the
+`VerifyKeysProvenance` gate reads the header Weaver stamps on it. It supplies typed
+names for telemetry attributes; Qyl domain models, routes, responses, stream events,
+and errors are authored here.
 
 ## Boundary
 

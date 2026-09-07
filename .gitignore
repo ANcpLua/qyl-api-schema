@@ -3,7 +3,7 @@ dist/
 coverage/
 emitters/*/dist/
 
-# Local TypeSpec emitter outputs. Keep generated/otel-keys.gen.tsp tracked.
+# Local TypeSpec emitter outputs.
 generated/contracts/
 generated/ts-types/
 generated/ts-runtime/

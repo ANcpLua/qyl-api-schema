@@ -2,7 +2,7 @@
 // qyl common types and scalars
 // =============================================================================
 // Foundational types used across qyl API contracts and OTel-compatible models.
-// OpenTelemetry registry provenance is owned by generated/otel-keys.gen.tsp.
+// The contract targets OpenTelemetry semantic conventions schema https://opentelemetry.io/schemas/1.44.0.
 // =============================================================================
 
 import "@typespec/openapi";
@@ -14,8 +14,6 @@ namespace Qyl.Api.Contracts.Common;
 // =============================================================================
 // Identifier Scalars - Strongly Typed IDs
 // =============================================================================
-// The semantic-conventions pin lives in the generated keys header and is
-// machine-checked; a hand-maintained enum of upstream releases would only drift.
 
 @doc("Unique trace identifier (32 lowercase hex characters)")
 @pattern("^[a-f0-9]{32}$")

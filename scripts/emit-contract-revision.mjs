@@ -1,11 +1,10 @@
 /**
  * Emits the contract revision into both generated faces of the contract.
  *
- * The revision hashes the semantic OpenAPI projection plus the exported
- * telemetry-key TypeSpec projection. Presentation-only OpenAPI fields are
- * removed and object keys are sorted before hashing, so documentation edits do
- * not force a lockstep deploy while any route, schema, operation, or exported
- * key change does.
+ * The revision hashes the semantic OpenAPI projection. Presentation-only
+ * OpenAPI fields are removed and object keys are sorted before hashing, so
+ * documentation edits do not force a lockstep deploy while any route, schema,
+ * or operation change does.
  *
  * It runs after the OpenAPI emit rather than inside an emitter because no
  * emitter can hash a file its own compile pass is still writing.
@@ -19,7 +18,6 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 
 const openApiPath = "generated/openapi/qyl.openapi.json";
-const otelKeysPath = "generated/otel-keys.gen.tsp";
 const csharpPath = "generated/contracts/Qyl/Api/ContractRevision.cs";
 const tsPath = "generated/ts-types/api.ts";
 
@@ -58,12 +56,6 @@ const openApi = JSON.parse(
   ),
 );
 
-const otelKeys = await readGenerated(
-  otelKeysPath,
-  "exported key projection",
-  "regenerate it from the Qyl.Telemetry.SemanticConventions repo",
-);
-
 const presentationKeys = new Set([
   "description",
   "example",
@@ -84,19 +76,9 @@ function canonicalize(value) {
   );
 }
 
-function semanticTypeSpec(value) {
-  return value
-    .replace(/^\uFEFF/u, "")
-    .replace(/\/\*[\s\S]*?\*\//gu, "")
-    .replace(/\/\/[^\r\n]*/gu, "")
-    .replace(/\s+/gu, " ")
-    .trim();
-}
-
 const revisionPayload = [
-  "qyl-contract-revision-v2",
+  "qyl-contract-revision-v3",
   JSON.stringify(canonicalize(openApi)),
-  semanticTypeSpec(otelKeys),
 ].join("\n");
 const revision =
   `sha256:${createHash("sha256").update(revisionPayload).digest("hex").slice(0, 16)}`;

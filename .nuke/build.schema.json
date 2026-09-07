@@ -37,7 +37,6 @@
         "VerifyContractFixtures",
         "VerifyEmitDeterministic",
         "VerifyGeneratedArtifactsCurrent",
-        "VerifyKeysProvenance",
         "VerifyLintRules",
         "VerifyPackedConsumers",
         "VerifyRouteContracts"

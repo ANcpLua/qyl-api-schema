@@ -32,10 +32,6 @@
       "typespec": "./otel/otel-conventions.tsp",
       "default": "./otel/otel-conventions.tsp"
     },
-    "./generated/otel-keys": {
-      "typespec": "./generated/otel-keys.gen.tsp",
-      "default": "./generated/otel-keys.gen.tsp"
-    },
     "./types": {
       "types": "./generated/ts-runtime/api.d.ts",
       "import": "./generated/ts-runtime/api.js",
@@ -72,7 +68,6 @@
     "otel/otel-conventions.tsp",
     "otel/resource.tsp",
     "otel/span.tsp",
-    "generated/otel-keys.gen.tsp",
     "generated/ts-runtime/api.d.ts",
     "generated/ts-runtime/api.js",
     "generated/openapi/qyl.openapi.json",

@@ -6,8 +6,6 @@ import "@typespec/http";
 import "@typespec/openapi";
 import "@typespec/sse";
 
-import "./generated/otel-keys.gen.tsp";
-
 import "./common/types.tsp";
 import "./common/errors.tsp";
 import "./common/pagination.tsp";

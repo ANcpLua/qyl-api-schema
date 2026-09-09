@@ -13892,9 +13892,7 @@
         "type": "string",
         "minLength": 1,
         "maxLength": 128,
-        "description": "Unique session identifier",
-        "x-csharp-type": "SessionId",
-        "x-csharp-struct": true
+        "description": "Unique session identifier"
       },
       "Common.Sha256Hash": {
         "type": "string",
@@ -13911,9 +13909,7 @@
         "description": "Unique span identifier (16 lowercase hex characters)",
         "examples": [
           "b7ad6b7169203331"
-        ],
-        "x-csharp-type": "SpanId",
-        "x-csharp-struct": true
+        ]
       },
       "Common.Temperature": {
         "type": "number",
@@ -13943,9 +13939,7 @@
         "description": "Unique trace identifier (32 lowercase hex characters)",
         "examples": [
           "0af7651916cd43dd8448eb211c80319c"
-        ],
-        "x-csharp-type": "TraceId",
-        "x-csharp-struct": true
+        ]
       },
       "Common.TraceParent": {
         "type": "string",

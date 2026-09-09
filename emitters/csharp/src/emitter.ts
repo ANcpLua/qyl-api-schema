@@ -6,7 +6,6 @@ import {
   getCsharpPolymorphicDiscriminator,
   hasCsharpBrand,
   hasCsharpPolymorphic,
-  hasCsharpRecord,
 } from "./decorators.js";
 import { isNamedFloatingPointUnion, mapType } from "./type-map.js";
 
@@ -166,8 +165,7 @@ function renderMediaType(name: string, value: string): string {
 }
 
 function renderModel(program: Program, model: Model, emittedName: string, unions: Union[]): string {
-  const asRecord = hasCsharpRecord(program, model);
-  const keyword = asRecord ? "public sealed record" : "public sealed class";
+  const keyword = "public sealed class";
   const union = unions.find((candidate) =>
     [...candidate.variants.values()].some((variant) => variant.type === model),
   );

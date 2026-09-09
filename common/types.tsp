@@ -20,8 +20,6 @@ namespace Qyl.Api.Contracts.Common;
 @minLength(32)
 @maxLength(32)
 @example("0af7651916cd43dd8448eb211c80319c")
-@TypeSpec.OpenAPI.extension("x-csharp-struct", true)
-@TypeSpec.OpenAPI.extension("x-csharp-type", "TraceId")
 scalar TraceId extends string;
 
 @doc("Unique span identifier (16 lowercase hex characters)")
@@ -29,8 +27,6 @@ scalar TraceId extends string;
 @minLength(16)
 @maxLength(16)
 @example("b7ad6b7169203331")
-@TypeSpec.OpenAPI.extension("x-csharp-struct", true)
-@TypeSpec.OpenAPI.extension("x-csharp-type", "SpanId")
 scalar SpanId extends string;
 
 @doc("W3C Trace Context traceparent header format")
@@ -45,8 +41,6 @@ scalar TraceState extends string;
 @doc("Unique session identifier")
 @minLength(1)
 @maxLength(128)
-@TypeSpec.OpenAPI.extension("x-csharp-struct", true)
-@TypeSpec.OpenAPI.extension("x-csharp-type", "SessionId")
 scalar SessionId extends string;
 
 @doc("User identifier (pseudonymized for privacy)")

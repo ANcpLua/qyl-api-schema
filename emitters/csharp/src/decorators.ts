@@ -9,16 +9,8 @@ export function $csharpNamespace(
   context.program.stateMap(stateKeys.csharpNamespace).set(target, ns);
 }
 
-export function $csharpRecord(context: DecoratorContext, target: Model): void {
-  context.program.stateMap(stateKeys.csharpRecord).set(target, true);
-}
-
 export function $csharpBrand(context: DecoratorContext, target: Scalar): void {
   context.program.stateMap(stateKeys.csharpBrand).set(target, true);
-}
-
-export function $csharpEnum(context: DecoratorContext, target: Enum | Union): void {
-  context.program.stateMap(stateKeys.csharpEnum).set(target, true);
 }
 
 export function $csharpPolymorphic(
@@ -33,16 +25,8 @@ export function getCsharpNamespace(program: { stateMap: (k: symbol) => Map<Type,
   return program.stateMap(stateKeys.csharpNamespace).get(target) as string | undefined;
 }
 
-export function hasCsharpRecord(program: { stateMap: (k: symbol) => Map<Type, unknown> }, target: Type): boolean {
-  return program.stateMap(stateKeys.csharpRecord).has(target);
-}
-
 export function hasCsharpBrand(program: { stateMap: (k: symbol) => Map<Type, unknown> }, target: Type): boolean {
   return program.stateMap(stateKeys.csharpBrand).has(target);
-}
-
-export function hasCsharpEnum(program: { stateMap: (k: symbol) => Map<Type, unknown> }, target: Type): boolean {
-  return program.stateMap(stateKeys.csharpEnum).has(target);
 }
 
 export function hasCsharpPolymorphic(program: { stateMap: (k: symbol) => Map<Type, unknown> }, target: Type): boolean {

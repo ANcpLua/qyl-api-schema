@@ -19,7 +19,6 @@ const definitions = contractSchema.$defs ?? {};
 // build typed validators; Ajv here checks structure, so an unimplemented format
 // must not turn into a silent pass or a hard failure.
 const ajv = new Ajv2020({ allErrors: true, strict: true, validateFormats: false });
-ajv.addKeyword({ keyword: "x-csharp-struct", schemaType: "boolean" });
 ajv.addKeyword({ keyword: "x-csharp-type", schemaType: "string" });
 ajv.addKeyword({ keyword: "discriminator", schemaType: "object" });
 

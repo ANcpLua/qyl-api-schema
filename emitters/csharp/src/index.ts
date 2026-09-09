@@ -1,8 +1,8 @@
 import { setTypeSpecNamespace } from "@typespec/compiler";
-import { $csharpBrand, $csharpEnum, $csharpNamespace, $csharpPolymorphic, $csharpRecord } from "./decorators.js";
+import { $csharpBrand, $csharpNamespace, $csharpPolymorphic } from "./decorators.js";
 
-setTypeSpecNamespace("Qyl.Api.Schema.Emit.CSharp", $csharpNamespace, $csharpRecord, $csharpBrand, $csharpEnum, $csharpPolymorphic);
+setTypeSpecNamespace("Qyl.Api.Schema.Emit.CSharp", $csharpNamespace, $csharpBrand, $csharpPolymorphic);
 
 export { $lib } from "./lib.js";
-export { $csharpBrand, $csharpEnum, $csharpNamespace, $csharpPolymorphic, $csharpRecord } from "./decorators.js";
+export { $csharpBrand, $csharpNamespace, $csharpPolymorphic } from "./decorators.js";
 export { $onEmit } from "./emitter.js";

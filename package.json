@@ -102,11 +102,11 @@
   },
   "peerDependencies": {
     "@typespec/compiler": "^1.13.0 || >=1.13.0-dev.0",
-    "@typespec/events": "^0.83.0 || ^0.84.0 || ^0.85.0",
+    "@typespec/events": "^0.83.0 || ^0.84.0 || ^0.85.0 || ^0.86.0",
     "@typespec/http": "^1.13.0",
     "@typespec/openapi": "^1.13.0",
     "@typespec/openapi3": "^1.13.0",
-    "@typespec/sse": ">=0.83.0 <0.86.0",
+    "@typespec/sse": ">=0.83.0 <0.87.0",
     "zod": ">=4.5.0 <5"
   },
   "peerDependenciesMeta": {
@@ -137,12 +137,12 @@
     "@ancplua/typespec-emit-ts-types": "file:./emitters/ts-types",
     "@ancplua/typespec-qyl-lint": "file:./emitters/qyl-lint",
     "@types/node": "26.4.1",
-    "@typespec/compiler": "1.15.0",
-    "@typespec/events": "0.85.0",
-    "@typespec/http": "1.15.0",
-    "@typespec/openapi": "1.15.0",
-    "@typespec/openapi3": "1.15.0",
-    "@typespec/sse": "0.85.0",
+    "@typespec/compiler": "1.16.0",
+    "@typespec/events": "0.86.0",
+    "@typespec/http": "1.16.0",
+    "@typespec/openapi": "1.16.0",
+    "@typespec/openapi3": "1.16.0",
+    "@typespec/sse": "0.86.0",
     "ajv": "8.20.0",
     "typescript": "7.0.2",
     "zod": "4.5.4"

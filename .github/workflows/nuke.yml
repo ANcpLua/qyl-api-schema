@@ -16,7 +16,7 @@ on:
 
 permissions:
   contents: read
-  packages: read      # npm ci (RestoreTypeSpecDeps) reads internal @ancplua/* deps from GitHub Packages
+  packages: read      # kept for a future GitHub Packages @ancplua/* dep; the emitters are workspace members and resolve locally
 
 concurrency:
   group: nuke-${{ github.ref }}

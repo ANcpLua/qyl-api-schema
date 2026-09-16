@@ -11,7 +11,6 @@ using Nuke.Common.Tools.Npm;
 using Serilog;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Nuke.Common.Tools.Git.GitTasks;
-using static Nuke.Common.Tools.Npm.NpmTasks;
 
 /// <summary>
 /// Build entry point for <c>@ancplua/qyl-api-schema</c>.
@@ -28,11 +27,31 @@ sealed class Build : NukeBuild
 
     AbsolutePath ArtifactsDir => RootDirectory / "Artifacts";
 
+    // Nuke ships no Bun tool, so bun is driven through ProcessTasks. npm survives
+    // in exactly one place -- PackApiPackage -- because `npm pack` feeds the OIDC
+    // trusted-publishing path, which bun cannot do. Everything upstream of the
+    // tarball installs, lints and verifies on bun.
+    static void BunInstall(AbsolutePath workingDirectory) =>
+        ProcessTasks.StartProcess("bun", "install --frozen-lockfile", workingDirectory)
+            .AssertZeroExitCode();
+
+    static void BunRun(string script, AbsolutePath workingDirectory) =>
+        ProcessTasks.StartProcess("bun", $"run {script}", workingDirectory)
+            .AssertZeroExitCode();
+
+    // The local tsp binary, not `bunx tsp`: this is what `npm exec --no` resolved to,
+    // and it cannot silently fetch a compiler the lockfile does not pin. Going through
+    // bunx here also loses the argument split -- Nuke hands the process one argument
+    // string, and tsp then sees the whole tail as a single unknown argument.
+    static void BunTsp(string arguments, AbsolutePath workingDirectory) =>
+        ProcessTasks.StartProcess(workingDirectory / "node_modules" / ".bin" / "tsp", arguments, workingDirectory)
+            .AssertZeroExitCode();
+
     Target RestoreTypeSpecDeps => _ => _
-        .Description("Restore npm dependencies (npm ci) for the TypeSpec spec.")
+        .Description("Restore dependencies (bun install --frozen-lockfile) for the TypeSpec spec.")
         .Executes(() =>
         {
-            NpmCi(s => s.SetProcessWorkingDirectory(DomainSpecRoot));
+            BunInstall(DomainSpecRoot);
         });
 
     Target CompileDomainSpec => _ => _
@@ -41,9 +60,7 @@ sealed class Build : NukeBuild
         .Executes(() =>
         {
             var spec = DomainSpecRoot;
-            NpmRun(s => s
-                .SetCommand("lint:public")
-                .SetProcessWorkingDirectory(spec));
+            BunRun("lint:public", spec);
         });
 
     Target EmitCSharp => _ => _
@@ -70,10 +87,10 @@ sealed class Build : NukeBuild
         var spec = DomainSpecRoot;
         EnsureCleanDirectory(outDir);
 
-        // --no forbids implicit installs; the explicit emitter path overrides tspconfig output.
-        NpmTasks.Npm(
-            $"exec --no -- tsp compile main.tsp --emit \"{emitterPackage}\" --option \"{emitterPackage}.emitter-output-dir={outDir}\"",
-            workingDirectory: spec);
+        // BunTsp runs the pinned local tsp and cannot install; the explicit emitter path overrides tspconfig output.
+        BunTsp(
+            $"compile main.tsp --emit {emitterPackage} --option {emitterPackage}.emitter-output-dir={outDir}",
+            spec);
     }
 
     Target VerifyEmitDeterministic => _ => _
@@ -108,9 +125,9 @@ sealed class Build : NukeBuild
             var (package, subdir) = ResolveEmitter(emitter);
             var outDir = root / subdir;
             EnsureCleanDirectory(outDir);
-            NpmTasks.Npm(
-                $"exec --no -- tsp compile main.tsp --emit \"{package}\" --option \"{package}.emitter-output-dir={outDir}\"",
-                workingDirectory: spec);
+            BunTsp(
+                $"compile main.tsp --emit {package} --option {package}.emitter-output-dir={outDir}",
+                spec);
         }
     }
 
@@ -170,9 +187,9 @@ sealed class Build : NukeBuild
             var actualOpenApi = ArtifactsDir / "verify-generated" / "openapi";
 
             EnsureCleanDirectory(actualOpenApi);
-            NpmTasks.Npm(
-                $"exec --no -- tsp compile main.tsp --emit \"@typespec/openapi3\" --option \"@typespec/openapi3.emitter-output-dir={actualOpenApi}\"",
-                workingDirectory: DomainSpecRoot);
+            BunTsp(
+                $"compile main.tsp --emit @typespec/openapi3 --option @typespec/openapi3.emitter-output-dir={actualOpenApi}",
+                DomainSpecRoot);
 
             var (ok, firstDiff) = DiffDirectoriesBytewise(expectedOpenApi, actualOpenApi);
             if (!ok)
@@ -204,9 +221,7 @@ sealed class Build : NukeBuild
         .DependsOn(VerifyGeneratedArtifactsCurrent)
         .Executes(() =>
         {
-            NpmRun(s => s
-                .SetCommand("verify:routes")
-                .SetProcessWorkingDirectory(DomainSpecRoot));
+            BunRun("verify:routes", DomainSpecRoot);
         });
 
     Target VerifyContractFixtures => _ => _
@@ -214,9 +229,7 @@ sealed class Build : NukeBuild
         .DependsOn(VerifyGeneratedArtifactsCurrent)
         .Executes(() =>
         {
-            NpmRun(s => s
-                .SetCommand("verify:contracts")
-                .SetProcessWorkingDirectory(DomainSpecRoot));
+            BunRun("verify:contracts", DomainSpecRoot);
         });
 
     // `verify:zod-contracts` rebuilds generated/zod-runtime first: the runtime is
@@ -227,9 +240,7 @@ sealed class Build : NukeBuild
         .DependsOn(VerifyContractFixtures)
         .Executes(() =>
         {
-            NpmRun(s => s
-                .SetCommand("verify:zod-contracts")
-                .SetProcessWorkingDirectory(DomainSpecRoot));
+            BunRun("verify:zod-contracts", DomainSpecRoot);
         });
 
     Target VerifyLintRules => _ => _
@@ -237,9 +248,7 @@ sealed class Build : NukeBuild
         .DependsOn(RestoreTypeSpecDeps)
         .Executes(() =>
         {
-            NpmRun(s => s
-                .SetCommand("verify:lint-rules")
-                .SetProcessWorkingDirectory(DomainSpecRoot));
+            BunRun("verify:lint-rules", DomainSpecRoot);
         });
 
     // CompileDomainSpec covers index.tsp, the published subset. main.tsp additionally
@@ -250,9 +259,7 @@ sealed class Build : NukeBuild
         .DependsOn(RestoreTypeSpecDeps)
         .Executes(() =>
         {
-            NpmRun(s => s
-                .SetCommand("lint")
-                .SetProcessWorkingDirectory(DomainSpecRoot));
+            BunRun("lint", DomainSpecRoot);
         });
 
     Target PackApiPackage => _ => _

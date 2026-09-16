@@ -47,14 +47,22 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      # Install side: internal @ancplua/* deps resolve from GitHub Packages (.npmrc scope map).
+      # The three @ancplua/* emitters are workspace members and resolve locally; the
+      # scope map and token remain for Renovate and for any future GitHub Packages
+      # dependency, which would be the first one bun has to authenticate.
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: '24'
           registry-url: 'https://npm.pkg.github.com'
           scope: '@ancplua'
 
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version-file: package.json
+
       # Trusted publishing to npmjs needs npm >= 11.5.1; Node 24 bundles an older npm.
+      # npm survives here for exactly three commands -- version, pack, publish -- because
+      # bun publish has no OIDC trusted-publishing or provenance path. Install and lint are bun.
       - name: Upgrade npm for trusted publishing
         run: npm install -g npm@latest
 
@@ -70,18 +78,18 @@ jobs:
           fi
 
       - name: Install dependencies
-        run: npm ci
+        run: bun install --frozen-lockfile
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build local emitters
-        run: npm run build:emitters
+        run: bun run build:emitters
 
       - name: Lint TypeSpec (full surface)
-        run: npm run lint
+        run: bun run lint
 
       - name: Lint TypeSpec (published surface only)
-        run: npm run lint:public
+        run: bun run lint:public
 
       - name: Resolve npm dist-tag
         shell: bash

@@ -1,4 +1,9 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>ANcpLua/github-settings-automation"]
+  "extends": [
+    "github>ANcpLua/github-settings-automation"
+  ],
+  "constraints": {
+    "bun": "1.4.2"
+  }
 }

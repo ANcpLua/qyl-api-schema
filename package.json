@@ -3,6 +3,12 @@
   "version": "0.0.0-development",
   "description": "TypeSpec source of truth for qyl API contracts. Emits OpenAPI, JSON Schema, Qyl.Api.Contracts DTOs, and TypeScript contract types; not an OpenTelemetry package, storage schema, or server implementation.",
   "license": "Apache-2.0",
+  "packageManager": "bun@1.4.2",
+  "workspaces": [
+    "emitters/csharp",
+    "emitters/ts-types",
+    "emitters/qyl-lint"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ANcpLua/qyl-api-schema.git"
@@ -89,16 +95,16 @@
     "build:zod-runtime": "tsc -p tsconfig.zod.json",
     "build:json-schema": "node scripts/openapi-to-json-schema.mjs",
     "emit:contract-revision": "node scripts/emit-contract-revision.mjs",
-    "prepare": "npm run build:emitters",
-    "prepack": "npm run compile",
-    "compile": "npm run clean:generated && npm run build:emitters && tsp compile main.tsp && npm run emit:contract-revision && npm run build:json-schema && npm run build:ts-runtime && npm run build:zod-runtime",
+    "prepare": "bun run build:emitters",
+    "prepack": "bun run compile",
+    "compile": "bun run clean:generated && bun run build:emitters && tsp compile main.tsp && bun run emit:contract-revision && bun run build:json-schema && bun run build:ts-runtime && bun run build:zod-runtime",
     "format": "tsp format **/*.tsp",
-    "lint": "npm run build:emitters && tsp compile main.tsp --no-emit --warn-as-error",
-    "lint:public": "npm run build:emitters && tsp compile index.tsp --no-emit --warn-as-error",
+    "lint": "bun run build:emitters && tsp compile main.tsp --no-emit --warn-as-error",
+    "lint:public": "bun run build:emitters && tsp compile index.tsp --no-emit --warn-as-error",
     "verify:routes": "node scripts/verify-route-contracts.mjs",
     "verify:contracts": "node scripts/verify-contract-fixtures.mjs",
-    "verify:zod-contracts": "npm run build:zod-runtime && node scripts/verify-zod-contracts.mjs",
-    "verify:lint-rules": "npm run build:emitters && node scripts/verify-lint-rules.mjs"
+    "verify:zod-contracts": "bun run build:zod-runtime && node scripts/verify-zod-contracts.mjs",
+    "verify:lint-rules": "bun run build:emitters && node scripts/verify-lint-rules.mjs"
   },
   "peerDependencies": {
     "@typespec/compiler": "^1.13.0 || >=1.13.0-dev.0",
@@ -133,9 +139,9 @@
     }
   },
   "devDependencies": {
-    "@ancplua/typespec-emit-csharp": "file:./emitters/csharp",
-    "@ancplua/typespec-emit-ts-types": "file:./emitters/ts-types",
-    "@ancplua/typespec-qyl-lint": "file:./emitters/qyl-lint",
+    "@ancplua/typespec-emit-csharp": "*",
+    "@ancplua/typespec-emit-ts-types": "*",
+    "@ancplua/typespec-qyl-lint": "*",
     "@types/node": "26.4.1",
     "@typespec/compiler": "1.16.0",
     "@typespec/events": "0.86.0",

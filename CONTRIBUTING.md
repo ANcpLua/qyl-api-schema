@@ -4,14 +4,17 @@ The consumer-facing overview is the [README](README.md); this file is the workin
 
 ## Develop
 
-Development and CI use Node.js 24 LTS. Published npm artifacts support maintained
-Node.js releases from 22 onward.
+Development and CI use Node.js 24 LTS, with Bun as the package manager (pinned by
+`packageManager` in package.json). The three emitters under `emitters/` are workspace
+members, not `file:` dependencies: bun copies a `file:` dependency before `prepare`
+builds it, which leaves TypeSpec resolving a library with no `dist/`. Published npm
+artifacts support maintained Node.js releases from 22 onward.
 
 ```bash
-npm ci
-npm run lint
-npm run lint:public
-npm run compile
+bun install --frozen-lockfile
+bun run lint
+bun run lint:public
+bun run compile
 ./build.sh Check
 ```
 
@@ -30,6 +33,9 @@ schemas and exposes inline route bodies as stable
 the same wire names. Change TypeSpec or the owning generator and regenerate.
 
 ## Publish
+
+npm remains only for `npm version`, `npm pack` and `npm publish`: bun has no OIDC
+trusted-publishing path. Install, lint, emit and every verify target run on bun.
 
 GitHub Actions publishes both registries through OIDC trusted publishing. A release
 tag supplies one version for npm and NuGet. The workflow validates and packs first,

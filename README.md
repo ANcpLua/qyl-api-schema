@@ -82,7 +82,7 @@ against the schema, so pair it with the matching type from `./types`.
 
 `scripts/emit-contract-revision.mjs` stamps a deterministic revision — `sha256:` plus
 the first 16 hex characters of the contract's canonical semantic digest — into both
-generated faces during `npm run compile`. A collector reports the revision it was built
+generated faces during `bun run compile`. A collector reports the revision it was built
 against on its health response, so a client can detect a peer built from a different
 contract instead of discovering the mismatch one malformed field at a time. Read the
 current value from a running collector or the generated artifacts; it is derived, never

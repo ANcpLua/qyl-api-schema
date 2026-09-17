@@ -33,7 +33,7 @@ var eventLog = new LogRecord
     TimeUnixNano = 2,
     ObservedTimeUnixNano = 3,
     SeverityNumber = SeverityNumber.Info,
-    Body = new LogBodyString { StringValue = "evaluation completed" },
+    Body = new AttributeValue.StringValue("evaluation completed"),
     EventName = "gen_ai.evaluation.result",
     Resource = new OTelResource { ServiceName = "evaluator" },
 };
@@ -43,25 +43,26 @@ var emptyAttribute = new OTelAttribute { Key = "empty", Value = null };
 var intAttribute = new OTelAttribute
 {
     Key = "int",
-    Value = new AttributeIntValue { Type = "int", Value = long.MaxValue },
+    Value = new AttributeValue.ObjectValue(new AttributeIntValue { Value = long.MaxValue }),
 };
 var doubleAttribute = new OTelAttribute
 {
     Key = "double",
-    Value = new AttributeDoubleValue { Type = "double", Value = double.PositiveInfinity },
+    Value = new AttributeValue.ObjectValue(new AttributeDoubleValue { Value = double.PositiveInfinity }),
 };
 var kvlistAttribute = new OTelAttribute
 {
     Key = "kvlist",
-    Value = new AttributeKeyValueListValue
+    Value = new AttributeValue.ObjectValue(new AttributeKeyValueListValue
     {
-        Type = "kvlist",
-        Values = new Dictionary<string, object?>
+        Values = new Dictionary<string, AttributeValue?>
         {
             ["empty"] = null,
-            ["nested"] = new AttributeIntValue { Type = "int", Value = 1 },
+            ["nested"] = new AttributeValue.ObjectValue(new AttributeIntValue { Value = 1 }),
+            ["flag"] = new AttributeValue.BoolValue(true),
+            ["items"] = new AttributeValue.ArrayValue([new AttributeValue.StringValue("a"), null]),
         },
-    },
+    }),
 };
 
 var entityRef = new EntityRef
@@ -172,6 +173,8 @@ var executionRequestWire = JsonSerializer.Serialize(executionRequest);
 var otlpFidelityValid = resourceRoundTrip is not null
     && resourceRoundTrip.Attributes is { Count: 4 }
     && resourceRoundTrip.Attributes[0].Value is null
+    && resourceRoundTrip.Attributes[1].Value is AttributeValue.ObjectValue { Value: AttributeIntValue { Value: long.MaxValue } }
+    && resourceRoundTrip.Attributes[3].Value is AttributeValue.ObjectValue { Value: AttributeKeyValueListValue { Values.Count: 4 } }
     && resourceRoundTrip.EntityRefs?[0] is { Type: "service", IdKeys.Count: 1 }
     && resourceWire.Contains("\"type\":\"int\",\"value\":\"9223372036854775807\"")
     && resourceWire.Contains("\"type\":\"double\",\"value\":\"Infinity\"")

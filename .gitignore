@@ -11,6 +11,7 @@ generated/json-schema/
 
 # Compiled output of src/zod (hand-written source, tracked; build output, not).
 generated/zod-runtime/
+generated/runtime/
 
 # Nuke build host outputs.
 build/bin/

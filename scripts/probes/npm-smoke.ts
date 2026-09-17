@@ -26,7 +26,7 @@ const eventLog: LogRecord = {
     time_unix_nano: "2",
     observed_time_unix_nano: "3",
     severity_number: 9,
-    body: { string_value: "evaluation completed" },
+    body: "evaluation completed",
     event_name: "gen_ai.evaluation.result",
     resource: { service_name: "evaluator" },
 };

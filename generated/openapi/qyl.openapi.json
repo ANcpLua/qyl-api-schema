@@ -13124,6 +13124,33 @@
         },
         "description": "Tagged recursive OTLP key-value-list, distinct from other object-shaped attribute variants."
       },
+      "Common.AttributeObjectValue": {
+        "type": "object",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Common.AttributeIntValue"
+          },
+          {
+            "$ref": "#/components/schemas/Common.AttributeDoubleValue"
+          },
+          {
+            "$ref": "#/components/schemas/Common.AttributeBytesValue"
+          },
+          {
+            "$ref": "#/components/schemas/Common.AttributeKeyValueListValue"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "int": "#/components/schemas/Common.AttributeIntValue",
+            "double": "#/components/schemas/Common.AttributeDoubleValue",
+            "bytes": "#/components/schemas/Common.AttributeBytesValue",
+            "kvlist": "#/components/schemas/Common.AttributeKeyValueListValue"
+          }
+        },
+        "description": "Object-shaped AttributeValue variants. The variant name is the wire `type` tag."
+      },
       "Common.AttributeValue": {
         "anyOf": [
           {
@@ -13136,25 +13163,16 @@
             "type": "boolean"
           },
           {
-            "$ref": "#/components/schemas/Common.AttributeIntValue"
-          },
-          {
-            "$ref": "#/components/schemas/Common.AttributeDoubleValue"
-          },
-          {
-            "$ref": "#/components/schemas/Common.AttributeBytesValue"
-          },
-          {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Common.AttributeValue"
             }
           },
           {
-            "$ref": "#/components/schemas/Common.AttributeKeyValueListValue"
+            "$ref": "#/components/schemas/Common.AttributeObjectValue"
           }
         ],
-        "description": "Lossless JSON projection of an OpenTelemetry AnyValue attribute."
+        "description": "Lossless JSON projection of an OpenTelemetry AnyValue attribute. Primitive variants are bare JSON values; object variants carry a `type` tag."
       },
       "Common.Attributes": {
         "type": "object",
@@ -15190,104 +15208,6 @@
         ],
         "description": "Telemetry SDK language"
       },
-      "OTel.Logs.LogBody": {
-        "type": "object",
-        "oneOf": [
-          {
-            "$ref": "#/components/schemas/OTel.Logs.LogBodyString"
-          },
-          {
-            "$ref": "#/components/schemas/OTel.Logs.LogBodyKvList"
-          },
-          {
-            "$ref": "#/components/schemas/OTel.Logs.LogBodyArray"
-          },
-          {
-            "$ref": "#/components/schemas/OTel.Logs.LogBodyBytes"
-          }
-        ],
-        "discriminator": {
-          "propertyName": "kind",
-          "mapping": {
-            "stringBody": "#/components/schemas/OTel.Logs.LogBodyString",
-            "kvListBody": "#/components/schemas/OTel.Logs.LogBodyKvList",
-            "arrayBody": "#/components/schemas/OTel.Logs.LogBodyArray",
-            "bytesBody": "#/components/schemas/OTel.Logs.LogBodyBytes"
-          }
-        },
-        "description": "Log body content - can be string, structured, or bytes"
-      },
-      "OTel.Logs.LogBodyArray": {
-        "type": "object",
-        "required": [
-          "array_value"
-        ],
-        "properties": {
-          "array_value": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Common.AttributeValue"
-            },
-            "description": "Array of values"
-          }
-        },
-        "unevaluatedProperties": {
-          "not": {}
-        },
-        "description": "Array log body"
-      },
-      "OTel.Logs.LogBodyBytes": {
-        "type": "object",
-        "required": [
-          "bytes_value"
-        ],
-        "properties": {
-          "bytes_value": {
-            "type": "string",
-            "contentEncoding": "base64",
-            "description": "Binary value (base64 encoded)"
-          }
-        },
-        "unevaluatedProperties": {
-          "not": {}
-        },
-        "description": "Binary log body"
-      },
-      "OTel.Logs.LogBodyKvList": {
-        "type": "object",
-        "required": [
-          "kv_list_value"
-        ],
-        "properties": {
-          "kv_list_value": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Common.Attribute"
-            },
-            "description": "Key-value pairs"
-          }
-        },
-        "unevaluatedProperties": {
-          "not": {}
-        },
-        "description": "Structured key-value log body"
-      },
-      "OTel.Logs.LogBodyString": {
-        "type": "object",
-        "required": [
-          "string_value"
-        ],
-        "properties": {
-          "string_value": {
-            "type": "string",
-            "description": "String value"
-          }
-        },
-        "unevaluatedProperties": {
-          "not": {}
-        },
-        "description": "String log body"
-      },
       "OTel.Logs.LogRecord": {
         "type": "object",
         "required": [
@@ -15315,8 +15235,8 @@
             "description": "Severity text (DEBUG, INFO, WARN, ERROR, etc.)"
           },
           "body": {
-            "$ref": "#/components/schemas/OTel.Logs.LogBody",
-            "description": "Log body - the main content"
+            "$ref": "#/components/schemas/Common.AttributeValue",
+            "description": "Log body: the OTLP AnyValue, projected exactly like an attribute value"
           },
           "attributes": {
             "type": "array",

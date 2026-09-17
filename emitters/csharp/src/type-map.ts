@@ -1,5 +1,5 @@
-import type { Program, Scalar, Type } from "@typespec/compiler";
-import { isArrayModelType, isRecordModelType, getFormat } from "@typespec/compiler";
+import type { Model, Program, Scalar, Type, Union } from "@typespec/compiler";
+import { getDiscriminatedUnion, isArrayModelType, isRecordModelType, getFormat } from "@typespec/compiler";
 import { getCsharpNamespace, hasCsharpPolymorphic } from "./decorators.js";
 import { hasCsharpBrand } from "./decorators.js";
 import { reportDiagnostic } from "./lib.js";
@@ -49,9 +49,12 @@ export function mapType(program: Program, type: Type): string {
       return mapType(program, (type as { type: Type }).type);
     case "EnumMember":
       return qualifyModelOrEnum(program, (type as { enum: Type }).enum);
-    case "Union":
+    case "Union": {
       if (hasCsharpPolymorphic(program, type)) return qualifyModelOrEnum(program, type);
       if (isNamedFloatingPointUnion(type)) return "double";
+      if (isDiscriminatedUnion(program, type)) return qualifyModelOrEnum(program, type);
+      const mixed = mixedUnionShape(program, type);
+      if (mixed) return `${qualifyModelOrEnum(program, type)}${mixed.hasNull ? "?" : ""}`;
       if ([...type.variants.values()].some((variant) =>
         variant.type.kind === "Intrinsic" && (variant.type as { name?: string }).name === "null")) {
         return "object?";
@@ -63,6 +66,7 @@ export function mapType(program: Program, type: Type): string {
       if ([...type.variants.values()].every((variant) => variant.type.kind === "Boolean")) return "bool";
       if ([...type.variants.values()].every((variant) => variant.type.kind === "Number")) return "double";
       return "object";
+    }
     case "Boolean":
       return "bool";
     case "String":
@@ -80,6 +84,56 @@ export function mapType(program: Program, type: Type): string {
       reportDiagnostic(program, { code: "unmapped-type", target: type, format: { name: type.kind } });
       return "object";
   }
+}
+
+/** A union declared with `@discriminated`: its variants are models and the variant name is the wire tag. */
+export function isDiscriminatedUnion(program: Program, union: Union): boolean {
+  return getDiscriminatedUnion(program, union)[0] !== undefined;
+}
+
+export type MixedUnionShape = {
+  hasNull: boolean;
+  primitives: Array<"string" | "boolean" | "number">;
+  arrayOfSelf: boolean;
+  /** The one object-shaped member: a model, or a discriminated union of models. */
+  objectMember?: { name: string; type: Model | Union };
+};
+
+/**
+ * A named union of bare JSON primitives (and optionally an array of itself) plus one
+ * object-shaped member, such as AttributeValue. Primitive variants dispatch on the JSON
+ * token kind; the object member dispatches on its own discriminator.
+ */
+export function mixedUnionShape(program: Program, union: Union): MixedUnionShape | undefined {
+  if (!union.name || isNamedFloatingPointUnion(union)) return undefined;
+  const shape: MixedUnionShape = { hasNull: false, primitives: [], arrayOfSelf: false };
+  for (const [name, variant] of union.variants) {
+    const t = variant.type;
+    if (t.kind === "Intrinsic" && t.name === "null") { shape.hasNull = true; continue; }
+    if (t.kind === "Scalar") {
+      const root = rootScalarName(t);
+      if (root === "string") { shape.primitives.push("string"); continue; }
+      if (root === "boolean") { shape.primitives.push("boolean"); continue; }
+      if (NUMERIC_SCALARS.has(root)) { shape.primitives.push("number"); continue; }
+      return undefined;
+    }
+    if (t.kind === "Model" && isArrayModelType(t)) {
+      if (t.indexer?.value === union) { shape.arrayOfSelf = true; continue; }
+      return undefined;
+    }
+    const isObjectMember = (t.kind === "Model" && !isRecordModelType(t)) ||
+      (t.kind === "Union" && isDiscriminatedUnion(program, t));
+    if (!isObjectMember || shape.objectMember) return undefined;
+    shape.objectMember = { name: String(name), type: t as Model | Union };
+  }
+  const hasPrimitiveSide = shape.primitives.length > 0 || shape.arrayOfSelf;
+  return hasPrimitiveSide && shape.objectMember ? shape : undefined;
+}
+
+const NUMERIC_SCALARS = new Set(["int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "decimal", "decimal128"]);
+
+function rootScalarName(scalar: Scalar): string {
+  return scalar.baseScalar ? rootScalarName(scalar.baseScalar) : scalar.name;
 }
 
 export function isNamedFloatingPointUnion(type: Type): boolean {

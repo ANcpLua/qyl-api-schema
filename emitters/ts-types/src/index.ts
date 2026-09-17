@@ -16,6 +16,7 @@ import type {
 } from "@typespec/compiler";
 import {
   emitFile,
+  getDiscriminatedUnion,
   getEncode,
   isArrayModelType,
   isRecordModelType,
@@ -59,6 +60,7 @@ export async function $onEmit(context: EmitContext): Promise<void> {
   const emittedModels = new Set<string>();
   const emittedEnums = new Set<string>();
   const emittedUnions = new Set<string>();
+  const runtimeUnions: Union[] = [];
 
   navigateProgram(program, {
     scalar: (s) => {
@@ -97,6 +99,7 @@ export async function $onEmit(context: EmitContext): Promise<void> {
       if (emittedUnions.has(u.name)) return;
       emittedUnions.add(u.name);
       unionBlock.push(renderUnion(program, u));
+      if (mixedUnionShape(program, u)) runtimeUnions.push(u);
     },
   });
 
@@ -104,6 +107,113 @@ export async function $onEmit(context: EmitContext): Promise<void> {
 
   const path = `${context.emitterOutputDir}/api.ts`;
   await emitFile(program, { path, content: out.join("\n") });
+
+  const runtime = [HEADER, ...runtimeUnions.map((u) => renderMixedUnionRuntime(program, u))];
+  await emitFile(program, { path: `${context.emitterOutputDir}/runtime.ts`, content: runtime.join("\n") });
+}
+
+type MixedUnionShape = {
+  hasNull: boolean;
+  primitives: Array<"string" | "boolean" | "number">;
+  arrayOfSelf: boolean;
+  /** The one object-shaped member: a model, or a discriminated union of models. */
+  objectMember?: { name: string; type: Model | Union };
+};
+
+/**
+ * A named union of bare JSON primitives (and optionally an array of itself) plus one
+ * object-shaped member, such as AttributeValue. Mirrors the C# emitter's rule so both
+ * languages read the same node the same way.
+ */
+function mixedUnionShape(program: Program, union: Union): MixedUnionShape | undefined {
+  if (!union.name) return undefined;
+  const shape: MixedUnionShape = { hasNull: false, primitives: [], arrayOfSelf: false };
+  for (const [name, variant] of union.variants) {
+    const t = variant.type;
+    if (t.kind === "Intrinsic" && t.name === "null") { shape.hasNull = true; continue; }
+    if (t.kind === "Scalar") {
+      const mapped = mapType(program, t);
+      if (mapped === "string" || mapped === "boolean" || mapped === "number") { shape.primitives.push(mapped); continue; }
+      return undefined;
+    }
+    if (t.kind === "Model" && isArrayModelType(t)) {
+      if (t.indexer?.value === union) { shape.arrayOfSelf = true; continue; }
+      return undefined;
+    }
+    const isObjectMember = (t.kind === "Model" && !isRecordModelType(t)) ||
+      (t.kind === "Union" && getDiscriminatedUnion(program, t)[0] !== undefined);
+    if (!isObjectMember || shape.objectMember) return undefined;
+    shape.objectMember = { name: String(name), type: t as Model | Union };
+  }
+  const hasPrimitiveSide = shape.primitives.length > 0 || shape.arrayOfSelf;
+  return hasPrimitiveSide && shape.objectMember ? shape : undefined;
+}
+
+/**
+ * The structural half of the decoder: an exhaustive matcher over every variant, with the
+ * object member's discriminated variants flattened into it. Presentation policy is written
+ * by hand over this, never generated.
+ */
+function renderMixedUnionRuntime(program: Program, union: Union): string {
+  const shape = mixedUnionShape(program, union)!;
+  const name = union.name!;
+  const member = shape.objectMember!;
+  const imports = new Set<string>([name]);
+  const handlers: string[] = [];
+  const dispatch: string[] = [];
+  for (const [variantName, variant] of union.variants) {
+    const key = String(variantName);
+    const t = variant.type;
+    if (t.kind === "Intrinsic") {
+      handlers.push(`  ${key}: () => R;`);
+      dispatch.push(`  if (value === null) return handlers.${key}();`);
+    } else if (t.kind === "Scalar") {
+      const mapped = mapType(program, t);
+      handlers.push(`  ${key}: (value: ${mapped}) => R;`);
+      dispatch.push(`  if (typeof value === "${mapped}") return handlers.${key}(value);`);
+    } else if (t.kind === "Model" && isArrayModelType(t)) {
+      handlers.push(`  ${key}: (value: ${name}[]) => R;`);
+      dispatch.push(`  if (Array.isArray(value)) return handlers.${key}(value);`);
+    }
+  }
+  let tagsBlock = "";
+  if (member.type.kind === "Union") {
+    const [discriminated] = getDiscriminatedUnion(program, member.type);
+    const tag = discriminated!.options.discriminatorPropertyName;
+    const memberName = member.type.name!;
+    imports.add(memberName);
+    const tags: string[] = [];
+    const cases: string[] = [];
+    for (const [tagValue, variantType] of discriminated!.variants) {
+      const typeName = mapType(program, variantType);
+      imports.add(typeName);
+      tags.push(JSON.stringify(tagValue));
+      handlers.push(`  ${tagValue}: (value: ${typeName}) => R;`);
+      cases.push(`    case ${JSON.stringify(tagValue)}: return handlers.${tagValue}(value);`);
+    }
+    tagsBlock =
+      `export const ${memberName}Tags = [${tags.join(", ")}] as const;\n` +
+      `export type ${memberName}Tag = typeof ${memberName}Tags[number];\n\n` +
+      `export function is${memberName}(value: unknown): value is ${memberName} {\n` +
+      `  return typeof value === "object" && value !== null && !Array.isArray(value)\n` +
+      `    && (${memberName}Tags as readonly string[]).includes(String((value as { ${tag}?: unknown }).${tag}));\n}\n`;
+    dispatch.push(
+      `  switch (value.${tag}) {\n${cases.join("\n")}\n` +
+      `    default:\n      throw new TypeError(\`${memberName} has unknown ${tag} tag '\${String((value as { ${tag}?: unknown }).${tag})}'.\`);\n  }`,
+    );
+  } else {
+    const typeName = mapType(program, member.type);
+    imports.add(typeName);
+    handlers.push(`  ${member.name}: (value: ${typeName}) => R;`);
+    dispatch.push(`  return handlers.${member.name}(value);`);
+  }
+  return (
+    `import type { ${[...imports].sort().join(", ")} } from "./api.js";\n\n` +
+    tagsBlock +
+    `\nexport interface ${name}Handlers<R> {\n${handlers.join("\n")}\n}\n\n` +
+    `/** Exhaustive over every ${name} variant; a handler per variant, no default. */\n` +
+    `export function match${name}<R>(value: ${name}, handlers: ${name}Handlers<R>): R {\n${dispatch.join("\n")}\n}\n`
+  );
 }
 
 function collectMediaType(

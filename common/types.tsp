@@ -255,7 +255,23 @@ model AttributeKeyValueListValue {
   values: Record<AttributeValue>;
 }
 
-@doc("Lossless JSON projection of an OpenTelemetry AnyValue attribute.")
+@doc("Object-shaped AttributeValue variants. The variant name is the wire `type` tag.")
+@discriminated(#{ envelope: "none", discriminatorPropertyName: "type" })
+union AttributeObjectValue {
+  @doc("Lossless 64-bit integer value")
+  int: AttributeIntValue,
+
+  @doc("Lossless finite or non-finite 64-bit floating point value")
+  double: AttributeDoubleValue,
+
+  @doc("Bytes value projected as an explicit tagged object")
+  bytes: AttributeBytesValue,
+
+  @doc("Recursive key-value-list value")
+  kvlist: AttributeKeyValueListValue,
+}
+
+@doc("Lossless JSON projection of an OpenTelemetry AnyValue attribute. Primitive variants are bare JSON values; object variants carry a `type` tag.")
 union AttributeValue {
   @doc("Empty AnyValue")
   emptyValue: null,
@@ -266,20 +282,11 @@ union AttributeValue {
   @doc("Boolean value")
   boolValue: boolean,
 
-  @doc("Lossless 64-bit integer value")
-  intValue: AttributeIntValue,
-
-  @doc("Lossless finite or non-finite 64-bit floating point value")
-  doubleValue: AttributeDoubleValue,
-
-  @doc("Bytes value projected as an explicit tagged object")
-  bytesValue: AttributeBytesValue,
-
   @doc("Nested and heterogeneous array value")
   arrayValue: AttributeValue[],
 
-  @doc("Recursive key-value-list value")
-  keyValueListValue: AttributeKeyValueListValue,
+  @doc("Tagged object value")
+  objectValue: AttributeObjectValue,
 }
 
 @doc("Key-value attribute pair following OTel conventions")

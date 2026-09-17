@@ -40,8 +40,8 @@ model LogRecord {
   @encodedName("application/json", "severity_text")
   severityText?: SeverityText;
 
-  @doc("Log body - the main content")
-  body: LogBody;
+  @doc("Log body: the OTLP AnyValue, projected exactly like an attribute value")
+  body: AttributeValue;
 
   @doc("Log attributes")
   attributes?: Attribute[];
@@ -76,50 +76,6 @@ model LogRecord {
 // =============================================================================
 // Log Body Types (Discriminated Union)
 // =============================================================================
-
-@doc("Log body content - can be string, structured, or bytes")
-@discriminated(#{ envelope: "none" })
-union LogBody {
-  @doc("Plain string body")
-  stringBody: LogBodyString,
-
-  @doc("Structured key-value body")
-  kvListBody: LogBodyKvList,
-
-  @doc("Array body")
-  arrayBody: LogBodyArray,
-
-  @doc("Binary body")
-  bytesBody: LogBodyBytes,
-}
-
-@doc("String log body")
-model LogBodyString {
-  @doc("String value")
-  @encodedName("application/json", "string_value")
-  stringValue: string;
-}
-
-@doc("Structured key-value log body")
-model LogBodyKvList {
-  @doc("Key-value pairs")
-  @encodedName("application/json", "kv_list_value")
-  kvListValue: Attribute[];
-}
-
-@doc("Array log body")
-model LogBodyArray {
-  @doc("Array of values")
-  @encodedName("application/json", "array_value")
-  arrayValue: AttributeValue[];
-}
-
-@doc("Binary log body")
-model LogBodyBytes {
-  @doc("Binary value (base64 encoded)")
-  @encodedName("application/json", "bytes_value")
-  bytesValue: bytes;
-}
 
 // =============================================================================
 // Structured Log Templates

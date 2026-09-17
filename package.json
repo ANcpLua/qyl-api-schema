@@ -53,6 +53,11 @@
       "types": "./generated/zod-runtime/index.d.ts",
       "import": "./generated/zod-runtime/index.js",
       "default": "./generated/zod-runtime/index.js"
+    },
+    "./runtime": {
+      "types": "./generated/runtime/index.d.ts",
+      "import": "./generated/runtime/index.js",
+      "default": "./generated/runtime/index.js"
     }
   },
   "files": [
@@ -76,12 +81,15 @@
     "otel/span.tsp",
     "generated/ts-runtime/api.d.ts",
     "generated/ts-runtime/api.js",
+    "generated/ts-runtime/runtime.d.ts",
+    "generated/ts-runtime/runtime.js",
     "generated/openapi/qyl.openapi.json",
     "generated/json-schema/qyl-api-schema.json",
     "generated/zod-runtime/index.d.ts",
     "generated/zod-runtime/index.js",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "generated/runtime"
   ],
   "publishConfig": {
     "access": "public",
@@ -97,7 +105,7 @@
     "emit:contract-revision": "node scripts/emit-contract-revision.mjs",
     "prepare": "bun run build:emitters",
     "prepack": "bun run compile",
-    "compile": "bun run clean:generated && bun run build:emitters && tsp compile main.tsp && bun run emit:contract-revision && bun run build:json-schema && bun run build:ts-runtime && bun run build:zod-runtime",
+    "compile": "bun run clean:generated && bun run build:emitters && tsp compile main.tsp && bun run emit:contract-revision && bun run build:json-schema && bun run build:ts-runtime && bun run build:runtime && bun run build:zod-runtime",
     "format": "tsp format **/*.tsp",
     "lint": "bun run build:emitters && tsp compile main.tsp --no-emit --warn-as-error",
     "lint:public": "bun run build:emitters && tsp compile index.tsp --no-emit --warn-as-error",
@@ -105,7 +113,8 @@
     "verify:contracts": "node scripts/verify-contract-fixtures.mjs",
     "verify:zod-contracts": "bun run build:zod-runtime && node scripts/verify-zod-contracts.mjs",
     "verify:lint-rules": "bun run build:emitters && node scripts/verify-lint-rules.mjs",
-    "lint:js": "oxlint ."
+    "lint:js": "oxlint .",
+    "build:runtime": "tsc -p tsconfig.runtime.json"
   },
   "peerDependencies": {
     "@typespec/compiler": "^1.13.0 || >=1.13.0-dev.0",

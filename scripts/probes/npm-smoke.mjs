@@ -26,6 +26,8 @@ import schema from "@ancplua/qyl-api-schema/json-schema" with { type: "json" };
 // the published runtime loads under a consumer's own zod rather than one hoisted
 // out of this repository.
 import { contractDefinitionNames, publishedContractSchema } from "@ancplua/qyl-api-schema/zod";
+// The runtime subpath ships the generated matcher and the presentation policy over it.
+import { attributeIdentity, attributeNumber, formatAttributeValue, matchAttributeValue } from "@ancplua/qyl-api-schema/runtime";
 
 const workbenchRef = (name) => `#/$defs/Workbench.${name}`;
 
@@ -62,20 +64,42 @@ const opaqueSdkBoundaries = !schema.$defs["Workbench.WorkbenchContent"]
     && !schema.$defs["Workbench.WorkbenchExecutionRecord"]?.properties?.result?.$ref;
 
 const attributeVariants = schema.$defs["Common.AttributeValue"]?.anyOf ?? [];
+const attributeObjectValue = schema.$defs["Common.AttributeObjectValue"];
+const attributeObjectVariants = attributeObjectValue?.oneOf ?? [];
 const attributeDouble = schema.$defs["Common.AttributeDouble"];
-const losslessAttributeValue = attributeVariants.length === 8
+// Two levels: bare JSON primitives (and an array of the union itself) at the top, and one
+// object member whose variants are discriminated by their `type` tag.
+const losslessAttributeValue = attributeVariants.length === 5
     && attributeVariants.some((variant) => variant.type === "null")
-    && attributeVariants.some((variant) => variant.$ref === "#/$defs/Common.AttributeIntValue")
-    && attributeVariants.some((variant) => variant.$ref === "#/$defs/Common.AttributeDoubleValue")
-    && attributeVariants.some((variant) => variant.$ref === "#/$defs/Common.AttributeBytesValue")
+    && attributeVariants.some((variant) => variant.type === "string")
+    && attributeVariants.some((variant) => variant.type === "boolean")
     && attributeVariants.some((variant) =>
         variant.type === "array" && variant.items?.$ref === "#/$defs/Common.AttributeValue")
-    && attributeVariants.some((variant) => variant.$ref === "#/$defs/Common.AttributeKeyValueListValue")
+    && attributeVariants.some((variant) => variant.$ref === "#/$defs/Common.AttributeObjectValue")
+    && attributeObjectValue?.discriminator?.propertyName === "type"
+    && attributeObjectVariants.length === 4
+    && attributeObjectVariants.some((variant) => variant.$ref === "#/$defs/Common.AttributeIntValue")
+    && attributeObjectVariants.some((variant) => variant.$ref === "#/$defs/Common.AttributeDoubleValue")
+    && attributeObjectVariants.some((variant) => variant.$ref === "#/$defs/Common.AttributeBytesValue")
+    && attributeObjectVariants.some((variant) => variant.$ref === "#/$defs/Common.AttributeKeyValueListValue")
+    && JSON.stringify(schema.$defs["Common.AttributeIntValue"]?.properties?.type?.enum) === JSON.stringify(["int"])
     && schema.$defs["Common.AttributeInt64"]?.type === "string"
     && JSON.stringify(attributeDouble?.anyOf?.[1]?.enum) === JSON.stringify(["NaN", "Infinity", "-Infinity"])
     && schema.$defs["Common.AttributeBytesValue"]?.properties?.base64?.contentEncoding === "base64"
     && schema.$defs["Common.AttributeKeyValueListValue"]?.properties?.values?.unevaluatedProperties?.$ref
         === "#/$defs/Common.AttributeValue";
+
+const kvlistFixture = {
+    type: "kvlist",
+    values: { n: { type: "int", value: "9223372036854775807" }, f: { type: "double", value: "NaN" }, b: { type: "bytes", base64: "AQ==" }, items: ["x", true, null] },
+};
+const runtimeDecodesEveryVariant =
+    formatAttributeValue(kvlistFixture) === '{"n":"9223372036854775807","f":"NaN","b":{"type":"bytes","base64":"AQ=="},"items":["x",true,null]}'
+    && formatAttributeValue(null) === "null"
+    && attributeNumber({ type: "int", value: "42" }) === 42
+    && attributeNumber({ type: "int", value: "9223372036854775807" }) === undefined
+    && attributeIdentity({ type: "kvlist", values: { b: 1 === 1, a: "x" } }) === attributeIdentity({ type: "kvlist", values: { a: "x", b: true } })
+    && matchAttributeValue(true, { emptyValue: () => "e", stringValue: () => "s", boolValue: () => "b", arrayValue: () => "a", int: () => "i", double: () => "d", bytes: () => "y", kvlist: () => "k" }) === "b";
 
 const entityRef = schema.$defs["Common.EntityRef"];
 const resourceContract = schema.$defs["OTel.Resource.Resource"];
@@ -212,6 +236,7 @@ const checks = [
     ["metricSurfacePresent", metricSurfacePresent],
     ["eventLogContract", eventLogContract],
     ["losslessAttributeValue", losslessAttributeValue],
+    ["runtimeDecodesEveryVariant", runtimeDecodesEveryVariant],
     ["exactEntityRef", exactEntityRef],
     ["exactServerConfigurationUnion", exactServerConfigurationUnion],
     ["exactAssertionUnion", exactAssertionUnion],

@@ -226,7 +226,10 @@ function renderModel(program: Program, model: Model, emittedName: string, unions
       const ignoreNull = "    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]\n";
       props.push(`${numberHandling}${ignoreNull}    [JsonPropertyName("${jsonName}")]\n    public ${optionalType} ${name} { get; init; }`);
     } else {
-      props.push(`${numberHandling}    [JsonPropertyName("${jsonName}")]\n    public required ${type} ${name} { get; init; }`);
+      // A required property whose type admits null must be written even when null; a consumer's
+      // context-wide WhenWritingNull policy would otherwise drop it and fail its own reader.
+      const alwaysWrite = type.endsWith("?") ? "    [JsonIgnore(Condition = JsonIgnoreCondition.Never)]\n" : "";
+      props.push(`${numberHandling}${alwaysWrite}    [JsonPropertyName("${jsonName}")]\n    public required ${type} ${name} { get; init; }`);
     }
   }
   const body = props.length ? `\n${props.join("\n")}\n` : "\n";

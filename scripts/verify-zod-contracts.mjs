@@ -127,12 +127,16 @@ const unixNanos = publishedContractSchema("Common.UnixNanos");
 if (!unixNanos.safeParse("1742000000123456789").success) {
   throw new Error("Common.UnixNanos must accept a full-precision nanosecond timestamp as a decimal string.");
 }
+// The imprecise literal is the input under test: an unencoded number must be
+// rejected precisely because it cannot round-trip.
+// oxlint-disable-next-line no-loss-of-precision
 if (unixNanos.safeParse("1.5").success || unixNanos.safeParse(1742000000123456789).success) {
   throw new Error("Common.UnixNanos must reject non-integral strings and unencoded numbers.");
 }
 const byteSize = publishedContractSchema("Common.ByteSize");
 // 2^53 + 1: the first integer JavaScript numbers cannot represent exactly, and
 // the boundary Zod's int64 conversion would have refused.
+// oxlint-disable-next-line no-loss-of-precision -- 2^53+1, per the comment above
 if (!byteSize.safeParse(9007199254740993).success) {
   throw new Error(
     "Common.ByteSize (integer/int64) must accept a value above 2^53. Zod's int64 range check leaked back in; " +

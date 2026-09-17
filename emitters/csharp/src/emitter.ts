@@ -285,12 +285,12 @@ function renderPolymorphicUnion(program: Program, union: Union): string {
   return `[JsonConverter(typeof(${converter}))]\npublic interface ${union.name}\n{\n}\n\npublic sealed class ${converter} : JsonConverter<${union.name}>\n{\n    public override ${union.name}? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)\n    {\n        if (reader.TokenType == JsonTokenType.Null) return null;\n        using var document = JsonDocument.ParseValue(ref reader);\n        var root = document.RootElement;\n        if (root.ValueKind != JsonValueKind.Object) throw new JsonException("${union.name} must be a JSON object.");\n${presence}\n        if (${count} != 1) throw new JsonException("${union.name} must contain exactly one variant field.");\n${reads}\n        throw new JsonException("${union.name} did not match a known variant.");\n    }\n\n    public override void Write(Utf8JsonWriter writer, ${union.name} value, JsonSerializerOptions options)\n    {\n        switch (value)\n        {\n${writes}\n            default:\n                throw new JsonException($"Unknown ${union.name} implementation '{value.GetType().FullName}'.");\n        }\n    }\n}\n`;
 }
 
-function isHttpMetadata(program: Program, property: import("@typespec/compiler").ModelProperty): boolean {
+function isHttpMetadata(program: Program, property: ModelProperty): boolean {
   return isHeader(program, property) || isStatusCode(program, property);
 }
 
-function inheritedProperties(model: Model): import("@typespec/compiler").ModelProperty[] {
-  const byName = new Map<string, import("@typespec/compiler").ModelProperty>();
+function inheritedProperties(model: Model): ModelProperty[] {
+  const byName = new Map<string, ModelProperty>();
   const lineage: Model[] = [];
   for (let current: Model | undefined = model; current; current = current.baseModel) {
     lineage.unshift(current);

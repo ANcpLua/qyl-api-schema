@@ -17,6 +17,7 @@ import {
     WorkbenchExecutionStatusValues,
     // Unused below on purpose: a named ESM import of a missing binding is a
     // link-time error, so the import itself asserts the export survives.
+    // oxlint-disable-next-line no-unused-vars
     WorkbenchTransportKindValues,
 } from "@ancplua/qyl-api-schema/types";
 import openapi from "@ancplua/qyl-api-schema/openapi" with { type: "json" };

@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  merge_group:
+
+permissions:
+  contents: read
+
+jobs:
+  # Lint and typecheck ran only inside publish.yml, i.e. after merge. This gates
+  # them on the pull request instead, so a contract or emitter break is named
+  # before it lands rather than when a release is already in flight.
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: '24'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@ancplua'
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version-file: package.json
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build local emitters
+        run: bun run build:emitters
+
+      - name: Lint TypeSpec (full surface)
+        run: bun run lint
+
+      - name: Lint TypeSpec (published surface only)
+        run: bun run lint:public
+
+      - name: Lint emitter and script sources
+        run: bun run lint:js

@@ -104,7 +104,8 @@
     "verify:routes": "node scripts/verify-route-contracts.mjs",
     "verify:contracts": "node scripts/verify-contract-fixtures.mjs",
     "verify:zod-contracts": "bun run build:zod-runtime && node scripts/verify-zod-contracts.mjs",
-    "verify:lint-rules": "bun run build:emitters && node scripts/verify-lint-rules.mjs"
+    "verify:lint-rules": "bun run build:emitters && node scripts/verify-lint-rules.mjs",
+    "lint:js": "oxlint ."
   },
   "peerDependencies": {
     "@typespec/compiler": "^1.13.0 || >=1.13.0-dev.0",
@@ -150,6 +151,8 @@
     "@typespec/openapi3": "1.16.0",
     "@typespec/sse": "0.86.0",
     "ajv": "8.20.0",
+    "oxlint": "^1.83.0",
+    "oxlint-tsgolint": "^7.0.2001",
     "typescript": "7.0.2",
     "zod": "4.5.4"
   }

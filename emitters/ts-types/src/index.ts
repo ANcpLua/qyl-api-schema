@@ -6,6 +6,7 @@ import type {
   IntrinsicType,
   Model,
   NumericLiteral,
+  Program,
   Scalar,
   StringLiteral,
   Tuple,
@@ -106,7 +107,7 @@ export async function $onEmit(context: EmitContext): Promise<void> {
 }
 
 function collectMediaType(
-  program: import("@typespec/compiler").Program,
+  program: Program,
   model: Model,
   emitted: Set<string>,
   output: string[],
@@ -131,13 +132,13 @@ function renderEnum(e: Enum): string {
   return `export const ${e.name}Values = {\n${entries},\n} as const;\nexport type ${e.name} = typeof ${e.name}Values[keyof typeof ${e.name}Values];\n`;
 }
 
-function renderUnion(program: import("@typespec/compiler").Program, union: Union): string {
+function renderUnion(program: Program, union: Union): string {
   const variants = [...union.variants.values()].map((variant) => mapType(program, variant.type));
   return `export type ${union.name} = ${[...new Set(variants)].join(" | ")};\n`;
 }
 
 function renderInterface(
-  program: import("@typespec/compiler").Program,
+  program: Program,
   m: Model,
   emittedName: string,
 ): string {
@@ -155,7 +156,7 @@ function renderInterface(
 }
 
 function renderRecordInterface(
-  program: import("@typespec/compiler").Program,
+  program: Program,
   model: Model,
 ): string {
   const value = model.indexer?.value;
@@ -163,7 +164,7 @@ function renderRecordInterface(
   return `export interface ${model.name} {\n  [key: string]: ${mapType(program, value)};\n}\n`;
 }
 
-function hasBodyProperties(program: import("@typespec/compiler").Program, model: Model): boolean {
+function hasBodyProperties(program: Program, model: Model): boolean {
   for (let current: Model | undefined = model; current; current = current.baseModel) {
     for (const property of current.properties.values()) {
       if (!isHeader(program, property) && !isStatusCode(program, property)) return true;
@@ -183,7 +184,7 @@ function emittedModelName(model: Model): string {
   return parts.join("");
 }
 
-function mapType(program: import("@typespec/compiler").Program, type: Type): string {
+function mapType(program: Program, type: Type): string {
   switch (type.kind) {
     case "Scalar": {
       const s = type as Scalar;

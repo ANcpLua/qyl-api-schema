@@ -3,3 +3,14 @@
 [tools]
 "bun" = "1.4.2"
 "dotnet" = "10.0.401"
+
+[tasks.check]
+description = "The gate: what CI runs, in order"
+run = [
+  "bun install --frozen-lockfile",
+  "bun run lint",
+  "bun run lint:public",
+  "bun run compile",
+  "bun run lint:js",
+  "./build.sh Check",
+]

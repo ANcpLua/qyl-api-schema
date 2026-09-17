@@ -3,7 +3,6 @@
   "version": "0.0.0-development",
   "description": "TypeSpec source of truth for qyl API contracts. Emits OpenAPI, JSON Schema, Qyl.Api.Contracts DTOs, and TypeScript contract types; not an OpenTelemetry package, storage schema, or server implementation.",
   "license": "Apache-2.0",
-  "packageManager": "bun@1.4.2",
   "workspaces": [
     "emitters/csharp",
     "emitters/ts-types",

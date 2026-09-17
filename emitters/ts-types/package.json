@@ -18,9 +18,9 @@
     "build": "tsc -p ."
   },
   "peerDependencies": {
-    "@typespec/compiler": "^1.13.0-dev",
-    "@typespec/http": "^1.13.0",
-    "@typespec/openapi": "^1.13.0"
+    "@typespec/compiler": "^1.16.0",
+    "@typespec/http": "^1.16.0",
+    "@typespec/openapi": "^1.16.0"
   },
   "devDependencies": {
     "@types/node": "26.4.1",

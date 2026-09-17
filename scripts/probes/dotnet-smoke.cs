@@ -65,6 +65,24 @@ var kvlistAttribute = new OTelAttribute
     }),
 };
 
+// One identity in every language: the same literal the npm probe asserts.
+var identityFixture = new AttributeValue.ObjectValue(new AttributeKeyValueListValue
+{
+    Values = new Dictionary<string, AttributeValue?>
+    {
+        ["n"] = new AttributeValue.ObjectValue(new AttributeIntValue { Value = long.MaxValue }),
+        ["f"] = new AttributeValue.ObjectValue(new AttributeDoubleValue { Value = double.NaN }),
+        ["g"] = new AttributeValue.ObjectValue(new AttributeDoubleValue { Value = 1e21 }),
+        ["h"] = new AttributeValue.ObjectValue(new AttributeDoubleValue { Value = 0.5 }),
+        ["b"] = new AttributeValue.ObjectValue(new AttributeBytesValue { Base64 = new byte[] { 1 } }),
+        ["items"] = new AttributeValue.ArrayValue([new AttributeValue.StringValue("x"), new AttributeValue.BoolValue(true), null]),
+        ["s"] = new AttributeValue.StringValue("line\n\"q\""),
+    },
+});
+const string identityCanonical = "{\"type\":\"kvlist\",\"values\":{\"b\":{\"base64\":\"AQ==\",\"type\":\"bytes\"},\"f\":{\"type\":\"double\",\"value\":\"NaN\"},\"g\":{\"type\":\"double\",\"value\":1e+21},\"h\":{\"type\":\"double\",\"value\":0.5},\"items\":[\"x\",true,null],\"n\":{\"type\":\"int\",\"value\":\"9223372036854775807\"},\"s\":\"line\\n\\\"q\\\"\"}}";
+var identityAgreesAcrossLanguages = identityFixture.ToStableString() == identityCanonical
+    && AttributeValue.StableString(null) == "null";
+
 var entityRef = new EntityRef
 {
     SchemaUrl = "https://opentelemetry.io/schemas/1.44.0",
@@ -198,6 +216,7 @@ var checks = new (string Name, bool Ok)[]
     ("problemDetailsMediaType", ProblemDetailsMediaType.Value == "application/problem+json"),
     ("eventLogWireEventName", eventLogWire.Contains("\"event_name\":\"gen_ai.evaluation.result\"")),
     ("otlpFidelityValid", otlpFidelityValid),
+    ("identityAgreesAcrossLanguages", identityAgreesAcrossLanguages),
     ("removedSignalContractsAbsent", removedSignalContractsAbsent),
     ("metricContractsPresent", metricContractsPresent),
     ("fetchTelemetryInputNamespace", typeof(FetchTelemetryInput).Namespace == "Qyl.Api.Contracts.Mcp.Tools"),

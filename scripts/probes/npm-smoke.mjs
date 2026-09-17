@@ -108,6 +108,22 @@ const typedSchemaCoversEveryDefinition =
     && contractSchema("Common.Errors.ProblemDetails") === publishedContractSchema("Common.Errors.ProblemDetails")
     && contractSchema("OTel.Traces.Span").safeParse({}).success === false;
 
+// One identity in every language: this literal is asserted byte for byte by the .NET probe too.
+const identityFixture = {
+    type: "kvlist",
+    values: {
+        n: { type: "int", value: "9223372036854775807" },
+        f: { type: "double", value: "NaN" },
+        g: { type: "double", value: 1e21 },
+        h: { type: "double", value: 0.5 },
+        b: { type: "bytes", base64: "AQ==" },
+        items: ["x", true, null],
+        s: "line\n\"q\"",
+    },
+};
+const identityCanonical = "{\"type\":\"kvlist\",\"values\":{\"b\":{\"base64\":\"AQ==\",\"type\":\"bytes\"},\"f\":{\"type\":\"double\",\"value\":\"NaN\"},\"g\":{\"type\":\"double\",\"value\":1e+21},\"h\":{\"type\":\"double\",\"value\":0.5},\"items\":[\"x\",true,null],\"n\":{\"type\":\"int\",\"value\":\"9223372036854775807\"},\"s\":\"line\\n\\\"q\\\"\"}}";
+const identityAgreesAcrossLanguages = attributeIdentity(identityFixture) === identityCanonical;
+
 const entityRef = schema.$defs["Common.EntityRef"];
 const resourceContract = schema.$defs["OTel.Resource.Resource"];
 const exactEntityRef = entityRef?.required?.includes("type")
@@ -245,6 +261,7 @@ const checks = [
     ["losslessAttributeValue", losslessAttributeValue],
     ["runtimeDecodesEveryVariant", runtimeDecodesEveryVariant],
     ["typedSchemaCoversEveryDefinition", typedSchemaCoversEveryDefinition],
+    ["identityAgreesAcrossLanguages", identityAgreesAcrossLanguages],
     ["exactEntityRef", exactEntityRef],
     ["exactServerConfigurationUnion", exactServerConfigurationUnion],
     ["exactAssertionUnion", exactAssertionUnion],

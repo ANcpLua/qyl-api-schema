@@ -13074,8 +13074,7 @@
       "Common.AttributeInt64": {
         "type": "string",
         "format": "int64",
-        "description": "An OTLP signed 64-bit attribute integer encoded without JavaScript precision loss.",
-        "x-csharp-type": "long"
+        "description": "An OTLP signed 64-bit attribute integer encoded without JavaScript precision loss."
       },
       "Common.AttributeIntValue": {
         "type": "object",
@@ -13197,8 +13196,7 @@
         "type": "integer",
         "format": "int64",
         "minimum": 0,
-        "description": "Size in bytes",
-        "x-csharp-type": "long"
+        "description": "Size in bytes"
       },
       "Common.ContentType": {
         "type": "string",
@@ -13221,29 +13219,25 @@
         "type": "number",
         "format": "double",
         "minimum": 0,
-        "description": "Cost in USD (floating point)",
-        "x-csharp-type": "double"
+        "description": "Cost in USD (floating point)"
       },
       "Common.Count": {
         "type": "integer",
         "format": "int64",
         "minimum": 0,
-        "description": "Generic non-negative counter",
-        "x-csharp-type": "long"
+        "description": "Generic non-negative counter"
       },
       "Common.DurationMs": {
         "type": "number",
         "format": "double",
         "minimum": 0,
-        "description": "Duration in milliseconds",
-        "x-csharp-type": "double"
+        "description": "Duration in milliseconds"
       },
       "Common.DurationNs": {
         "type": "string",
         "format": "uint64",
         "minimum": 0,
-        "description": "Duration in nanoseconds, encoded as a decimal string",
-        "x-csharp-type": "ulong"
+        "description": "Duration in nanoseconds, encoded as a decimal string"
       },
       "Common.DurationS": {
         "type": "number",
@@ -13879,24 +13873,21 @@
         "format": "double",
         "minimum": 0,
         "maximum": 100,
-        "description": "Percentage value (0.0 to 100.0)",
-        "x-csharp-type": "double"
+        "description": "Percentage value (0.0 to 100.0)"
       },
       "Common.Port": {
         "type": "integer",
         "format": "int32",
         "minimum": 1,
         "maximum": 65535,
-        "description": "Network port number (1-65535)",
-        "x-csharp-type": "int"
+        "description": "Network port number (1-65535)"
       },
       "Common.Ratio": {
         "type": "number",
         "format": "double",
         "minimum": 0,
         "maximum": 1,
-        "description": "Ratio value (0.0 to 1.0)",
-        "x-csharp-type": "double"
+        "description": "Ratio value (0.0 to 1.0)"
       },
       "Common.SemVer": {
         "type": "string",
@@ -13934,8 +13925,7 @@
         "format": "double",
         "minimum": 0,
         "maximum": 2,
-        "description": "Temperature setting for LLM requests (0.0-2.0)",
-        "x-csharp-type": "double"
+        "description": "Temperature setting for LLM requests (0.0-2.0)"
       },
       "Common.Timestamp": {
         "type": "string",
@@ -13946,8 +13936,7 @@
         "type": "integer",
         "format": "int64",
         "minimum": 0,
-        "description": "Token count (for LLM operations)",
-        "x-csharp-type": "long"
+        "description": "Token count (for LLM operations)"
       },
       "Common.TraceId": {
         "type": "string",
@@ -13978,8 +13967,7 @@
         "type": "string",
         "format": "uint64",
         "minimum": 0,
-        "description": "Unsigned Unix timestamp in nanoseconds since epoch, encoded as a decimal string",
-        "x-csharp-type": "ulong"
+        "description": "Unsigned Unix timestamp in nanoseconds since epoch, encoded as a decimal string"
       },
       "Common.UrlPath": {
         "type": "string",
@@ -14160,8 +14148,7 @@
         "unevaluatedProperties": {
           "not": {}
         },
-        "description": "Complete session entity with aggregated data",
-        "x-csharp-type": "SessionEntity"
+        "description": "Complete session entity with aggregated data"
       },
       "Domains.Observe.Session.SessionEvent": {
         "type": "object",

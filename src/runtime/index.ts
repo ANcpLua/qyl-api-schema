@@ -7,6 +7,8 @@
 import type { AttributeValue } from "@ancplua/qyl-api-schema/types";
 import { matchAttributeValue } from "../../generated/ts-runtime/runtime.js";
 
+export * from "./time.js";
+
 export {
   AttributeObjectValueTags,
   isAttributeObjectValue,

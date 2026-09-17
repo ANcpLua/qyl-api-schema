@@ -11,6 +11,7 @@
     "target": "ES2022"
   },
   "include": [
-    "src/runtime/index.ts"
+    "src/runtime/index.ts",
+    "src/runtime/time.ts"
   ]
 }

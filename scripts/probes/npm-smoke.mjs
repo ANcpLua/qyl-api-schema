@@ -25,7 +25,7 @@ import schema from "@ancplua/qyl-api-schema/json-schema" with { type: "json" };
 // zod is an optional peer, so this import also proves the subpath resolves and
 // the published runtime loads under a consumer's own zod rather than one hoisted
 // out of this repository.
-import { contractDefinitionNames, publishedContractSchema } from "@ancplua/qyl-api-schema/zod";
+import { contractDefinitionKeys, contractDefinitionNames, contractSchema, publishedContractSchema } from "@ancplua/qyl-api-schema/zod";
 // The runtime subpath ships the generated matcher and the presentation policy over it.
 import { attributeIdentity, attributeNumber, formatAttributeValue, matchAttributeValue } from "@ancplua/qyl-api-schema/runtime";
 
@@ -100,6 +100,13 @@ const runtimeDecodesEveryVariant =
     && attributeNumber({ type: "int", value: "9223372036854775807" }) === undefined
     && attributeIdentity({ type: "kvlist", values: { b: 1 === 1, a: "x" } }) === attributeIdentity({ type: "kvlist", values: { a: "x", b: true } })
     && matchAttributeValue(true, { emptyValue: () => "e", stringValue: () => "s", boolValue: () => "b", arrayValue: () => "a", int: () => "i", double: () => "d", bytes: () => "y", kvlist: () => "k" }) === "b";
+
+// The generated name -> type map is the whole published surface, and the typed accessor
+// resolves the same validator the string one does.
+const typedSchemaCoversEveryDefinition =
+    JSON.stringify([...contractDefinitionKeys].sort()) === JSON.stringify([...contractDefinitionNames()].sort())
+    && contractSchema("Common.Errors.ProblemDetails") === publishedContractSchema("Common.Errors.ProblemDetails")
+    && contractSchema("OTel.Traces.Span").safeParse({}).success === false;
 
 const entityRef = schema.$defs["Common.EntityRef"];
 const resourceContract = schema.$defs["OTel.Resource.Resource"];
@@ -237,6 +244,7 @@ const checks = [
     ["eventLogContract", eventLogContract],
     ["losslessAttributeValue", losslessAttributeValue],
     ["runtimeDecodesEveryVariant", runtimeDecodesEveryVariant],
+    ["typedSchemaCoversEveryDefinition", typedSchemaCoversEveryDefinition],
     ["exactEntityRef", exactEntityRef],
     ["exactServerConfigurationUnion", exactServerConfigurationUnion],
     ["exactAssertionUnion", exactAssertionUnion],

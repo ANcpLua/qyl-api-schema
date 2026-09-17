@@ -83,6 +83,8 @@
     "generated/ts-runtime/api.js",
     "generated/ts-runtime/runtime.d.ts",
     "generated/ts-runtime/runtime.js",
+    "generated/ts-runtime/schemas.js",
+    "generated/ts-runtime/schemas.d.ts",
     "generated/openapi/qyl.openapi.json",
     "generated/json-schema/qyl-api-schema.json",
     "generated/zod-runtime/index.d.ts",

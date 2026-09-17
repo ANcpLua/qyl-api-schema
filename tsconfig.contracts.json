@@ -12,6 +12,7 @@
   },
   "include": [
     "generated/ts-types/api.ts",
-    "generated/ts-types/runtime.ts"
+    "generated/ts-types/runtime.ts",
+    "generated/ts-types/schemas.ts"
   ]
 }

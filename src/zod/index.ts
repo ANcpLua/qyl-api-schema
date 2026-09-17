@@ -10,6 +10,10 @@
 // map, so this file resolves the same artifact from source, from
 // generated/zod-runtime, and from inside an installed node_modules copy.
 import contractJsonSchema from "@ancplua/qyl-api-schema/json-schema" with { type: "json" };
+import type { ContractDefinitionName, ContractDefinitions } from "../../generated/ts-runtime/schemas.js";
+
+export type { ContractDefinitionName, ContractDefinitions };
+export { contractDefinitionKeys } from "../../generated/ts-runtime/schemas.js";
 import { z } from "zod";
 
 type JsonSchemaObject = Record<string, unknown>;
@@ -270,6 +274,20 @@ const publishedContractSchemas = new Map<string, z.ZodType<unknown>>();
  * const span = SpanSchema.parse(await response.json());
  * ```
  */
+/**
+ * A validator for a published definition with its TypeScript type bound by the emitter:
+ * the name is checked at compile time and the result type cannot be paired wrongly.
+ *
+ * ```ts
+ * const span = contractSchema("OTel.Traces.Span").parse(await response.json());
+ * ```
+ */
+export function contractSchema<TName extends ContractDefinitionName>(
+  definitionName: TName,
+): z.ZodType<ContractDefinitions[TName]> {
+  return publishedContractSchema<ContractDefinitions[TName]>(definitionName);
+}
+
 export function publishedContractSchema<TContract>(definitionName: string): z.ZodType<TContract> {
   const cached = publishedContractSchemas.get(definitionName);
   if (cached) return cached as z.ZodType<TContract>;

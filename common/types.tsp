@@ -64,18 +64,15 @@ scalar Timestamp extends utcDateTime;
 @doc("Unsigned Unix timestamp in nanoseconds since epoch, encoded as a decimal string")
 @minValue(0)
 @encode(string)
-@TypeSpec.OpenAPI.extension("x-csharp-type", "ulong")
 scalar UnixNanos extends uint64;
 
 @doc("Duration in nanoseconds, encoded as a decimal string")
 @minValue(0)
 @encode(string)
-@TypeSpec.OpenAPI.extension("x-csharp-type", "ulong")
 scalar DurationNs extends uint64;
 
 @doc("Duration in milliseconds")
 @minValue(0)
-@TypeSpec.OpenAPI.extension("x-csharp-type", "double")
 scalar DurationMs extends float64;
 
 @doc("Duration in seconds")
@@ -105,7 +102,6 @@ scalar IpAddress extends string;
 @doc("Network port number (1-65535)")
 @minValue(1)
 @maxValue(65535)
-@TypeSpec.OpenAPI.extension("x-csharp-type", "int")
 scalar Port extends int32;
 
 @doc("MAC address in colon-separated hex notation")
@@ -119,29 +115,24 @@ scalar MacAddress extends string;
 
 @doc("Size in bytes")
 @minValue(0)
-@TypeSpec.OpenAPI.extension("x-csharp-type", "long")
 scalar ByteSize extends int64;
 
 @doc("Token count (for LLM operations)")
 @minValue(0)
-@TypeSpec.OpenAPI.extension("x-csharp-type", "long")
 scalar TokenCount extends int64;
 
 @doc("Generic non-negative counter")
 @minValue(0)
-@TypeSpec.OpenAPI.extension("x-csharp-type", "long")
 scalar Count extends int64;
 
 @doc("Percentage value (0.0 to 100.0)")
 @minValue(0.0)
 @maxValue(100.0)
-@TypeSpec.OpenAPI.extension("x-csharp-type", "double")
 scalar Percentage extends float64;
 
 @doc("Ratio value (0.0 to 1.0)")
 @minValue(0.0)
 @maxValue(1.0)
-@TypeSpec.OpenAPI.extension("x-csharp-type", "double")
 scalar Ratio extends float64;
 
 // =============================================================================
@@ -150,13 +141,11 @@ scalar Ratio extends float64;
 
 @doc("Cost in USD (floating point)")
 @minValue(0)
-@TypeSpec.OpenAPI.extension("x-csharp-type", "double")
 scalar CostUsd extends float64;
 
 @doc("Temperature setting for LLM requests (0.0-2.0)")
 @minValue(0)
 @maxValue(2)
-@TypeSpec.OpenAPI.extension("x-csharp-type", "double")
 scalar Temperature extends float64;
 
 // =============================================================================
@@ -226,7 +215,6 @@ model AttributeBytesValue {
 
 @doc("An OTLP signed 64-bit attribute integer encoded without JavaScript precision loss.")
 @encode(string)
-@TypeSpec.OpenAPI.extension("x-csharp-type", "long")
 scalar AttributeInt64 extends int64;
 
 @doc("An OTLP attribute double encoded as a JSON number when finite or a canonical named string when non-finite.")

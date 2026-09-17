@@ -18,13 +18,15 @@ import {
   emitFile,
   getDiscriminatedUnion,
   getEncode,
+  getPattern,
   isArrayModelType,
   isRecordModelType,
   navigateProgram,
   resolveEncodedName,
   setTypeSpecNamespace,
 } from "@typespec/compiler";
-import { getHeaderFieldName, isHeader, isStatusCode } from "@typespec/http";
+import { getAllHttpServices, getHeaderFieldName, isHeader, isStatusCode } from "@typespec/http";
+import { getOperationId } from "@typespec/openapi";
 import { reportDiagnostic, stateKeys, $lib } from "./lib.js";
 
 export { $lib };
@@ -61,20 +63,33 @@ export async function $onEmit(context: EmitContext): Promise<void> {
   const emittedEnums = new Set<string>();
   const emittedUnions = new Set<string>();
   const runtimeUnions: Union[] = [];
+  /** JSON-schema definition name -> emitted TypeScript type, for the generated ContractDefinitions map. */
+  const definitions = new Map<string, string>();
 
   navigateProgram(program, {
     scalar: (s) => {
       if (isBuiltin(s)) return;
+      definitions.set(definitionName(s), program.stateMap(stateKeys.tsBrand).has(s) ? s.name : mapType(program, s));
       if (!program.stateMap(stateKeys.tsBrand).has(s)) return;
       if (emittedScalars.has(s.name)) return;
       emittedScalars.add(s.name);
       brandBlock.push(`export type ${s.name} = string & { readonly __brand: "${s.name}" };\n`);
+      const pattern = getPattern(program, s);
+      if (pattern !== undefined) {
+        // The guard and the parser come from the scalar's own @pattern, so a cast is never needed.
+        brandBlock.push(
+          `const ${s.name}Pattern = new RegExp(${JSON.stringify(pattern)}, "u");\n` +
+          `export function is${s.name}(value: string): value is ${s.name} {\n  return ${s.name}Pattern.test(value);\n}\n` +
+          `export function parse${s.name}(value: string): ${s.name} {\n  if (!is${s.name}(value)) throw new TypeError(\`Not a ${s.name}: \${JSON.stringify(value)}\`);\n  return value;\n}\n`,
+        );
+      }
     },
     enum: (e) => {
       if (isBuiltin(e)) return;
       if (emittedEnums.has(e.name)) return;
       emittedEnums.add(e.name);
       enumBlock.push(renderEnum(e));
+      definitions.set(definitionName(e), e.name);
     },
     model: (m) => {
       if (isBuiltin(m)) return;
@@ -93,6 +108,8 @@ export async function $onEmit(context: EmitContext): Promise<void> {
       if (emittedModels.has(name)) return;
       emittedModels.add(name);
       modelBlock.push(renderInterface(program, m, name));
+      // Template instantiations are inlined by the OpenAPI emitter and have no definition of their own.
+      if (!m.templateMapper?.args.length) definitions.set(definitionName(m), name);
     },
     union: (u) => {
       if (isBuiltin(u) || !u.name || u.name.endsWith("Auth")) return;
@@ -100,6 +117,7 @@ export async function $onEmit(context: EmitContext): Promise<void> {
       emittedUnions.add(u.name);
       unionBlock.push(renderUnion(program, u));
       if (mixedUnionShape(program, u)) runtimeUnions.push(u);
+      definitions.set(definitionName(u), u.name);
     },
   });
 
@@ -110,6 +128,88 @@ export async function $onEmit(context: EmitContext): Promise<void> {
 
   const runtime = [HEADER, ...runtimeUnions.map((u) => renderMixedUnionRuntime(program, u))];
   await emitFile(program, { path: `${context.emitterOutputDir}/runtime.ts`, content: runtime.join("\n") });
+
+  collectOperationDefinitions(program, definitions);
+  await emitFile(program, { path: `${context.emitterOutputDir}/schemas.ts`, content: renderDefinitions(definitions) });
+}
+
+/** The JSON-schema definition name of a declared type: its namespace below the root, dotted, plus its name. */
+function definitionName(type: { name?: string; namespace?: { name?: string; namespace?: unknown } }): string {
+  const parts: string[] = [];
+  let cursor = type.namespace;
+  while (cursor && cursor.name) {
+    parts.unshift(cursor.name);
+    cursor = cursor.namespace as typeof cursor;
+  }
+  // The root is `Qyl.Api.Contracts`; everything below it is the published spelling.
+  const below = parts.slice(3);
+  return [...below, type.name!].join(".");
+}
+
+/**
+ * One entry per operation body the JSON-schema converter publishes:
+ * `Operations.<operationId>.Request` and `Operations.<operationId>.Response.<status>`, for
+ * single-content JSON bodies. The operationId spelling is the OpenAPI emitter's
+ * parent-container strategy unless the operation declares its own.
+ */
+function collectOperationDefinitions(program: Program, definitions: Map<string, string>): void {
+  const [services] = getAllHttpServices(program);
+  for (const service of services) {
+    for (const operation of service.operations) {
+      const op = operation.operation;
+      const explicit = getOperationId(program, op);
+      const container = op.interface?.name;
+      const operationId = explicit ?? (container ? `${container}_${op.name}` : op.name);
+      const request = operation.parameters.body;
+      if (request && isJsonBody(request.contentTypes) && request.type.kind === "Model") {
+        definitions.set(`Operations.${operationId}.Request`, bodyTypeName(program, request.type));
+      }
+      for (const response of operation.responses) {
+        if (typeof response.statusCodes !== "number") continue;
+        const bodies = response.responses.map((content) => content.body).filter((body) => body !== undefined);
+        if (bodies.length !== 1) continue;
+        const body = bodies[0]!;
+        if (!isJsonBody(body.contentTypes) || body.type.kind === "Intrinsic") continue;
+        definitions.set(`Operations.${operationId}.Response.${response.statusCodes}`, bodyTypeName(program, body.type));
+      }
+    }
+  }
+}
+
+/**
+ * The TypeScript type of a body. An anonymous response model that wraps a single property is
+ * that property's type on the wire; anything else anonymous has no name a consumer can use.
+ */
+function bodyTypeName(program: Program, type: Type): string {
+  if (type.kind === "Model" && !type.name) {
+    const bodyProperties = [...type.properties.values()].filter((p) => !isHeader(program, p) && !isStatusCode(program, p));
+    return bodyProperties.length === 1 ? mapType(program, bodyProperties[0]!.type) : "unknown";
+  }
+  const mapped = mapType(program, type);
+  return mapped.length > 0 ? mapped : "unknown";
+}
+
+function isJsonBody(contentTypes: readonly string[]): boolean {
+  return contentTypes.length === 1 && /json/u.test(contentTypes[0]!);
+}
+
+function renderDefinitions(definitions: Map<string, string>): string {
+  const entries = [...definitions.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+  const usedTypes = new Set<string>();
+  for (const [, type] of entries) for (const name of type.match(/[A-Za-z_][A-Za-z0-9_]*/gu) ?? []) usedTypes.add(name);
+  const keywords = new Set(["string", "number", "boolean", "bigint", "unknown", "null", "undefined", "never", "void", "any", "object"]);
+  const knownTypes = new Set(entries.map(([, t]) => t).filter((t) => /^[A-Za-z_][A-Za-z0-9_]*$/u.test(t) && !keywords.has(t)));
+  const imports = [...usedTypes].filter((name) => knownTypes.has(name)).sort();
+  return (
+    HEADER +
+    `import type { ${imports.join(", ")} } from "./api.js";\n\n` +
+    `/** Every published JSON-schema definition, bound to the TypeScript type it describes. */\n` +
+    `export interface ContractDefinitions {\n` +
+    entries.map(([name, type]) => `  ${JSON.stringify(name)}: ${type};`).join("\n") +
+    `\n}\n\nexport type ContractDefinitionName = keyof ContractDefinitions;\n\n` +
+    `/** The same names at runtime, so a consumer can prove the published surface is covered. */\n` +
+    `export const contractDefinitionKeys = [\n${entries.map(([name]) => `  ${JSON.stringify(name)},`).join("\n")}\n] as const;\n`
+  );
 }
 
 type MixedUnionShape = {

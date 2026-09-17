@@ -45,5 +45,10 @@ jobs:
       - name: Lint TypeSpec (published surface only)
         run: bun run lint:public
 
+      # src/runtime imports the generated types through the package's own exports, so the
+      # type-aware rules need the generated output to exist before they read it.
+      - name: Generate the contract outputs
+        run: bun run compile
+
       - name: Lint emitter and script sources
         run: bun run lint:js

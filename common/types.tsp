@@ -38,9 +38,10 @@ scalar TraceParent extends string;
 @example("rojo=00f067aa0ba902b7,congo=t61rcWkgMzE")
 scalar TraceState extends string;
 
-@doc("Unique session identifier")
+@doc("Unique session identifier: URL-safe characters, at least one, at most 128, not only dots. The same rule the SDK enforces on the baggage header.")
 @minLength(1)
 @maxLength(128)
+@pattern("^(?!\\.+$)[A-Za-z0-9._~-]{1,128}$")
 scalar SessionId extends string;
 
 @doc("User identifier (pseudonymized for privacy)")

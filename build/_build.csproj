@@ -15,10 +15,10 @@
     <PackageReference Include="Fallout.Common" Version="10.4.0" />
   </ItemGroup>
 
-  <!-- Override vulnerable Fallout.Common transitives. -->
+  <!-- The .NET SDK's NuGet (7.9.0), not the 6.14.3 Fallout.Common 10.4.0 brings; Fallout's own
+       build moved the same way (Fallout-build/Fallout#677). -->
   <ItemGroup>
     <PackageReference Include="NuGet.Packaging" Version="7.9.0" PrivateAssets="all" />
-    <PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.11" PrivateAssets="all" />
   </ItemGroup>
 
 </Project>

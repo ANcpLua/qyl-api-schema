@@ -1,9 +1,9 @@
-name: Nuke build verification
+name: Fallout build verification
 
 # Local-build verification gate. Complements (does NOT replace) publish.yml:
 #   - publish.yml stays small + npm-direct so trusted-publishing OIDC keeps working
 #     unchanged.
-#   - nuke.yml runs the IDomainConventionsApi pipeline end-to-end (`./build.sh Check`)
+#   - fallout.yml runs the IDomainConventionsApi pipeline end-to-end (`./build.sh Check`)
 #     to guarantee restore -> lockstep -> compile -> no-manual-edits -> emit-all ->
 #     determinism -> pack all pass on a clean checkout.
 
@@ -19,7 +19,7 @@ permissions:
   packages: read      # kept for a future GitHub Packages @ancplua/* dep; the emitters are workspace members and resolve locally
 
 concurrency:
-  group: nuke-${{ github.ref }}
+  group: fallout-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -50,7 +50,7 @@ jobs:
           bun --version
           dotnet --version
 
-      - name: Run Nuke Check
+      - name: Run Fallout Check
         run: ./build.sh Check
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}   # npm ci auth for GitHub Packages

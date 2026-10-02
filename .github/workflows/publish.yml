@@ -198,7 +198,7 @@ jobs:
       # revision A to nuget.org and revision B to npmjs for the same version, and every client
       # comparing CONTRACT_REVISION against the collector's HealthReport.contract_revision
       # would refuse to start for the life of that release. PackContractsNuget also declares
-      # this as a Nuke dependency; naming it here fails the release at a step whose name says
+      # this as a Fallout dependency; naming it here fails the release at a step whose name says
       # what is wrong, and keeps the gate if that dependency is ever dropped.
       - name: Verify committed generated artifacts are current
         run: ./build.sh VerifyGeneratedArtifactsCurrent

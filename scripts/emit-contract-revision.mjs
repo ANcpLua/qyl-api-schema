@@ -36,7 +36,7 @@ const emitTs = flags.length === 0 || flags.includes("--ts");
 
 // "Run `npm run compile`" is the right advice for a file that is not there yet and
 // useless for one that is. An EACCES from a badly restored checkout, an EISDIR from a
-// half-finished clean, an EMFILE under a parallel Nuke run: told to compile, the operator
+// half-finished clean, an EMFILE under a parallel Fallout run: told to compile, the operator
 // compiles, watches it succeed, reruns the pack, and reads the identical message. So only
 // ENOENT gets that sentence; everything else surfaces its own error as the cause.
 async function readGenerated(path, what, missingAdvice) {

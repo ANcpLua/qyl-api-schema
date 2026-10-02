@@ -3,21 +3,21 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Nuke.Common;
-using Nuke.Common.IO;
-using Nuke.Common.Tooling;
-using Nuke.Common.Tools.DotNet;
-using Nuke.Common.Tools.Npm;
+using Fallout.Common;
+using Fallout.Common.IO;
+using Fallout.Common.Tooling;
+using Fallout.Common.Tools.DotNet;
+using Fallout.Common.Tools.Npm;
 using Serilog;
-using static Nuke.Common.Tools.DotNet.DotNetTasks;
-using static Nuke.Common.Tools.Git.GitTasks;
+using static Fallout.Common.Tools.DotNet.DotNetTasks;
+using static Fallout.Common.Tools.Git.GitTasks;
 
 /// <summary>
 /// Build entry point for <c>@ancplua/qyl-api-schema</c>.
 ///
 /// Owns qyl-api-schema's restore, compile, deterministic-emission, and package gates.
 /// </summary>
-sealed class Build : NukeBuild
+sealed class Build : FalloutBuild
 {
     public static int Main() => Execute<Build>(x => x.EmitAll);
 
@@ -27,7 +27,7 @@ sealed class Build : NukeBuild
 
     AbsolutePath ArtifactsDir => RootDirectory / "Artifacts";
 
-    // Nuke ships no Bun tool, so bun is driven through ProcessTasks. npm survives
+    // Fallout ships no Bun tool, so bun is driven through ProcessTasks. npm survives
     // in exactly one place -- PackApiPackage -- because `npm pack` feeds the OIDC
     // trusted-publishing path, which bun cannot do. Everything upstream of the
     // tarball installs, lints and verifies on bun.
@@ -41,7 +41,7 @@ sealed class Build : NukeBuild
 
     // The local tsp binary, not `bunx tsp`: this is what `npm exec --no` resolved to,
     // and it cannot silently fetch a compiler the lockfile does not pin. Going through
-    // bunx here also loses the argument split -- Nuke hands the process one argument
+    // bunx here also loses the argument split -- Fallout hands the process one argument
     // string, and tsp then sees the whole tail as a single unknown argument.
     static void BunTsp(string arguments, AbsolutePath workingDirectory) =>
         ProcessTasks.StartProcess(workingDirectory / "node_modules" / ".bin" / "tsp", arguments, workingDirectory)
@@ -234,7 +234,7 @@ sealed class Build : NukeBuild
 
     // `verify:zod-contracts` rebuilds generated/zod-runtime first: the runtime is
     // compiled from tracked src/zod, so unlike the emitter outputs it has no
-    // upstream Nuke target to depend on.
+    // upstream Fallout target to depend on.
     Target VerifyZodContracts => _ => _
         .Description("Build the ./zod runtime and assert its validators agree with the published JSON Schema on every definition and fixture.")
         .DependsOn(VerifyContractFixtures)

@@ -14395,6 +14395,13 @@
             "$ref": "#/components/schemas/Common.SessionId",
             "description": "Session id of one CI run for a per-leg phase breakdown; omit to list recent runs."
           },
+          "service_prefix": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "description": "Case-sensitive service-name prefix identifying CI telemetry in both run lists and phase breakdowns.",
+            "default": "qyl-ci"
+          },
           "limit": {
             "type": "integer",
             "format": "int32",
@@ -14694,6 +14701,23 @@
         "properties": {
           "trace_id": {
             "$ref": "#/components/schemas/Common.TraceId"
+          },
+          "errors_only": {
+            "type": "boolean",
+            "description": "Return only spans with error status; omitted or false includes all span statuses.",
+            "default": false
+          },
+          "max_spans": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 1000,
+            "description": "Maximum spans to return after filtering; omit to keep all matching spans."
+          },
+          "include_attributes": {
+            "type": "boolean",
+            "description": "Include span, resource, event and link attributes; false omits those attribute collections.",
+            "default": true
           }
         },
         "unevaluatedProperties": {

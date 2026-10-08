@@ -22,6 +22,34 @@ const csharpLogsRuntime = await readFile(
 );
 const defs = schema.$defs ?? {};
 
+const validateGetTrace = validatorFor("Mcp.Tools.GetTraceInput");
+const traceInput = { trace_id: "0123456789abcdef0123456789abcdef" };
+assertValid(validateGetTrace, traceInput, "get_trace existing input without projection options");
+for (const max_spans of [1, 1000]) {
+  assertValid(validateGetTrace, {
+    ...traceInput, errors_only: true, max_spans, include_attributes: false,
+  }, `get_trace bounded projection at ${max_spans} spans`);
+}
+for (const max_spans of [0, -1, 1001, 1.5, "10"]) {
+  assertInvalid(validateGetTrace, { ...traceInput, max_spans }, `get_trace invalid max_spans ${max_spans}`);
+}
+for (const option of ["errors_only", "include_attributes"]) {
+  assertValid(validateGetTrace, { ...traceInput, [option]: false }, `get_trace ${option} false`);
+  assertValid(validateGetTrace, { ...traceInput, [option]: true }, `get_trace ${option} true`);
+  assertInvalid(validateGetTrace, { ...traceInput, [option]: "false" }, `get_trace non-boolean ${option}`);
+}
+assertInvalid(validateGetTrace, { ...traceInput, maxSpans: 10 }, "get_trace rejects unencoded option name");
+
+const validateCiLog = validatorFor("Mcp.Tools.CiLogInput");
+assertValid(validateCiLog, {}, "ci_log existing default input");
+assertValid(validateCiLog, { service_prefix: "custom-ci", limit: 5 }, "ci_log custom run-list prefix");
+assertValid(validateCiLog, { service_prefix: "custom-ci", run_id: "build-42" }, "ci_log custom phase prefix");
+assertValid(validateCiLog, { service_prefix: "x".repeat(256) }, "ci_log prefix length upper bound");
+for (const service_prefix of ["", "x".repeat(257), 12, false]) {
+  assertInvalid(validateCiLog, { service_prefix }, `ci_log invalid prefix ${JSON.stringify(service_prefix)}`);
+}
+assertInvalid(validateCiLog, { servicePrefix: "custom-ci" }, "ci_log rejects unencoded prefix name");
+
 function assertReferences(definition, expected) {
   const actual = (defs[definition]?.oneOf ?? []).map((variant) => variant.$ref);
   if (JSON.stringify(actual) !== JSON.stringify(expected)) {

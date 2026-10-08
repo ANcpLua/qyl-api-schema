@@ -72,6 +72,20 @@ model ListTracesOutput {
 model GetTraceInput {
   @encodedName("application/json", "trace_id")
   traceId: TraceId;
+
+  @doc("Return only spans with error status; omitted or false includes all span statuses.")
+  @encodedName("application/json", "errors_only")
+  errorsOnly?: boolean = false;
+
+  @doc("Maximum spans to return after filtering; omit to keep all matching spans.")
+  @encodedName("application/json", "max_spans")
+  @minValue(1)
+  @maxValue(1000)
+  maxSpans?: int32;
+
+  @doc("Include span, resource, event and link attributes; false omits those attribute collections.")
+  @encodedName("application/json", "include_attributes")
+  includeAttributes?: boolean = true;
 }
 
 @doc("Structured output for get_trace.")
@@ -129,6 +143,12 @@ model CiLogInput {
   @doc("Session id of one CI run for a per-leg phase breakdown; omit to list recent runs.")
   @encodedName("application/json", "run_id")
   runId?: SessionId;
+
+  @doc("Case-sensitive service-name prefix identifying CI telemetry in both run lists and phase breakdowns.")
+  @encodedName("application/json", "service_prefix")
+  @minLength(1)
+  @maxLength(256)
+  servicePrefix?: string = "qyl-ci";
 
   @doc("Maximum CI runs to list.")
   @minValue(1)

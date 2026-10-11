@@ -4,7 +4,7 @@ The consumer-facing overview is the [README](README.md); this file is the workin
 
 ## Develop
 
-Development and CI use Node.js 24 LTS, with Bun as the package manager; `mise.toml`
+Development uses Node.js 24 LTS, with Bun as the package manager; `mise.toml`
 pins both. The three emitters under `emitters/` are workspace members, not `file:`
 dependencies: bun copies a `file:` dependency before `prepare` builds it, which leaves
 TypeSpec resolving a library with no `dist/`. Published npm artifacts support
@@ -40,12 +40,11 @@ there:
 - `generated/runtime/**` — the `./runtime` export: `src/runtime/` compiled by
   `tsconfig.runtime.json`
 
-Two pull-request gates run: `ci.yml` is the fast bun-only pass (lint both TypeSpec
-surfaces, `compile`, `lint:js`), and `fallout.yml` is the full `./build.sh Check`
-(adds the generated-current, route, fixture, Zod-parity, lint-rule and determinism
-invariants and installs the packed npm and NuGet artifacts into clean consumers), so
-a contract break is named within minutes while the release path is still proven on
-every PR.
+The one gate is `./build.sh Check` (Fallout): it lints both TypeSpec surfaces, runs
+`compile` and `lint:js`, then the generated-current, route, fixture, Zod-parity, lint-rule
+and determinism invariants, and installs the packed npm and NuGet artifacts into clean
+consumers. Run it before every push; `./release.sh` runs the pack targets again before
+publishing.
 
 Generated files are not editing surfaces. OpenAPI comes from the official TypeSpec
 emitter; the bundled JSON Schema is a deterministic projection of its component

@@ -16,8 +16,8 @@
 import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
+import { openApiPath } from "./lib/openapi.mjs";
 
-const openApiPath = "generated/openapi/qyl.openapi.json";
 const csharpPath = "generated/contracts/Qyl/Api/ContractRevision.cs";
 const tsPath = "generated/ts-types/api.ts";
 

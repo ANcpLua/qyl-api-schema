@@ -1,8 +1,6 @@
-import { readFile } from "node:fs/promises";
+import { httpMethods, openApiPath, readOpenApi } from "./lib/openapi.mjs";
 
-const openapiPath = "generated/openapi/qyl.openapi.json";
-const openapi = JSON.parse(await readFile(openapiPath, "utf8"));
-const httpMethods = new Set(["delete", "get", "head", "options", "patch", "post", "put", "trace"]);
+const openapi = await readOpenApi();
 const operations = new Map(
   Object.entries(openapi.paths ?? {}).flatMap(([path, pathItem]) =>
     Object.entries(pathItem)
@@ -11,9 +9,14 @@ const operations = new Map(
   ),
 );
 
-function verifyExactResponse(operationId, status, schemaName, schemaNamespace = "Common.Errors") {
+function requireOperation(operationId) {
   const operation = operations.get(operationId);
-  if (!operation) throw new Error(`${operationId} is missing from ${openapiPath}.`);
+  if (!operation) throw new Error(`${operationId} is missing from ${openApiPath}.`);
+  return operation;
+}
+
+function verifyExactResponse(operationId, status, schemaName, schemaNamespace = "Common.Errors") {
+  const operation = requireOperation(operationId);
 
   const content = operation.responses?.[status]?.content ?? {};
   const mediaType = "application/problem+json";
@@ -169,8 +172,7 @@ const validationQueries = new Map([
   ["GET /workbench/workspaces/{workspace_id}/evaluation-runs", ["status", "cursor", "limit"]],
 ]);
 for (const [operationId, runtimeValidatedQueries] of validationQueries) {
-  const operation = operations.get(operationId);
-  if (!operation) throw new Error(`${operationId} is missing from ${openapiPath}.`);
+  const operation = requireOperation(operationId);
 
   const declaredQueries = new Set(
     (operation.parameters ?? []).filter((parameter) => parameter.in === "query").map((parameter) => parameter.name),
@@ -189,8 +191,7 @@ const resumableSseOperations = new Set([
   "GET /workbench/workspaces/{workspace_id}/servers/{server_id}/executions/stream",
 ]);
 for (const operationId of resumableSseOperations) {
-  const operation = operations.get(operationId);
-  if (!operation) throw new Error(`${operationId} is missing from ${openapiPath}.`);
+  const operation = requireOperation(operationId);
 
   const lastEventId = (operation.parameters ?? []).find((parameter) =>
     parameter.in === "header" && parameter.name.toLowerCase() === "last-event-id"

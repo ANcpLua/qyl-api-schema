@@ -5,8 +5,9 @@ import {
   contractSchema as schema,
   validatorFor,
 } from "./lib/contract-fixtures.mjs";
+import { httpMethods, readOpenApi } from "./lib/openapi.mjs";
 
-const openapi = JSON.parse(await readFile("generated/openapi/qyl.openapi.json", "utf8"));
+const openapi = await readOpenApi();
 const tsRuntime = await readFile("generated/ts-runtime/api.d.ts", "utf8");
 const csharpRuntime = await readFile(
   "generated/contracts/Qyl/Api/Contracts/Workbench.cs",
@@ -57,7 +58,6 @@ function assertReferences(definition, expected) {
   }
 }
 
-const httpMethods = new Set(["delete", "get", "head", "options", "patch", "post", "put", "trace"]);
 const expectedOperationDefinitions = new Set();
 for (const [path, pathItem] of Object.entries(openapi.paths ?? {})) {
   for (const [method, operation] of Object.entries(pathItem ?? {})) {

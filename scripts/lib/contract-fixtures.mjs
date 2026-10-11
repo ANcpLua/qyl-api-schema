@@ -9,8 +9,8 @@
 // drift into disagreeing about the same wire shape.
 import { readFile } from "node:fs/promises";
 import Ajv2020 from "ajv/dist/2020.js";
+import { contractSchemaPath } from "./openapi.mjs";
 
-export const contractSchemaPath = "generated/json-schema/qyl-api-schema.json";
 export const contractSchema = JSON.parse(await readFile(contractSchemaPath, "utf8"));
 
 const definitions = contractSchema.$defs ?? {};

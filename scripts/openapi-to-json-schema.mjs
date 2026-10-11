@@ -1,15 +1,13 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
+import { dirname } from "node:path";
+import { contractSchemaPath, httpMethods, openApiPath, readOpenApi } from "./lib/openapi.mjs";
 
-const input = "generated/openapi/qyl.openapi.json";
-const output = "generated/json-schema/qyl-api-schema.json";
-
-const openapi = JSON.parse(await readFile(input, "utf8"));
+const openapi = await readOpenApi();
 const schemas = openapi.components?.schemas;
 if (!schemas || typeof schemas !== "object") {
-  throw new Error(`${input} has no components.schemas`);
+  throw new Error(`${openApiPath} has no components.schemas`);
 }
 
-const httpMethods = new Set(["delete", "get", "head", "options", "patch", "post", "put", "trace"]);
 const compareNames = (left, right) => left === right ? 0 : left < right ? -1 : 1;
 
 function rewriteReferences(value) {
@@ -127,5 +125,5 @@ const bundle = {
   ),
 };
 
-await mkdir("generated/json-schema", { recursive: true });
-await writeFile(output, `${JSON.stringify(bundle, null, 2)}\n`);
+await mkdir(dirname(contractSchemaPath), { recursive: true });
+await writeFile(contractSchemaPath, `${JSON.stringify(bundle, null, 2)}\n`);

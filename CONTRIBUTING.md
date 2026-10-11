@@ -59,7 +59,9 @@ the same wire names. Change TypeSpec or the owning generator and regenerate.
 npm remains only for `npm version`, `npm pack` and `npm publish`. Install, lint, emit and every
 verify target run on bun.
 
-A release is published from your machine: `npm version <x.y.z>` sets the one version for npm and
-NuGet, `bun run compile` and `./build.sh Check` pass, then `npm publish --registry=https://registry.npmjs.org`
-and `dotnet nuget push` of `Qyl.Api.Contracts` with the npm token and the NuGet API key registered
-in Vitals (never in the repository), then the `v<x.y.z>` tag and the GitHub release.
+A release is published from your machine by `./release.sh <x.y.z>`: it sets the one version for npm and
+NuGet in the working tree, runs the Fallout pack targets, publishes with `npm publish` (scope override to
+npmjs.org, `--provenance=false`) and `dotnet nuget push` using the npm token and the NuGet API key
+registered in Vitals (never in the repository), then tags `v<x.y.z>` and creates the GitHub release.
+`./release.sh <x.y.z> --dry-run` rehearses every step without publishing. The tag is the only version
+source; package.json stays at `0.0.0-development` on `main`.

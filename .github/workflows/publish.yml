@@ -48,14 +48,10 @@ jobs:
 
       # node, bun and dotnet come from mise.toml. The three @ancplua/* emitters are workspace
       # members and resolve locally, so install authenticates against nothing.
-      - uses: jdx/mise-action@2d8d4cafcbd33be2ea37d2b6f5ad595363d1f1ca # v5.1.1
-
-      # Trusted publishing to npmjs needs npm >= 11.5.1; Node 24 bundles an older npm.
-      # It runs after mise-action so the upgrade lands in the Node that is first on PATH.
+      # Trusted publishing needs npm >= 11.5.1, which Node 24 bundles since 24.5.0.
       # npm survives here for exactly three commands -- version, pack, publish -- because
       # bun publish has no OIDC trusted-publishing or provenance path. Install and lint are bun.
-      - name: Upgrade npm for trusted publishing
-        run: npm install -g npm@latest
+      - uses: jdx/mise-action@2d8d4cafcbd33be2ea37d2b6f5ad595363d1f1ca # v5.1.1
 
       - name: Verify package.json is not private
         run: |

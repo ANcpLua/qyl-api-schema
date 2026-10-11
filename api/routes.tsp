@@ -41,6 +41,20 @@ model ProjectScopeHeader {
   projectId?: string;
 }
 
+// Problem bodies carry no headers (common/errors.tsp). The one header a
+// collector error response carries is declared here, on the collector's own
+// operations: its unhandled-exception handler names the trace of the failed
+// request.
+@doc("The collector failed while handling the request (500). `X-Trace-Id` names the collector's own trace of the failed request.")
+@error
+model CollectorServerErrorResponse {
+  @doc("Trace id of the collector's own trace of the failed request, for finding it in the collector's telemetry.")
+  @header("X-Trace-Id")
+  traceId?: TraceId;
+
+  @bodyRoot problem: InternalServerError;
+}
+
 // -----------------------------------------------------------------------------
 // Traces
 // -----------------------------------------------------------------------------
@@ -49,6 +63,7 @@ model ProjectScopeHeader {
 @tag("Traces")
 @useAuth(QylApiKeyHeaderAuth)
 interface TracesApi {
+  @list
   @get
   list(
     ...ProjectScopeHeader,
@@ -69,17 +84,12 @@ interface TracesApi {
     @query("errors_only")
     errorsOnly?: boolean,
 
-    @query
-    @minValue(1)
-    @maxValue(1000)
-    limit?: int32 = 100,
-
-    @query cursor?: Cursor,
+    ...CursorPageQuery,
   ):
     | CursorPage<Trace>
     | ValidationError
     | UnauthorizedError
-    | InternalServerError;
+    | CollectorServerErrorResponse;
 
   @get
   @route("/{trace_id}")
@@ -87,27 +97,23 @@ interface TracesApi {
     | Trace
     | NotFoundError
     | UnauthorizedError
-    | InternalServerError;
+    | CollectorServerErrorResponse;
 
+  @doc("Page through the spans of one trace. `GET /api/v1/traces/{trace_id}` returns the whole trace at once.")
+  @list
   @get
   @route("/{trace_id}/spans")
   getSpans(
     ...ProjectScopeHeader,
     @path("trace_id") traceId: TraceId,
 
-    @doc("Page size. Omitted, every span of the trace is returned in one page.")
-    @query
-    @minValue(1)
-    @maxValue(10000)
-    limit?: int32,
-
-    @query cursor?: Cursor,
+    ...CursorPageQuery,
   ):
     | CursorPage<Span>
     | ValidationError
     | NotFoundError
     | UnauthorizedError
-    | InternalServerError;
+    | CollectorServerErrorResponse;
 }
 
 // -----------------------------------------------------------------------------
@@ -118,6 +124,7 @@ interface TracesApi {
 @tag("Logs")
 @useAuth(QylApiKeyHeaderAuth)
 interface LogsApi {
+  @list
   @get
   list(
     ...ProjectScopeHeader,
@@ -130,17 +137,12 @@ interface LogsApi {
     @query("end_time") endTime?: utcDateTime,
     @query query?: string,
 
-    @query
-    @minValue(1)
-    @maxValue(10000)
-    limit?: int32 = 100,
-
-    @query cursor?: Cursor,
+    ...CursorPageQuery,
   ):
     | CursorPage<LogRecord>
     | ValidationError
     | UnauthorizedError
-    | InternalServerError;
+    | CollectorServerErrorResponse;
 }
 
 // -----------------------------------------------------------------------------
@@ -157,6 +159,7 @@ interface LogsApi {
 @useAuth(QylApiKeyHeaderAuth)
 interface MetricsApi {
   @doc("List the metric names recorded for a project.")
+  @list
   @get
   list(
     ...ProjectScopeHeader,
@@ -165,19 +168,15 @@ interface MetricsApi {
     @query("name_prefix")
     namePrefix?: string,
 
-    @query
-    @minValue(1)
-    @maxValue(1000)
-    limit?: int32 = 200,
-
-    @query cursor?: Cursor,
+    ...CursorPageQuery,
   ):
     | CursorPage<MetricDescriptor>
     | ValidationError
     | UnauthorizedError
-    | InternalServerError;
+    | CollectorServerErrorResponse;
 
   @doc("List the distinct attribute streams recorded under one metric name.")
+  @list
   @get
   @route("/{metric_name}/series")
   listSeries(
@@ -195,18 +194,13 @@ interface MetricsApi {
     @query(#{ name: "attr_prefix", explode: true })
     attrPrefix?: string[],
 
-    @query
-    @minValue(1)
-    @maxValue(1000)
-    limit?: int32 = 200,
-
-    @query cursor?: Cursor,
+    ...CursorPageQuery,
   ):
     | CursorPage<MetricSeries>
     | ValidationError
     | NotFoundError
     | UnauthorizedError
-    | InternalServerError;
+    | CollectorServerErrorResponse;
 
   @doc("""
     Aggregate one metric over a time range into buckets of `step_ms`.
@@ -250,7 +244,7 @@ interface MetricsApi {
     | ValidationError
     | NotFoundError
     | UnauthorizedError
-    | InternalServerError;
+    | CollectorServerErrorResponse;
 }
 
 // -----------------------------------------------------------------------------
@@ -261,6 +255,7 @@ interface MetricsApi {
 @tag("Sessions")
 @useAuth(QylApiKeyHeaderAuth)
 interface SessionsApi {
+  @list
   @get
   list(
     ...ProjectScopeHeader,
@@ -268,17 +263,12 @@ interface SessionsApi {
     @query("start_time") startTime?: utcDateTime,
     @query("end_time") endTime?: utcDateTime,
 
-    @query
-    @minValue(1)
-    @maxValue(1000)
-    limit?: int32 = 100,
-
-    @query cursor?: Cursor,
+    ...CursorPageQuery,
   ):
     | CursorPage<SessionEntity>
     | ValidationError
     | UnauthorizedError
-    | InternalServerError;
+    | CollectorServerErrorResponse;
 
   @get
   @route("/{session_id}")
@@ -286,27 +276,22 @@ interface SessionsApi {
     | SessionEntity
     | NotFoundError
     | UnauthorizedError
-    | InternalServerError;
+    | CollectorServerErrorResponse;
 
+  @list
   @get
   @route("/{session_id}/traces")
   getTraces(
     ...ProjectScopeHeader,
     @path("session_id") sessionId: SessionId,
 
-    @doc("Page size; the response is bounded even when omitted.")
-    @query
-    @minValue(1)
-    @maxValue(1000)
-    limit?: int32 = 100,
-
-    @query cursor?: Cursor,
+    ...CursorPageQuery,
   ):
     | CursorPage<Trace>
     | ValidationError
     | NotFoundError
     | UnauthorizedError
-    | InternalServerError;
+    | CollectorServerErrorResponse;
 
   @get
   @route("/stats")
@@ -314,7 +299,7 @@ interface SessionsApi {
     ...ProjectScopeHeader,
     @query("start_time") startTime?: utcDateTime,
     @query("end_time") endTime?: utcDateTime,
-  ): SessionStats | ValidationError | UnauthorizedError | InternalServerError;
+  ): SessionStats | ValidationError | UnauthorizedError | CollectorServerErrorResponse;
 }
 
 // -----------------------------------------------------------------------------
@@ -350,10 +335,11 @@ interface AnnotationsApi {
     | ForbiddenError
     | NotFoundError
     | ConflictError
-    | InternalServerError;
+    | CollectorServerErrorResponse;
 
   @doc("List annotations, newest first, optionally only those attached to one trace, span or session.")
   @useAuth(QylApiKeyHeaderAuth)
+  @list
   @get
   list(
     ...ProjectScopeHeader,
@@ -368,17 +354,12 @@ interface AnnotationsApi {
 
     @query("session_id") sessionId?: SessionId,
 
-    @query
-    @minValue(1)
-    @maxValue(1000)
-    limit?: int32 = 100,
-
-    @query cursor?: Cursor,
+    ...CursorPageQuery,
   ):
     | CursorPage<Annotation>
     | ValidationError
     | UnauthorizedError
-    | InternalServerError;
+    | CollectorServerErrorResponse;
 
   @useAuth(QylApiKeyHeaderAuth)
   @get
@@ -390,7 +371,7 @@ interface AnnotationsApi {
       }
     | NotFoundError
     | UnauthorizedError
-    | InternalServerError;
+    | CollectorServerErrorResponse;
 
   @doc("Replace the text of an annotation. The target is fixed at creation.")
   @useAuth(QylWriteKeyAuth)
@@ -412,7 +393,7 @@ interface AnnotationsApi {
     | NotFoundError
     | PreconditionFailedError
     | PreconditionRequiredError
-    | InternalServerError;
+    | CollectorServerErrorResponse;
 
   @doc("Delete one annotation. Telemetry is never deleted.")
   @useAuth(QylDeleteKeyAuth)
@@ -429,7 +410,7 @@ interface AnnotationsApi {
     | NotFoundError
     | PreconditionFailedError
     | PreconditionRequiredError
-    | InternalServerError;
+    | CollectorServerErrorResponse;
 }
 
 // -----------------------------------------------------------------------------
@@ -464,26 +445,22 @@ interface SavedQueriesApi {
     | UnauthorizedError
     | ForbiddenError
     | ConflictError
-    | InternalServerError;
+    | CollectorServerErrorResponse;
 
   @doc("List the project's saved queries by name.")
   @useAuth(QylApiKeyHeaderAuth)
+  @list
   @get
   list(
     ...ProjectScopeHeader,
     @query signal?: SavedQuerySignal,
 
-    @query
-    @minValue(1)
-    @maxValue(1000)
-    limit?: int32 = 100,
-
-    @query cursor?: Cursor,
+    ...CursorPageQuery,
   ):
     | CursorPage<SavedQuery>
     | ValidationError
     | UnauthorizedError
-    | InternalServerError;
+    | CollectorServerErrorResponse;
 
   @useAuth(QylApiKeyHeaderAuth)
   @get
@@ -495,7 +472,7 @@ interface SavedQueriesApi {
       }
     | NotFoundError
     | UnauthorizedError
-    | InternalServerError;
+    | CollectorServerErrorResponse;
 
   @doc("Change a saved query. Renaming onto a name already used in the project is refused with 409.")
   @useAuth(QylWriteKeyAuth)
@@ -518,7 +495,7 @@ interface SavedQueriesApi {
     | ConflictError
     | PreconditionFailedError
     | PreconditionRequiredError
-    | InternalServerError;
+    | CollectorServerErrorResponse;
 
   @doc("Delete one saved query.")
   @useAuth(QylDeleteKeyAuth)
@@ -535,7 +512,7 @@ interface SavedQueriesApi {
     | NotFoundError
     | PreconditionFailedError
     | PreconditionRequiredError
-    | InternalServerError;
+    | CollectorServerErrorResponse;
 
   @doc("Evaluate a saved query against current telemetry. Read-only.")
   @useAuth(QylApiKeyHeaderAuth)
@@ -550,7 +527,7 @@ interface SavedQueriesApi {
     | ValidationError
     | UnauthorizedError
     | NotFoundError
-    | InternalServerError;
+    | CollectorServerErrorResponse;
 }
 
 // -----------------------------------------------------------------------------

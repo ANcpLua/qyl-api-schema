@@ -9,6 +9,7 @@
 import "@typespec/http";
 import "@typespec/openapi";
 import "../common/types.tsp";
+import "../common/pagination.tsp";
 import "../common/resource.tsp";
 import "../otel/enums.tsp";
 import "../otel/span.tsp";
@@ -17,6 +18,7 @@ import "./metrics.tsp";
 
 using TypeSpec.OpenAPI;
 using Qyl.Api.Contracts.Common;
+using Qyl.Api.Contracts.Common.Pagination;
 using Qyl.Api.Contracts.OTel.Enums;
 using Qyl.Api.Contracts.OTel.Logs;
 using Qyl.Api.Contracts.OTel.Metrics;
@@ -164,10 +166,8 @@ model SavedQueryRunRequest {
   @encodedName("application/json", "end_time")
   endTime?: utcDateTime;
 
-  @doc("Page size for trace and log runs.")
-  @minValue(1)
-  @maxValue(1000)
-  limit?: int32 = 100;
+  @doc("Page size for trace and log runs; 100 when omitted.")
+  limit?: PageLimit = 100;
 
   @doc("`next_cursor` of a previous run of the same saved query.")
   cursor?: Cursor;
@@ -178,9 +178,11 @@ model SavedTraceQueryRun {
   signal: "traces";
   items: TraceSummary[];
 
+  @doc("Pass back as `cursor` for the next page of the same run. Absent on the last page.")
   @encodedName("application/json", "next_cursor")
   nextCursor?: Cursor;
 
+  @doc("Whether more items follow this page. `next_cursor` is present exactly when this is true.")
   @encodedName("application/json", "has_more")
   hasMore: boolean;
 }
@@ -190,9 +192,11 @@ model SavedLogQueryRun {
   signal: "logs";
   items: LogRecord[];
 
+  @doc("Pass back as `cursor` for the next page of the same run. Absent on the last page.")
   @encodedName("application/json", "next_cursor")
   nextCursor?: Cursor;
 
+  @doc("Whether more items follow this page. `next_cursor` is present exactly when this is true.")
   @encodedName("application/json", "has_more")
   hasMore: boolean;
 }

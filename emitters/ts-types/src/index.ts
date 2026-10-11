@@ -5,6 +5,7 @@ import type {
   Enum,
   IntrinsicType,
   Model,
+  ModelProperty,
   NumericLiteral,
   Program,
   Scalar,
@@ -18,6 +19,7 @@ import {
   emitFile,
   getDiscriminatedUnion,
   getEncode,
+  getMediaTypeHint,
   getPattern,
   isArrayModelType,
   isRecordModelType,
@@ -25,7 +27,7 @@ import {
   resolveEncodedName,
   setTypeSpecNamespace,
 } from "@typespec/compiler";
-import { getAllHttpServices, getHeaderFieldName, isHeader, isStatusCode } from "@typespec/http";
+import { getAllHttpServices, isBody, isBodyRoot, isMetadata } from "@typespec/http";
 import { getOperationId } from "@typespec/openapi";
 import { reportDiagnostic, stateKeys, $lib } from "./lib.js";
 
@@ -182,7 +184,7 @@ function collectOperationDefinitions(program: Program, definitions: Map<string, 
  */
 function bodyTypeName(program: Program, type: Type): string {
   if (type.kind === "Model" && !type.name) {
-    const bodyProperties = [...type.properties.values()].filter((p) => !isHeader(program, p) && !isStatusCode(program, p));
+    const bodyProperties = [...type.properties.values()].filter((p) => !isHttpMetadata(program, p));
     return bodyProperties.length === 1 ? mapType(program, bodyProperties[0]!.type) : "unknown";
   }
   const mapped = mapType(program, type);
@@ -316,6 +318,10 @@ function renderMixedUnionRuntime(program: Program, union: Union): string {
   );
 }
 
+/**
+ * A model that declares its own `@mediaTypeHint` (ProblemDetails) gets a constant for it; derived
+ * models inherit the hint and do not repeat the constant. Mirrors the C# emitter.
+ */
 function collectMediaType(
   program: Program,
   model: Model,
@@ -324,15 +330,22 @@ function collectMediaType(
 ): void {
   const name = `${emittedModelName(model)}MediaType`;
   if (emitted.has(name)) return;
-  for (const property of model.properties.values()) {
-    if (!isHeader(program, property) || getHeaderFieldName(program, property) !== "content-type") continue;
-    if (property.type.kind !== "String") continue;
-    emitted.add(name);
-    output.push(
-      `export const ${name} = ${JSON.stringify(property.type.value)} as const;\n` +
-      `export type ${name} = typeof ${name};\n`,
-    );
-  }
+  const hint = getMediaTypeHint(program, model);
+  if (hint === undefined) return;
+  if (model.baseModel && getMediaTypeHint(program, model.baseModel) === hint) return;
+  emitted.add(name);
+  output.push(
+    `export const ${name} = ${JSON.stringify(hint)} as const;\n` +
+    `export type ${name} = typeof ${name};\n`,
+  );
+}
+
+/**
+ * Headers, parameters and the status code travel beside the body, and a `@body`/`@bodyRoot`
+ * property *is* the body: a response envelope made only of these has no interface of its own.
+ */
+function isHttpMetadata(program: Program, property: ModelProperty): boolean {
+  return isMetadata(program, property) || isBody(program, property) || isBodyRoot(program, property);
 }
 
 function renderEnum(e: Enum): string {
@@ -355,7 +368,7 @@ function renderInterface(
   const base = m.baseModel ? ` extends ${emittedModelName(m.baseModel)}` : "";
   const lines: string[] = [`export interface ${emittedName}${base} {`];
   for (const [, prop] of m.properties) {
-    if (isHeader(program, prop) || isStatusCode(program, prop)) continue;
+    if (isHttpMetadata(program, prop)) continue;
     const t = mapType(program, prop.type);
     const q = prop.optional ? "?" : "";
     const wireName = resolveEncodedName(program, prop, "application/json");
@@ -377,7 +390,7 @@ function renderRecordInterface(
 function hasBodyProperties(program: Program, model: Model): boolean {
   for (let current: Model | undefined = model; current; current = current.baseModel) {
     for (const property of current.properties.values()) {
-      if (!isHeader(program, property) && !isStatusCode(program, property)) return true;
+      if (!isHttpMetadata(program, property)) return true;
     }
   }
   return false;

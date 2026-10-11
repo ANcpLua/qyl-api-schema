@@ -228,9 +228,16 @@ const healthAdvertisesRevision = healthReport?.required?.includes("contract_revi
 // definition count that matches the schema imported above proves the installed
 // copy is validating the installed contract and not a bundled snapshot.
 const zodProblemDetails = publishedContractSchema("Common.Errors.ProblemDetails");
+const internalProblem = {
+    type: "https://qyl.at/problems/internal-error",
+    title: "Internal Server Error",
+    status: 500,
+    code: "internal_error",
+};
 const zodExportValidatesContracts =
-    zodProblemDetails.safeParse({ type: "about:blank", title: "x", status: 500 }).success
-    && !zodProblemDetails.safeParse({ type: "about:blank", title: "x", status: "500" }).success
+    zodProblemDetails.safeParse(internalProblem).success
+    && !zodProblemDetails.safeParse({ ...internalProblem, status: "500" }).success
+    && !zodProblemDetails.safeParse({ ...internalProblem, type: "about:blank" }).success
     && contractDefinitionNames().length === Object.keys(schema.$defs).length;
 
 // The npm and NuGet faces of one contract have to agree on bytes, not just on
@@ -288,5 +295,8 @@ if (failed.length > 0) {
     process.exit(1);
 }
 console.log(`contract-revision=${CONTRACT_REVISION}`);
+// prepack stamps the release version into the packed OpenAPI document; the
+// caller compares it with the version it installed.
+console.log(`openapi-version=${openapi.info.version}`);
 console.log(`session-event-fixture=${Buffer.from(sessionEventFixtureWire).toString("base64")}`);
 console.log(`npm consumer probe passed ${checks.length} checks`);

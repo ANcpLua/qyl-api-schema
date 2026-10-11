@@ -1,251 +1,224 @@
 // =============================================================================
-// qyl product API error models
+// qyl product API problem details (RFC 9457)
 // =============================================================================
-// Standardized error responses following RFC 7807 Problem Details.
+// Every error body is an RFC 9457 problem: the five standard members plus the
+// qyl extension member `code`. A problem type is named twice, by its `type` URI
+// and by its `code`, and each error model below fixes both, so a client branches
+// on either and never on `title` or `detail`.
+//
+// Bodies carry no HTTP headers. The media type is a property of the body type
+// (`@mediaTypeHint`), and a header an error response carries is declared on the
+// operations whose server sends it: `X-Trace-Id` on the collector's 500
+// (api/routes.tsp) and `WWW-Authenticate` on the workbench's 401
+// (api/workbench.tsp).
 // =============================================================================
 
 import "@typespec/http";
-import "./types.tsp";
 
 using TypeSpec.Http;
 
 namespace Qyl.Api.Contracts.Common.Errors;
 
+@doc("""
+  Problem type URI, the RFC 9457 `type` member: one per problem a qyl server
+  reports. `code` names the same problem type.
+  """)
+enum ProblemType {
+  validationFailed: "https://qyl.at/problems/validation-failed",
+  unauthorized: "https://qyl.at/problems/unauthorized",
+  forbidden: "https://qyl.at/problems/forbidden",
+  notFound: "https://qyl.at/problems/not-found",
+  conflict: "https://qyl.at/problems/conflict",
+  preconditionFailed: "https://qyl.at/problems/precondition-failed",
+  preconditionRequired: "https://qyl.at/problems/precondition-required",
+  internalError: "https://qyl.at/problems/internal-error",
+  badGateway: "https://qyl.at/problems/bad-gateway",
+  serviceUnavailable: "https://qyl.at/problems/service-unavailable",
+}
+
+@doc("""
+  Stable machine-readable code of a problem type, the qyl `code` extension
+  member. `type` names the same problem type as a URI.
+  """)
+enum ProblemCode {
+  validationFailed: "validation_failed",
+  unauthorized: "unauthorized",
+  forbidden: "forbidden",
+  notFound: "not_found",
+  conflict: "conflict",
+  preconditionFailed: "precondition_failed",
+  preconditionRequired: "precondition_required",
+  internalError: "internal_error",
+  badGateway: "bad_gateway",
+  serviceUnavailable: "service_unavailable",
+}
+
 // =============================================================================
-// RFC 7807 Problem Details Base
+// RFC 9457 Problem Details Base
 // =============================================================================
 
-@doc("RFC 7807 Problem Details for HTTP APIs")
+@doc("RFC 9457 problem details, served as application/problem+json: the standard members plus the qyl `code` extension.")
+@mediaTypeHint("application/problem+json")
 @error
 model ProblemDetails {
-  @doc("RFC 7807 problem-details response media type")
-  @header contentType: "application/problem+json";
+  @doc("URI of the problem type.")
+  type: ProblemType;
 
-  @doc("A URI reference identifying the problem type")
-  @encodedName("application/json", "type")
-  problemType: url = "about:blank";
-
-  @doc("A short, human-readable summary of the problem type")
+  @doc("Short summary of the problem type; the same for every occurrence.")
   title: string;
 
-  @doc("The HTTP status code (informational only, actual code set by subtype)")
+  @doc("HTTP status code of this response, repeated for the reader of the body.")
   status: int32;
 
-  @doc("A human-readable explanation specific to this occurrence")
+  @doc("Explanation specific to this occurrence.")
   detail?: string;
 
-  @doc("A URI reference identifying the specific occurrence")
+  @doc("URI reference identifying this occurrence.")
   instance?: url;
 
-  @doc("Trace ID for correlation")
-  @encodedName("application/json", "trace_id")
-  @header("X-Trace-Id")
-  traceId?: TraceId;
-
-  @doc("Request ID for support")
-  @encodedName("application/json", "request_id")
-  @header("X-Request-Id")
-  requestId?: string;
-
-  @doc("Timestamp of the error")
-  timestamp?: utcDateTime;
+  @doc("Stable code of the problem type.")
+  code: ProblemCode;
 }
 
 // =============================================================================
-// Specific Error Types
+// Problem Types
 // =============================================================================
 
-@doc("Resource not found (404)")
-@error
-model NotFoundError extends ProblemDetails {
-  @statusCode _: 404;
-  title: "Not Found";
-
-  @doc("The type of resource that was not found")
-  @encodedName("application/json", "resource_type")
-  resourceType?: string;
-
-  @doc("The identifier that was not found")
-  @encodedName("application/json", "resource_id")
-  resourceId?: string;
-}
-
-@doc("Bad request - validation failed (400)")
+@doc("The request failed validation (400).")
 @error
 model ValidationError extends ProblemDetails {
   @statusCode _: 400;
+  type: ProblemType.validationFailed;
+  code: ProblemCode.validationFailed;
   title: "Validation Failed";
 
-  @doc("List of validation errors")
+  @doc("Each rule the request broke.")
   errors: ValidationErrorDetail[];
 }
 
-@doc("Individual validation error detail")
+@doc("One rule a request broke.")
 model ValidationErrorDetail {
-  @doc("The field/property that failed validation")
+  @doc("The field or parameter that failed validation.")
   field: string;
 
-  @doc("The error message")
+  @doc("What is wrong with it.")
   message: string;
 
-  @doc("The validation rule that failed")
+  @doc("The validation rule that failed.")
   code: string;
 
-  @doc("The rejected value (if safe to include)")
+  @doc("The rejected value, when it is safe to repeat.")
   @encodedName("application/json", "rejected_value")
   rejectedValue?: string;
 }
 
-@doc("Unauthorized - authentication required (401)")
+@doc("The request carries no valid credential (401).")
 @error
 model UnauthorizedError extends ProblemDetails {
   @statusCode _: 401;
+  type: ProblemType.unauthorized;
+  code: ProblemCode.unauthorized;
   title: "Unauthorized";
-
-  @doc("Authentication scheme expected")
-  @header("WWW-Authenticate")
-  @encodedName("application/json", "www_authenticate")
-  wwwAuthenticate?: string;
 }
 
-@doc("Forbidden - insufficient permissions (403)")
+@doc("The credential is valid but not allowed to do this (403).")
 @error
 model ForbiddenError extends ProblemDetails {
   @statusCode _: 403;
+  type: ProblemType.forbidden;
+  code: ProblemCode.forbidden;
   title: "Forbidden";
 
-  @doc("Required permission that is missing")
+  @doc("The permission the credential lacks.")
   @encodedName("application/json", "required_permission")
   requiredPermission?: string;
 }
 
-@doc("Conflict - resource state conflict (409)")
+@doc("The addressed resource does not exist (404).")
+@error
+model NotFoundError extends ProblemDetails {
+  @statusCode _: 404;
+  type: ProblemType.notFound;
+  code: ProblemCode.notFound;
+  title: "Not Found";
+
+  @doc("The kind of resource that was not found.")
+  @encodedName("application/json", "resource_type")
+  resourceType?: string;
+
+  @doc("The identifier that was not found.")
+  @encodedName("application/json", "resource_id")
+  resourceId?: string;
+}
+
+@doc("The request conflicts with the current state of a resource (409).")
 @error
 model ConflictError extends ProblemDetails {
   @statusCode _: 409;
+  type: ProblemType.conflict;
+  code: ProblemCode.conflict;
   title: "Conflict";
 
-  @doc("The conflicting resource ID")
+  @doc("The identifier of the conflicting resource.")
   @encodedName("application/json", "conflicting_resource")
   conflictingResource?: string;
 }
 
-@doc("Precondition failed - the If-Match entity tag is no longer current (412)")
+@doc("The If-Match entity tag is no longer current (412).")
 @error
 model PreconditionFailedError extends ProblemDetails {
   @statusCode _: 412;
+  type: ProblemType.preconditionFailed;
+  code: ProblemCode.preconditionFailed;
   title: "Precondition Failed";
 
-  @doc("Entity tag of the current version, when the caller may read it")
+  @doc("Entity tag of the current version, when the caller may read it.")
   @encodedName("application/json", "current_etag")
   currentEtag?: string;
 }
 
-@doc("Precondition required - the request must send If-Match (428)")
+@doc("The request must send If-Match (428).")
 @error
 model PreconditionRequiredError extends ProblemDetails {
   @statusCode _: 428;
+  type: ProblemType.preconditionRequired;
+  code: ProblemCode.preconditionRequired;
   title: "Precondition Required";
 
-  @doc("The header the request must carry")
+  @doc("The header the request must carry.")
   @encodedName("application/json", "required_header")
   requiredHeader?: "If-Match";
 }
 
-@doc("Rate limited - too many requests (429)")
-@error
-model RateLimitError extends ProblemDetails {
-  @statusCode _: 429;
-  title: "Too Many Requests";
-
-  @doc("Seconds until the rate limit resets")
-  @header("Retry-After")
-  @encodedName("application/json", "retry_after")
-  retryAfter: int32;
-
-  @doc("Maximum requests allowed per window")
-  @header("X-RateLimit-Limit")
-  @encodedName("application/json", "rate_limit")
-  rateLimit?: int32;
-
-  @doc("Remaining requests in current window")
-  @header("X-RateLimit-Remaining")
-  @encodedName("application/json", "rate_limit_remaining")
-  rateLimitRemaining?: int32;
-}
-
-@doc("Internal server error (500)")
+@doc("The server failed while handling the request (500).")
 @error
 model InternalServerError extends ProblemDetails {
   @statusCode _: 500;
+  type: ProblemType.internalError;
+  code: ProblemCode.internalError;
   title: "Internal Server Error";
-
-  @doc("Error code for support reference")
-  @encodedName("application/json", "error_code")
-  errorCode?: string;
 }
 
-@doc("Upstream dependency failed while fulfilling the request (502)")
+@doc("An upstream dependency failed while the server handled the request (502).")
 @error
 model BadGatewayError extends ProblemDetails {
   @statusCode _: 502;
+  type: ProblemType.badGateway;
+  code: ProblemCode.badGateway;
   title: "Bad Gateway";
 
-  @doc("Stable dependency category; never contains raw exception text")
+  @doc("Stable dependency category; never raw exception text.")
   dependency?: string;
 }
 
-@doc("Service unavailable (503)")
+@doc("The server cannot take the request at present (503).")
 @error
 model ServiceUnavailableError extends ProblemDetails {
   @statusCode _: 503;
+  type: ProblemType.serviceUnavailable;
+  code: ProblemCode.serviceUnavailable;
   title: "Service Unavailable";
 
-  @doc("Expected availability time")
-  @header("Retry-After")
-  @encodedName("application/json", "retry_after")
-  retryAfter?: int32;
-
-  @doc("Reason for unavailability")
+  @doc("Why the server is unavailable.")
   reason?: "maintenance" | "overloaded" | "dependency_failure";
-}
-
-// =============================================================================
-// Error Response Union
-// =============================================================================
-
-@doc("Standard error response types")
-union ApiError {
-  @doc("Resource not found")
-  notFound: NotFoundError,
-
-  @doc("Validation failed")
-  validation: ValidationError,
-
-  @doc("Authentication required")
-  unauthorized: UnauthorizedError,
-
-  @doc("Permission denied")
-  forbidden: ForbiddenError,
-
-  @doc("Resource conflict")
-  conflict: ConflictError,
-
-  @doc("Entity tag no longer current")
-  preconditionFailed: PreconditionFailedError,
-
-  @doc("If-Match missing")
-  preconditionRequired: PreconditionRequiredError,
-
-  @doc("Rate limit exceeded")
-  rateLimit: RateLimitError,
-
-  @doc("Server error")
-  serverError: InternalServerError,
-
-  @doc("Upstream dependency failed")
-  badGateway: BadGatewayError,
-
-  @doc("Service unavailable")
-  unavailable: ServiceUnavailableError,
 }

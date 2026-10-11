@@ -195,6 +195,9 @@ const cursorPageDefinitions = new Map([
   ["Operations.AnnotationsApi_list.Response.200", "#/$defs/Annotations.Annotation"],
   ["Operations.SavedQueriesApi_list.Response.200", "#/$defs/SavedQueries.SavedQuery"],
 ]);
+// Contract 12.0.0: a page hands out an opaque `Cursor` token, has no backward
+// cursor, and omits the token on the last page instead of sending null.
+const cursorRef = "#/$defs/Common.Cursor";
 for (const [definition, itemReference] of cursorPageDefinitions) {
   const page = defs[definition];
   if (!page ||
@@ -202,23 +205,145 @@ for (const [definition, itemReference] of cursorPageDefinitions) {
       !page.required?.includes("has_more") ||
       page.properties?.items?.type !== "array" ||
       page.properties.items.items?.$ref !== itemReference ||
-      page.properties?.next_cursor?.type !== "string" ||
-      page.properties?.prev_cursor?.type !== "string" ||
+      page.properties?.next_cursor?.$ref !== cursorRef ||
+      page.required.includes("next_cursor") ||
+      "prev_cursor" in (page.properties ?? {}) ||
       page.properties?.has_more?.type !== "boolean" ||
       JSON.stringify(page.unevaluatedProperties) !== JSON.stringify({ not: {} })) {
     throw new Error(`${definition} must remain the exact closed CursorPage envelope for ${itemReference}.`);
   }
 
   const validatePage = validatorFor(definition);
-  assertValid(
+  assertValid(validatePage, { items: [], next_cursor: "next", has_more: true }, `${definition} page with a next cursor`);
+  assertValid(validatePage, { items: [], has_more: false }, `${definition} last page without a cursor`);
+  assertInvalid(validatePage, { items: [], next_cursor: null, has_more: false }, `${definition} with a null cursor`);
+  assertInvalid(
     validatePage,
-    { items: [], next_cursor: "next", prev_cursor: "previous", has_more: false },
-    `${definition} valid empty page`,
+    { items: [], next_cursor: "next", prev_cursor: "previous", has_more: true },
+    `${definition} with the removed prev_cursor`,
   );
   assertInvalid(validatePage, { items: [] }, `${definition} without has_more`);
   assertInvalid(validatePage, { items: [], has_more: "false" }, `${definition} with non-boolean has_more`);
   assertInvalid(validatePage, { items: [{}], has_more: false }, `${definition} with an invalid item`);
   assertInvalid(validatePage, { items: [], has_more: false, total: 0 }, `${definition} with an undeclared field`);
+}
+
+const workbenchPageItems = new Map([
+  ["Workbench.WorkbenchProtocolEventPage", "events"],
+  ["Workbench.WorkbenchExecutionPage", "executions"],
+  ["Workbench.WorkbenchTestCasePage", "test_cases"],
+  ["Workbench.WorkbenchTestSuitePage", "suites"],
+  ["Workbench.WorkbenchEvaluationRunPage", "runs"],
+]);
+for (const [definition, itemsKey] of workbenchPageItems) {
+  const page = defs[definition];
+  if (page?.properties?.[itemsKey]?.type !== "array" ||
+      page.properties?.next_cursor?.$ref !== cursorRef ||
+      page.required?.includes("next_cursor") ||
+      "prev_cursor" in (page.properties ?? {})) {
+    throw new Error(`${definition} must page its ${itemsKey} with an optional opaque next_cursor.`);
+  }
+  const validatePage = validatorFor(definition);
+  assertValid(validatePage, { [itemsKey]: [] }, `${definition} last page without a cursor`);
+  assertInvalid(validatePage, { [itemsKey]: [], next_cursor: null }, `${definition} with a null cursor`);
+}
+
+const pageLimit = defs["Common.Pagination.PageLimit"];
+if (pageLimit?.type !== "integer" || pageLimit.minimum !== 1 || pageLimit.maximum !== 1000) {
+  throw new Error("Common.Pagination.PageLimit must be the one page-size rule: an integer from 1 to 1000.");
+}
+const runRequestLimit = defs["SavedQueries.SavedQueryRunRequest"]?.properties?.limit;
+if (runRequestLimit?.$ref !== "#/$defs/Common.Pagination.PageLimit" || runRequestLimit.default !== 100) {
+  throw new Error("SavedQueryRunRequest.limit must be a PageLimit that defaults to 100.");
+}
+
+// Contract 12.0.0 problem details: RFC 9457 members plus `code`, no header-borne
+// members in the body, and one `type` URI and `code` per problem type.
+const problemTypes = new Map([
+  ["ValidationError", ["validation-failed", "validation_failed", "Validation Failed", 400]],
+  ["UnauthorizedError", ["unauthorized", "unauthorized", "Unauthorized", 401]],
+  ["ForbiddenError", ["forbidden", "forbidden", "Forbidden", 403]],
+  ["NotFoundError", ["not-found", "not_found", "Not Found", 404]],
+  ["ConflictError", ["conflict", "conflict", "Conflict", 409]],
+  ["PreconditionFailedError", ["precondition-failed", "precondition_failed", "Precondition Failed", 412]],
+  ["PreconditionRequiredError", ["precondition-required", "precondition_required", "Precondition Required", 428]],
+  ["InternalServerError", ["internal-error", "internal_error", "Internal Server Error", 500]],
+  ["BadGatewayError", ["bad-gateway", "bad_gateway", "Bad Gateway", 502]],
+  ["ServiceUnavailableError", ["service-unavailable", "service_unavailable", "Service Unavailable", 503]],
+]);
+const problemDetails = defs["Common.Errors.ProblemDetails"];
+const problemMembers = Object.keys(problemDetails?.properties ?? {}).sort((left, right) => left.localeCompare(right));
+if (JSON.stringify(problemMembers) !== JSON.stringify(["code", "detail", "instance", "status", "title", "type"]) ||
+    JSON.stringify([...(problemDetails?.required ?? [])].sort((left, right) => left.localeCompare(right))) !== JSON.stringify(["code", "status", "title", "type"])) {
+  throw new Error(`ProblemDetails must carry exactly the RFC 9457 members plus code; it has ${problemMembers.join(", ")}.`);
+}
+const publishedTypes = defs["Common.Errors.ProblemType"]?.enum ?? [];
+const publishedCodes = defs["Common.Errors.ProblemCode"]?.enum ?? [];
+const expectedTypes = [...problemTypes.values()].map(([slug]) => `https://qyl.at/problems/${slug}`);
+const expectedCodes = [...problemTypes.values()].map(([, code]) => code);
+if (JSON.stringify(publishedTypes) !== JSON.stringify(expectedTypes) ||
+    JSON.stringify(publishedCodes) !== JSON.stringify(expectedCodes)) {
+  throw new Error(`ProblemType/ProblemCode drifted: ${JSON.stringify(publishedTypes)} / ${JSON.stringify(publishedCodes)}.`);
+}
+const derivedProblems = Object.entries(defs)
+  .filter(([, definition]) => definition.allOf?.some((entry) => entry.$ref === "#/$defs/Common.Errors.ProblemDetails"))
+  .map(([name]) => name.replace("Common.Errors.", ""))
+  .sort((left, right) => left.localeCompare(right));
+if (JSON.stringify(derivedProblems) !== JSON.stringify([...problemTypes.keys()].sort((left, right) => left.localeCompare(right)))) {
+  throw new Error(`Every problem type needs a fixture row; published: ${derivedProblems.join(", ")}.`);
+}
+for (const [model, [slug, code, title, status]] of problemTypes) {
+  const definition = `Common.Errors.${model}`;
+  const validateProblem = validatorFor(definition);
+  const body = {
+    type: `https://qyl.at/problems/${slug}`,
+    title,
+    status,
+    code,
+    detail: "what went wrong in this occurrence",
+    ...(model === "ValidationError" ? { errors: [{ field: "limit", message: "must be at most 1000", code: "max_value" }] } : {}),
+  };
+  assertValid(validateProblem, body, `${model} problem`);
+  assertInvalid(validateProblem, { ...body, type: "about:blank" }, `${model} without its problem type URI`);
+  assertInvalid(
+    validateProblem,
+    { ...body, code: code === "conflict" ? "not_found" : "conflict" },
+    `${model} with another problem type's code`,
+  );
+  const withoutCode = { ...body };
+  delete withoutCode.code;
+  assertInvalid(validateProblem, withoutCode, `${model} without code`);
+  for (const removed of ["trace_id", "request_id", "timestamp", "error_code", "www_authenticate", "retry_after"]) {
+    assertInvalid(validateProblem, { ...body, [removed]: "x" }, `${model} with the removed body member ${removed}`);
+  }
+}
+
+const csharpErrorsRuntime = await readFile("generated/contracts/Qyl/Api/Contracts/Common/Errors.cs", "utf8");
+const csharpPaginationRuntime = await readFile("generated/contracts/Qyl/Api/Contracts/Common/Pagination.cs", "utf8");
+const csharpTracesRuntime = await readFile("generated/contracts/Qyl/Api/Contracts/OTel/Traces.cs", "utf8");
+// Templates, unions and filter models no operation used. None may come back as
+// a definition, a TypeScript type or a C# type.
+for (const removedDefinition of [
+  "Common.Errors.ApiError",
+  "Common.Errors.RateLimitError",
+  "Common.Pagination.CursorPaginationParams",
+  "Common.Pagination.SortOrder",
+  "Common.Pagination.OffsetPaginationParams",
+  "Common.Pagination.OffsetPage",
+  "Common.Pagination.TimeRangeParams",
+  "Common.Pagination.TimeRangePage",
+  "Common.Pagination.StreamParams",
+  "Common.Pagination.StreamEvent",
+  "Common.Pagination.AggregationParams",
+  "Common.Pagination.TimeBucket",
+  "OTel.Traces.SpanQueryFilters",
+]) {
+  if (removedDefinition in defs) throw new Error(`${removedDefinition} must not survive the Contract 12.0.0 cleanup.`);
+  const typeName = removedDefinition.split(".").at(-1);
+  const declaration = new RegExp(`\\b(?:class|const|enum|interface|record|struct|type)\\s+${typeName}\\w*\\b`, "u");
+  if ([tsRuntime, csharpErrorsRuntime, csharpPaginationRuntime, csharpTracesRuntime].some((source) => declaration.test(source))) {
+    throw new Error(`${typeName} must not survive in generated TypeScript or C# contracts.`);
+  }
 }
 
 if (!/export interface WorkbenchSessionBootstrapResponse extends WorkbenchSession\s*\{\s*\}/u.test(tsRuntime)) {

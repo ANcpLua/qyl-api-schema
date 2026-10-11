@@ -52,8 +52,6 @@ export const WIRE_NAME_EXCEPTIONS: Readonly<Record<string, WireNameException>> =
   "InstrumentationScope.scopeName": { wire: "name", reason: "OTLP InstrumentationScope.name" },
   "InstrumentationScope.scopeVersion": { wire: "version", reason: "OTLP InstrumentationScope.version" },
   "InstrumentationScope.scopeAttributes": { wire: "attributes", reason: "OTLP InstrumentationScope.attributes" },
-  // RFC 7807 fixes this member name; `type` is reserved in TypeSpec.
-  "ProblemDetails.problemType": { wire: "type", reason: "RFC 7807 problem-details member" },
   // GenAI is one token in semantic conventions, so it does not split.
   "SessionStats.sessionsWithGenAi": { wire: "sessions_with_genai", reason: "'genai' is a single semconv token" },
 };

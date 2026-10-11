@@ -2,9 +2,12 @@
  * Emits the contract revision into both generated faces of the contract.
  *
  * The revision hashes the semantic OpenAPI projection. Presentation-only
- * OpenAPI fields are removed and object keys are sorted before hashing, so
- * documentation edits do not force a lockstep deploy while any route, schema,
- * or operation change does.
+ * OpenAPI fields and `info.version` are removed and object keys are sorted
+ * before hashing, so documentation edits and a release that changes nothing
+ * but its version do not force a lockstep deploy, while any route, schema, or
+ * operation change does. `info.version` carries the release tag only in the
+ * packed package (scripts/stamp-openapi-version.mjs); outside a pack it is
+ * TypeSpec's `0.0.0`, and neither value may reach the digest.
  *
  * It runs after the OpenAPI emit rather than inside an emitter because no
  * emitter can hash a file its own compile pass is still writing.
@@ -76,9 +79,13 @@ function canonicalize(value) {
   );
 }
 
+// Only `info.version` leaves: a version key anywhere else (a schema property
+// named `version`, say) is contract.
+const versionlessInfo = { ...openApi.info };
+delete versionlessInfo.version;
 const revisionPayload = [
-  "qyl-contract-revision-v3",
-  JSON.stringify(canonicalize(openApi)),
+  "qyl-contract-revision-v4",
+  JSON.stringify(canonicalize({ ...openApi, info: versionlessInfo })),
 ].join("\n");
 const revision =
   `sha256:${createHash("sha256").update(revisionPayload).digest("hex").slice(0, 16)}`;

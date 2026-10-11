@@ -1,6 +1,14 @@
 import type { EmitContext, Enum, Model, ModelProperty, Program, Scalar, Type, Union } from "@typespec/compiler";
-import { emitFile, getDiscriminatedUnion, getEncode, isArrayModelType, navigateProgram, resolveEncodedName } from "@typespec/compiler";
-import { getHeaderFieldName, isHeader, isStatusCode } from "@typespec/http";
+import {
+  emitFile,
+  getDiscriminatedUnion,
+  getEncode,
+  getMediaTypeHint,
+  isArrayModelType,
+  navigateProgram,
+  resolveEncodedName,
+} from "@typespec/compiler";
+import { isBody, isBodyRoot, isMetadata } from "@typespec/http";
 import {
   getCsharpNamespace,
   getCsharpPolymorphicDiscriminator,
@@ -157,12 +165,16 @@ function polymorphicBaseModels(unions: Union[]): Set<Model> {
   return result;
 }
 
+/**
+ * A model that declares its own `@mediaTypeHint` (ProblemDetails) gets a constant for it, so a
+ * server writes the published media type instead of a string typed beside it. Derived models
+ * inherit the hint and do not repeat the constant.
+ */
 function collectMediaType(program: Program, model: Model, bucket: Bucket): void {
-  for (const property of model.properties.values()) {
-    if (!isHeader(program, property) || getHeaderFieldName(program, property) !== "content-type") continue;
-    if (property.type.kind !== "String") continue;
-    bucket.mediaTypes.set(`${model.name}MediaType`, property.type.value);
-  }
+  const hint = getMediaTypeHint(program, model);
+  if (hint === undefined) return;
+  if (model.baseModel && getMediaTypeHint(program, model.baseModel) === hint) return;
+  bucket.mediaTypes.set(`${model.name}MediaType`, hint);
 }
 
 function renderMediaType(name: string, value: string): string {
@@ -535,8 +547,12 @@ function stableWriteFor(program: Program, property: ModelProperty, csType: strin
   throw new Error(`Canonical text of ${unionName}: no stable writer for property '${property.name}' of C# type '${csType}'.`);
 }
 
+/**
+ * Headers, parameters and the status code travel beside the body, and a `@body`/`@bodyRoot`
+ * property *is* the body: a response envelope made only of these has no DTO of its own.
+ */
 function isHttpMetadata(program: Program, property: ModelProperty): boolean {
-  return isHeader(program, property) || isStatusCode(program, property);
+  return isMetadata(program, property) || isBody(program, property) || isBodyRoot(program, property);
 }
 
 function inheritedProperties(model: Model): ModelProperty[] {

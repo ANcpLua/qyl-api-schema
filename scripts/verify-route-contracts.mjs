@@ -190,16 +190,66 @@ for (const [operationId, runtimeValidatedQueries] of validationQueries) {
   verifyExactResponse(operationId, "400", "ValidationError");
 }
 
-// Every operation that returns a CursorPage takes the cursor that page hands out.
-const cursorPagedOperations = [...operations].filter(([, operation]) => {
-  const schema = operation.responses?.["200"]?.content?.["application/json"]?.schema;
-  return schema?.properties?.has_more !== undefined && schema.properties.next_cursor !== undefined;
-});
-for (const [operationId, operation] of cursorPagedOperations) {
-  const cursor = (operation.parameters ?? []).find((parameter) => parameter.in === "query" && parameter.name === "cursor");
-  if (!cursor || cursor.required === true) {
-    throw new Error(`${operationId} returns a CursorPage but declares no optional cursor query parameter.`);
+// Every list operation pages the same way: an optional opaque `cursor`, an
+// optional `limit` of the one PageLimit rule (100 when omitted), and a page whose
+// optional `next_cursor` is that same opaque Cursor. Pages are forward-only.
+const listOperations = new Set([
+  "GET /api/v1/traces",
+  "GET /api/v1/traces/{trace_id}/spans",
+  "GET /api/v1/logs",
+  "GET /api/v1/metrics",
+  "GET /api/v1/metrics/{metric_name}/series",
+  "GET /api/v1/sessions",
+  "GET /api/v1/sessions/{session_id}/traces",
+  "GET /api/v1/annotations",
+  "GET /api/v1/saved-queries",
+  "GET /workbench/workspaces/{workspace_id}/servers/{server_id}/protocol",
+  "GET /workbench/workspaces/{workspace_id}/servers/{server_id}/executions",
+  "GET /workbench/workspaces/{workspace_id}/test-cases",
+  "GET /workbench/workspaces/{workspace_id}/suites",
+  "GET /workbench/workspaces/{workspace_id}/evaluation-runs",
+]);
+const queryParameter = (operation, name) =>
+  (operation.parameters ?? []).find((parameter) => parameter.in === "query" && parameter.name === name);
+const unlistedPagedOperations = [...operations]
+  .filter(([, operation]) => queryParameter(operation, "limit") || queryParameter(operation, "cursor"))
+  .map(([operationId]) => operationId)
+  .filter((operationId) => !listOperations.has(operationId));
+if (unlistedPagedOperations.length > 0) {
+  throw new Error(`Paged operations outside the list inventory: ${unlistedPagedOperations.join(", ")}.`);
+}
+
+const schemaRef = (name) => `#/components/schemas/${name}`;
+const componentSchema = (ref) => openapi.components?.schemas?.[ref?.replace("#/components/schemas/", "")];
+const pageLimitRef = schemaRef("Common.Pagination.PageLimit");
+const cursorRef = schemaRef("Common.Cursor");
+const pageLimit = componentSchema(pageLimitRef);
+if (pageLimit?.type !== "integer" || pageLimit.minimum !== 1 || pageLimit.maximum !== 1000) {
+  throw new Error("Common.Pagination.PageLimit must be the one page-size rule: an integer from 1 to 1000.");
+}
+for (const operationId of listOperations) {
+  const operation = requireOperation(operationId);
+  const limit = queryParameter(operation, "limit");
+  if (!limit || limit.required === true || limit.schema?.$ref !== pageLimitRef || limit.schema.default !== 100) {
+    throw new Error(`${operationId} must take an optional PageLimit limit that defaults to 100.`);
   }
+  const cursor = queryParameter(operation, "cursor");
+  if (!cursor || cursor.required === true || cursor.schema?.$ref !== cursorRef) {
+    throw new Error(`${operationId} must take an optional opaque Cursor as cursor.`);
+  }
+  const body = operation.responses?.["200"]?.content?.["application/json"]?.schema;
+  const page = body?.$ref ? componentSchema(body.$ref) : body;
+  if (page?.properties?.next_cursor?.$ref !== cursorRef || page.required?.includes("next_cursor")) {
+    throw new Error(`${operationId} must answer a page with an optional opaque next_cursor.`);
+  }
+}
+const backwardCursors = [];
+JSON.stringify(openapi, (key, value) => {
+  if (key === "prev_cursor") backwardCursors.push(key);
+  return value;
+});
+if (backwardCursors.length > 0) {
+  throw new Error(`${backwardCursors.length} schema(s) still declare prev_cursor; pages are forward-only.`);
 }
 
 // The write surface: user-created resources on the shared write base.
@@ -264,6 +314,39 @@ for (const [operationId, role] of expectedWriteOperations) {
 }
 verifyExactResponse("PATCH /api/v1/saved-queries/{saved_query_id}", "409", "ConflictError");
 
+// Problem bodies carry no headers. An error response declares a header only on
+// the operations whose server sends it: the collector's 500 names the trace of
+// the failed request, and the workbench's 401 names its cookie challenge.
+const problemMediaType = "application/problem+json";
+const servedProblemHeaders = (operationId, status) => {
+  const path = operationId.slice(operationId.indexOf(" ") + 1);
+  if (status === "500" && path.startsWith("/api/v1/")) return ["X-Trace-Id"];
+  if (status === "401" && path.startsWith("/workbench/")) return ["WWW-Authenticate"];
+  return [];
+};
+let problemResponses = 0;
+for (const [operationId, operation] of operations) {
+  for (const [status, response] of Object.entries(operation.responses ?? {})) {
+    if (!response.content?.[problemMediaType]) continue;
+    problemResponses += 1;
+    const declared = Object.keys(response.headers ?? {}).sort((left, right) => left.localeCompare(right));
+    const served = servedProblemHeaders(operationId, status);
+    if (JSON.stringify(declared) !== JSON.stringify(served)) {
+      throw new Error(
+        `${operationId} ${status} declares header(s) [${declared.join(", ")}]; its server sends [${served.join(", ")}].`,
+      );
+    }
+    const traceId = response.headers?.["X-Trace-Id"];
+    if (traceId && (traceId.required === true || traceId.schema?.$ref !== schemaRef("Common.TraceId"))) {
+      throw new Error(`${operationId} ${status} X-Trace-Id must be an optional Common.TraceId.`);
+    }
+    const challenge = response.headers?.["WWW-Authenticate"];
+    if (challenge && (challenge.required !== true || challenge.schema?.type !== "string")) {
+      throw new Error(`${operationId} ${status} WWW-Authenticate must be a required string.`);
+    }
+  }
+}
+
 const resumableSseOperations = new Set([
   "GET /api/v1/stream/logs",
   "GET /runner/resources/{resource}/logs/stream",
@@ -287,5 +370,6 @@ console.log(
   `${capacityLimitedOperations.size} capacity responses, ` +
   `${validationQueries.size} typed-query validation responses, ` +
   `${resumableSseOperations.size} resumable SSE headers, ` +
-  `${cursorPagedOperations.length} cursor-paged lists, and ${expectedWriteOperations.size} write-surface operations.`,
+  `${listOperations.size} cursor-paged lists, ${expectedWriteOperations.size} write-surface operations, and ` +
+  `${problemResponses} problem responses with only their served headers.`,
 );

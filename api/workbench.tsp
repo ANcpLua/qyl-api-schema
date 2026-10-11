@@ -3,6 +3,7 @@ import "@typespec/http";
 import "@typespec/sse";
 
 import "../common/errors.tsp";
+import "../common/pagination.tsp";
 import "../models/workbench.tsp";
 
 using TypeSpec.Events;
@@ -10,6 +11,7 @@ using TypeSpec.Http;
 using TypeSpec.SSE;
 
 using Qyl.Api.Contracts.Common.Errors;
+using Qyl.Api.Contracts.Common.Pagination;
 using Qyl.Api.Contracts.Workbench;
 
 namespace TypeSpec.Http {
@@ -19,6 +21,19 @@ namespace TypeSpec.Http {
 }
 
 namespace Qyl.Api.Contracts.Workbench {
+  // Problem bodies carry no headers (common/errors.tsp). The workbench answers
+  // a missing or invalid session cookie with a challenge naming its scheme, so
+  // its 401 declares the header here, on the workbench operations.
+  @doc("The local workbench session cookie is missing or invalid (401). `WWW-Authenticate` names the `Cookie` scheme.")
+  @error
+  model WorkbenchUnauthorizedResponse {
+    @doc("Authentication challenge. The workbench sends `Cookie`.")
+    @header("WWW-Authenticate")
+    wwwAuthenticate: string;
+
+    @bodyRoot problem: UnauthorizedError;
+  }
+
   @events
   union WorkbenchProtocolEvents {
     message: WorkbenchProtocolEvent,
@@ -37,7 +52,7 @@ namespace Qyl.Api.Contracts.Workbench {
     @get
     get():
       | WorkbenchSession
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | ServiceUnavailableError
       | InternalServerError;
@@ -46,7 +61,7 @@ namespace Qyl.Api.Contracts.Workbench {
     @post
     bootstrap():
       | WorkbenchSessionBootstrapResponse
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | ConflictError
       | ServiceUnavailableError
@@ -60,7 +75,7 @@ namespace Qyl.Api.Contracts.Workbench {
     @get
     list():
       | WorkbenchWorkspaceListResponse
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | ServiceUnavailableError
       | InternalServerError;
@@ -69,7 +84,7 @@ namespace Qyl.Api.Contracts.Workbench {
     create(@body request: WorkbenchWorkspaceCreateRequest):
       | WorkbenchWorkspace
       | ValidationError
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | ConflictError
       | ServiceUnavailableError
@@ -79,7 +94,7 @@ namespace Qyl.Api.Contracts.Workbench {
     @route("/{workspace_id}")
     get(@path("workspace_id") workspaceId: WorkbenchWorkspaceId):
       | WorkbenchWorkspace
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ServiceUnavailableError
@@ -93,7 +108,7 @@ namespace Qyl.Api.Contracts.Workbench {
     ):
       | WorkbenchWorkspace
       | ValidationError
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ConflictError
@@ -104,7 +119,7 @@ namespace Qyl.Api.Contracts.Workbench {
     @route("/{workspace_id}")
     delete(@path("workspace_id") workspaceId: WorkbenchWorkspaceId):
       | WorkbenchDeleted
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ConflictError
@@ -115,7 +130,7 @@ namespace Qyl.Api.Contracts.Workbench {
     @route("/{workspace_id}/preferences")
     getPreferences(@path("workspace_id") workspaceId: WorkbenchWorkspaceId):
       | WorkbenchWorkspacePreferences
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ServiceUnavailableError
@@ -129,7 +144,7 @@ namespace Qyl.Api.Contracts.Workbench {
     ):
       | WorkbenchWorkspacePreferences
       | ValidationError
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ServiceUnavailableError
@@ -143,7 +158,7 @@ namespace Qyl.Api.Contracts.Workbench {
     @get
     list(@path("workspace_id") workspaceId: WorkbenchWorkspaceId):
       | WorkbenchServerListResponse
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ServiceUnavailableError
@@ -156,7 +171,7 @@ namespace Qyl.Api.Contracts.Workbench {
     ):
       | WorkbenchServer
       | ValidationError
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ConflictError
@@ -170,7 +185,7 @@ namespace Qyl.Api.Contracts.Workbench {
       @path("server_id") serverId: WorkbenchServerId,
     ):
       | WorkbenchServer
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ServiceUnavailableError
@@ -185,7 +200,7 @@ namespace Qyl.Api.Contracts.Workbench {
     ):
       | WorkbenchServer
       | ValidationError
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ConflictError
@@ -199,7 +214,7 @@ namespace Qyl.Api.Contracts.Workbench {
       @path("server_id") serverId: WorkbenchServerId,
     ):
       | WorkbenchDeleted
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ConflictError
@@ -213,7 +228,7 @@ namespace Qyl.Api.Contracts.Workbench {
       @path("server_id") serverId: WorkbenchServerId,
     ):
       | WorkbenchServerActionAccepted
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ConflictError
@@ -228,7 +243,7 @@ namespace Qyl.Api.Contracts.Workbench {
       @path("server_id") serverId: WorkbenchServerId,
     ):
       | WorkbenchServerActionAccepted
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ConflictError
@@ -242,7 +257,7 @@ namespace Qyl.Api.Contracts.Workbench {
       @path("server_id") serverId: WorkbenchServerId,
     ):
       | WorkbenchServerActionAccepted
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ConflictError
@@ -257,7 +272,7 @@ namespace Qyl.Api.Contracts.Workbench {
       @path("server_id") serverId: WorkbenchServerId,
     ):
       | WorkbenchDiscoverySnapshot
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ConflictError
@@ -272,7 +287,7 @@ namespace Qyl.Api.Contracts.Workbench {
       @path("server_id") serverId: WorkbenchServerId,
     ):
       | WorkbenchDiscoverySnapshot
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ConflictError
@@ -280,21 +295,17 @@ namespace Qyl.Api.Contracts.Workbench {
       | ServiceUnavailableError
       | InternalServerError;
 
+    @list
     @get
     @route("/{server_id}/protocol")
     protocolEvents(
       @path("workspace_id") workspaceId: WorkbenchWorkspaceId,
       @path("server_id") serverId: WorkbenchServerId,
-      @query cursor?: string,
-
-      @query
-      @minValue(1)
-      @maxValue(1000)
-      limit?: int32 = 200,
+      ...CursorPageQuery,
     ):
       | WorkbenchProtocolEventPage
       | ValidationError
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ServiceUnavailableError
@@ -308,7 +319,7 @@ namespace Qyl.Api.Contracts.Workbench {
       @header("Last-Event-ID") lastEventId?: string,
     ):
       | SSEStream<WorkbenchProtocolEvents>
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ServiceUnavailableError
@@ -328,27 +339,23 @@ namespace Qyl.Api.Contracts.Workbench {
       @header("Last-Event-ID") lastEventId?: string,
     ):
       | SSEStream<WorkbenchExecutionUpdateEvents>
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ServiceUnavailableError
       | InternalServerError;
 
+    @list
     @get
     list(
       @path("workspace_id") workspaceId: WorkbenchWorkspaceId,
       @path("server_id") serverId: WorkbenchServerId,
       @query status?: WorkbenchExecutionStatus,
-      @query cursor?: string,
-
-      @query
-      @minValue(1)
-      @maxValue(1000)
-      limit?: int32 = 100,
+      ...CursorPageQuery,
     ):
       | WorkbenchExecutionPage
       | ValidationError
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ServiceUnavailableError
@@ -362,7 +369,7 @@ namespace Qyl.Api.Contracts.Workbench {
     ):
       | WorkbenchExecutionAccepted
       | ValidationError
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ConflictError
@@ -378,7 +385,7 @@ namespace Qyl.Api.Contracts.Workbench {
       @path("execution_id") executionId: WorkbenchExecutionId,
     ):
       | WorkbenchExecutionRecord
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ServiceUnavailableError
@@ -394,7 +401,7 @@ namespace Qyl.Api.Contracts.Workbench {
     ):
       | WorkbenchExecutionAccepted
       | ValidationError
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ConflictError
@@ -409,7 +416,7 @@ namespace Qyl.Api.Contracts.Workbench {
       @path("execution_id") executionId: WorkbenchExecutionId,
     ):
       | WorkbenchExecutionTelemetryResponse
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ServiceUnavailableError
@@ -420,21 +427,17 @@ namespace Qyl.Api.Contracts.Workbench {
   @tag("Workbench MCP test cases")
   @useAuth(WorkbenchSessionCookieAuth)
   interface WorkbenchTestCasesApi {
+    @list
     @get
     list(
       @path("workspace_id") workspaceId: WorkbenchWorkspaceId,
       @query("server_id") serverId?: WorkbenchServerId,
       @query("tool_name") toolName?: string,
-      @query cursor?: string,
-
-      @query
-      @minValue(1)
-      @maxValue(1000)
-      limit?: int32 = 100,
+      ...CursorPageQuery,
     ):
       | WorkbenchTestCasePage
       | ValidationError
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ServiceUnavailableError
@@ -447,7 +450,7 @@ namespace Qyl.Api.Contracts.Workbench {
     ):
       | WorkbenchTestCase
       | ValidationError
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ConflictError
@@ -461,7 +464,7 @@ namespace Qyl.Api.Contracts.Workbench {
       @path("test_case_id") testCaseId: WorkbenchTestCaseId,
     ):
       | WorkbenchTestCase
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ServiceUnavailableError
@@ -476,7 +479,7 @@ namespace Qyl.Api.Contracts.Workbench {
     ):
       | WorkbenchTestCase
       | ValidationError
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ConflictError
@@ -490,7 +493,7 @@ namespace Qyl.Api.Contracts.Workbench {
       @path("test_case_id") testCaseId: WorkbenchTestCaseId,
     ):
       | WorkbenchDeleted
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ConflictError
@@ -506,7 +509,7 @@ namespace Qyl.Api.Contracts.Workbench {
     ):
       | WorkbenchEvaluationRunAccepted
       | ValidationError
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ConflictError
@@ -518,19 +521,15 @@ namespace Qyl.Api.Contracts.Workbench {
   @tag("Workbench MCP suites")
   @useAuth(WorkbenchSessionCookieAuth)
   interface WorkbenchSuitesApi {
+    @list
     @get
     list(
       @path("workspace_id") workspaceId: WorkbenchWorkspaceId,
-      @query cursor?: string,
-
-      @query
-      @minValue(1)
-      @maxValue(1000)
-      limit?: int32 = 100,
+      ...CursorPageQuery,
     ):
       | WorkbenchTestSuitePage
       | ValidationError
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ServiceUnavailableError
@@ -543,7 +542,7 @@ namespace Qyl.Api.Contracts.Workbench {
     ):
       | WorkbenchTestSuite
       | ValidationError
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ConflictError
@@ -557,7 +556,7 @@ namespace Qyl.Api.Contracts.Workbench {
       @path("suite_id") suiteId: WorkbenchSuiteId,
     ):
       | WorkbenchTestSuite
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ServiceUnavailableError
@@ -572,7 +571,7 @@ namespace Qyl.Api.Contracts.Workbench {
     ):
       | WorkbenchTestSuite
       | ValidationError
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ConflictError
@@ -586,7 +585,7 @@ namespace Qyl.Api.Contracts.Workbench {
       @path("suite_id") suiteId: WorkbenchSuiteId,
     ):
       | WorkbenchDeleted
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ConflictError
@@ -602,7 +601,7 @@ namespace Qyl.Api.Contracts.Workbench {
     ):
       | WorkbenchEvaluationRunAccepted
       | ValidationError
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ConflictError
@@ -614,20 +613,16 @@ namespace Qyl.Api.Contracts.Workbench {
   @tag("Workbench MCP evaluations")
   @useAuth(WorkbenchSessionCookieAuth)
   interface WorkbenchEvaluationRunsApi {
+    @list
     @get
     list(
       @path("workspace_id") workspaceId: WorkbenchWorkspaceId,
       @query status?: WorkbenchEvaluationRunStatus,
-      @query cursor?: string,
-
-      @query
-      @minValue(1)
-      @maxValue(1000)
-      limit?: int32 = 100,
+      ...CursorPageQuery,
     ):
       | WorkbenchEvaluationRunPage
       | ValidationError
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ServiceUnavailableError
@@ -640,7 +635,7 @@ namespace Qyl.Api.Contracts.Workbench {
       @path("evaluation_run_id") evaluationRunId: WorkbenchEvaluationRunId,
     ):
       | WorkbenchEvaluationRun
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ServiceUnavailableError
@@ -654,7 +649,7 @@ namespace Qyl.Api.Contracts.Workbench {
     ):
       | WorkbenchEvaluationRunComparison
       | ValidationError
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ConflictError
@@ -670,7 +665,7 @@ namespace Qyl.Api.Contracts.Workbench {
     ):
       | WorkbenchEvaluationExportAccepted
       | ValidationError
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ConflictError
@@ -685,7 +680,7 @@ namespace Qyl.Api.Contracts.Workbench {
       @path("export_id") exportId: WorkbenchEvaluationExportId,
     ):
       | WorkbenchEvaluationExport
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ServiceUnavailableError
@@ -699,7 +694,7 @@ namespace Qyl.Api.Contracts.Workbench {
       @path("export_id") exportId: WorkbenchEvaluationExportId,
     ):
       | WorkbenchEvaluationExportArtifact
-      | UnauthorizedError
+      | WorkbenchUnauthorizedResponse
       | ForbiddenError
       | NotFoundError
       | ConflictError

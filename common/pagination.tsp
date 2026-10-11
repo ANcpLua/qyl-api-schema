@@ -1,7 +1,11 @@
 // =============================================================================
-// Qyl API pagination templates
+// Qyl API cursor pagination
 // =============================================================================
-// Reusable pagination patterns for list operations.
+// Every list operation pages the same way: it is a `@list` operation, spreads
+// `CursorPageQuery` (one page-size rule, one cursor parameter) and answers a
+// page whose items carry `@pageItems` and whose opaque `Cursor` carries
+// `@continuationToken`. The cursor is a token the client passes back, never a
+// link it follows, and the last page omits it.
 // =============================================================================
 
 import "@typespec/http";
@@ -11,244 +15,37 @@ using TypeSpec.Http;
 
 namespace Qyl.Api.Contracts.Common.Pagination;
 
-// =============================================================================
-// Cursor-Based Pagination (Preferred for Large Datasets)
-// =============================================================================
+@doc("Page size of a list operation: at least 1 and at most 1000 items.")
+@minValue(1)
+@maxValue(1000)
+scalar PageLimit extends int32;
 
-@doc("Cursor-based pagination parameters")
-model CursorPaginationParams {
-  @doc("Opaque cursor for fetching the next page")
+// The query parameters of every list operation. An alias, not a model, so it
+// reaches the wire only as the parameters of the operations that spread it.
+alias CursorPageQuery = {
+  @doc("Page size; 100 when omitted.")
   @query
-  cursor?: string;
-
-  @doc("Maximum number of items to return (1-1000)")
-  @query
-  @minValue(1)
-  @maxValue(1000)
-  limit?: int32 = 100;
-
-  @doc("Sort direction")
-  @query
-  order?: SortOrder = SortOrder.desc;
-}
-
-@doc("Sort order")
-enum SortOrder {
-  @doc("Ascending order (oldest first)")
-  asc,
-
-  @doc("Descending order (newest first)")
-  desc,
-}
-
-@doc("Cursor-based paginated response wrapper")
-model CursorPage<T> {
-  @doc("List of items in this page")
-  @pageItems
-  items: T[];
-
-  @doc("Cursor for the next page (null if no more pages)")
-  @encodedName("application/json", "next_cursor")
-  @nextLink
-  nextCursor?: string;
-
-  @doc("Cursor for the previous page (null if first page)")
-  @encodedName("application/json", "prev_cursor")
-  prevCursor?: string;
-
-  @doc("Whether there are more items available")
-  @encodedName("application/json", "has_more")
-  hasMore: boolean;
-}
-
-// =============================================================================
-// Offset-Based Pagination (For Small/Medium Datasets)
-// =============================================================================
-
-@doc("Offset-based pagination parameters")
-model OffsetPaginationParams {
-  @doc("Page number (1-indexed)")
-  @query
-  @pageIndex
-  @minValue(1)
-  page?: int32 = 1;
-
-  @doc("Items per page (1-1000)")
-  @query("page_size")
   @pageSize
-  @minValue(1)
-  @maxValue(1000)
-  @encodedName("application/json", "page_size")
-  pageSize?: int32 = 100;
-}
+  limit?: PageLimit = 100;
 
-@doc("Offset-based paginated response wrapper")
-model OffsetPage<T> {
-  @doc("List of items in this page")
-  @pageItems
-  items: T[];
-
-  @doc("Current page number")
-  page: int32;
-
-  @doc("Items per page")
-  @encodedName("application/json", "page_size")
-  pageSize: int32;
-
-  @doc("Total number of items across all pages")
-  @encodedName("application/json", "total_count")
-  totalCount: int64;
-
-  @doc("Total number of pages")
-  @encodedName("application/json", "total_pages")
-  totalPages: int32;
-
-  @doc("Whether there is a next page")
-  @encodedName("application/json", "has_next")
-  hasNext: boolean;
-
-  @doc("Whether there is a previous page")
-  @encodedName("application/json", "has_prev")
-  hasPrev: boolean;
-}
-
-// =============================================================================
-// Time-Range Pagination (For Time-Series Data)
-// =============================================================================
-
-@doc("Time-range based query parameters")
-model TimeRangeParams {
-  @doc("Start of time range (inclusive)")
-  @query("start_time")
-  @encodedName("application/json", "start_time")
-  startTime?: utcDateTime;
-
-  @doc("End of time range (exclusive)")
-  @query("end_time")
-  @encodedName("application/json", "end_time")
-  endTime?: utcDateTime;
-
-  @doc("Maximum number of items to return")
+  @doc("The `next_cursor` of the previous page of the same query; omitted for the first page.")
   @query
-  @minValue(1)
-  @maxValue(10000)
-  limit?: int32 = 1000;
-}
+  @continuationToken
+  cursor?: Cursor;
+};
 
-@doc("Time-range paginated response with continuation")
-model TimeRangePage<T> {
-  @doc("List of items in this page")
+@doc("One page of a list operation.")
+model CursorPage<T> {
+  @doc("The items of this page.")
   @pageItems
   items: T[];
 
-  @doc("Actual start time of returned data")
-  @encodedName("application/json", "start_time")
-  startTime: utcDateTime;
-
-  @doc("Actual end time of returned data")
-  @encodedName("application/json", "end_time")
-  endTime: utcDateTime;
-
-  @doc("Continuation token for next time window")
-  @encodedName("application/json", "continuation_token")
+  @doc("Cursor of the next page, passed back as the `cursor` query parameter. Absent on the last page.")
+  @encodedName("application/json", "next_cursor")
   @continuationToken
-  continuationToken?: string;
+  nextCursor?: Cursor;
 
-  @doc("Whether there is more data in the time range")
+  @doc("Whether more items follow this page. `next_cursor` is present exactly when this is true.")
   @encodedName("application/json", "has_more")
   hasMore: boolean;
-
-  @doc("Number of items returned")
-  count: int32;
-}
-
-// =============================================================================
-// Streaming Pagination (For Real-Time Data)
-// =============================================================================
-
-@doc("Streaming parameters for SSE endpoints")
-model StreamParams {
-  @doc("Include historical data from this timestamp")
-  @query
-  since?: utcDateTime;
-
-  @doc("Filter by trace ID")
-  @query("trace_id")
-  @encodedName("application/json", "trace_id")
-  traceId?: TraceId;
-
-  @doc("Filter by service name")
-  @query("service_name")
-  @encodedName("application/json", "service_name")
-  serviceName?: string;
-
-  @doc("Maximum events per second (rate limiting)")
-  @query("max_events_per_second")
-  @encodedName("application/json", "max_events_per_second")
-  @minValue(1)
-  @maxValue(1000)
-  maxEventsPerSecond?: int32 = 100;
-}
-
-@doc("SSE event wrapper for streaming")
-model StreamEvent<T> {
-  @doc("Event ID for resumption")
-  id: string;
-
-  @doc("Event type")
-  @encodedName("application/json", "event_type")
-  eventType: string;
-
-  @doc("Event timestamp")
-  timestamp: utcDateTime;
-
-  @doc("Event data payload")
-  data: T;
-
-  @doc("Retry interval hint in milliseconds")
-  retry?: int32;
-}
-
-// =============================================================================
-// Aggregation Parameters
-// =============================================================================
-
-@doc("Time bucket size for aggregations")
-enum TimeBucket {
-  @doc("1 minute buckets")
-  minute: "1m",
-
-  @doc("5 minute buckets")
-  fiveMinutes: "5m",
-
-  @doc("15 minute buckets")
-  fifteenMinutes: "15m",
-
-  @doc("1 hour buckets")
-  hour: "1h",
-
-  @doc("1 day buckets")
-  day: "1d",
-
-  @doc("1 week buckets")
-  week: "1w",
-
-  @doc("Auto-select based on time range")
-  auto: "auto",
-}
-
-@doc("Aggregation query parameters")
-model AggregationParams {
-  @doc("Time bucket size")
-  @query
-  bucket?: TimeBucket = TimeBucket.auto;
-
-  @doc("Group by these dimensions")
-  @query("group_by")
-  @encodedName("application/json", "group_by")
-  groupBy?: string[];
-
-  @doc("Filter expression")
-  @query
-  filter?: string;
 }

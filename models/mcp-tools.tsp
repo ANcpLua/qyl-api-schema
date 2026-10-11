@@ -77,11 +77,11 @@ model ToolError {
 
 @doc("Pagination members of a paged tool output.")
 model ToolPage {
-  @doc("Whether more items exist beyond this page. False only when the result is complete.")
+  @doc("Whether more items exist beyond this page. False only when the result is complete; `next_cursor` is present exactly when this is true.")
   @encodedName("application/json", "has_more")
   hasMore: boolean;
 
-  @doc("Pass as `cursor` to the same tool with the same filters for the next page.")
+  @doc("Pass as `cursor` to the same tool with the same filters for the next page. Absent on the last page.")
   @encodedName("application/json", "next_cursor")
   nextCursor?: Cursor;
 }

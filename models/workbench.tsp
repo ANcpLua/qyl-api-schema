@@ -460,9 +460,12 @@ model WorkbenchProtocolEvent {
 
 @doc("Cursor page of chronological MCP protocol diagnostic events.")
 model WorkbenchProtocolEventPage {
+  @pageItems
   events: WorkbenchProtocolEvent[];
+  @doc("Cursor of the next page, passed back as the `cursor` query parameter. Absent on the last page.")
   @encodedName("application/json", "next_cursor")
-  nextCursor?: string;
+  @continuationToken
+  nextCursor?: Cursor;
 }
 
 @doc("How consequential the workbench considers an MCP tool invocation.")
@@ -617,9 +620,12 @@ model WorkbenchExecutionCancelRequest {
 
 @doc("Cursor page of MCP execution records.")
 model WorkbenchExecutionPage {
+  @pageItems
   executions: WorkbenchExecutionRecord[];
+  @doc("Cursor of the next page, passed back as the `cursor` query parameter. Absent on the last page.")
   @encodedName("application/json", "next_cursor")
-  nextCursor?: string;
+  @continuationToken
+  nextCursor?: Cursor;
 }
 
 @doc("Whether correlated Qyl observability evidence was available.")
@@ -820,10 +826,13 @@ model WorkbenchTestCaseUpdateRequest {
 
 @doc("Cursor page of reusable MCP test cases.")
 model WorkbenchTestCasePage {
+  @pageItems
   @encodedName("application/json", "test_cases")
   testCases: WorkbenchTestCase[];
+  @doc("Cursor of the next page, passed back as the `cursor` query parameter. Absent on the last page.")
   @encodedName("application/json", "next_cursor")
-  nextCursor?: string;
+  @continuationToken
+  nextCursor?: Cursor;
 }
 
 @doc("Reusable ordered group of MCP test cases.")
@@ -879,9 +888,12 @@ model WorkbenchTestSuiteUpdateRequest {
 
 @doc("Cursor page of reusable MCP test suites.")
 model WorkbenchTestSuitePage {
+  @pageItems
   suites: WorkbenchTestSuite[];
+  @doc("Cursor of the next page, passed back as the `cursor` query parameter. Absent on the last page.")
   @encodedName("application/json", "next_cursor")
-  nextCursor?: string;
+  @continuationToken
+  nextCursor?: Cursor;
 }
 
 @doc("Request to execute one test case or suite asynchronously.")
@@ -1044,9 +1056,12 @@ model WorkbenchEvaluationRunAccepted {
 
 @doc("Cursor page of MCP evaluation runs.")
 model WorkbenchEvaluationRunPage {
+  @pageItems
   runs: WorkbenchEvaluationRun[];
+  @doc("Cursor of the next page, passed back as the `cursor` query parameter. Absent on the last page.")
   @encodedName("application/json", "next_cursor")
-  nextCursor?: string;
+  @continuationToken
+  nextCursor?: Cursor;
 }
 
 @doc("Request to compare a baseline MCP evaluation run with a candidate run.")

@@ -64,8 +64,7 @@ export const httpParamSnakeCaseRule = createRule({
         }
       },
 
-      // Parameters declared on a reusable spread model (CursorPaginationParams,
-      // SpanQueryFilters, StreamParams, …).
+      // Parameters declared on a named model that operations spread.
       modelProperty: (property: ModelProperty) => {
         if (!isInNamespace(property, PRODUCT_NAMESPACE)) return;
         checkProperty(property);

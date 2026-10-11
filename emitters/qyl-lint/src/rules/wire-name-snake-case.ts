@@ -41,10 +41,10 @@ export const wireNameSnakeCaseRule = createRule({
         // A header's wire name is its HTTP field name, which follows HTTP's own
         // conventions (`X-Trace-Id`, `Last-Event-ID`) and is deliberately not
         // snake_case. Status codes and cookies likewise never reach the body.
-        // Query and path properties are NOT skipped: a reusable parameter model
-        // (StreamParams, SpanQueryFilters, …) is also emitted as a standalone
-        // schema, where the JSON name is what ships, so it must agree with the
-        // parameter name that http-param-snake-case sets.
+        // Query and path properties are NOT skipped: a named model of query or
+        // path parameters is also emitted as a standalone schema, where the JSON
+        // name is what ships, so it must agree with the parameter name that
+        // http-param-snake-case sets.
         const program = context.program;
         if (isStatusCode(program, property) || isCookieParam(program, property)) return;
         if (isHeader(program, property)) {

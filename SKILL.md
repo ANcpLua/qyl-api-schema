@@ -79,6 +79,9 @@ This repo consumes no qyl-dev package. If a Renovate or TypeSpec dependency move
 ## Order rules that never change
 
 - A release that changes the contract revision deploys in order: qyl (Collector) first, wait
-  until `https://api.qyl.at/health` serves the new revision, then qyl.mcp.
+  until `https://api.qyl.at/health` serves the new revision, then qyl.mcp. Deployment state:
+  `railway deployment list --json` in the qyl clone (linked to service `qyl-collector`,
+  environment `production`); the newest entry must show `status: SUCCESS` and
+  `meta.commitHash` equal to the pushed commit.
 - One release per repo per wave, only when shipped content changed.
 - qyl.at lists a version only after the index confirms it.

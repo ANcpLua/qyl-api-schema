@@ -33,7 +33,6 @@ on:
 
 permissions:
   contents: read
-  packages: read      # read internal @ancplua/* deps from GitHub Packages at install
   id-token: write     # OIDC for BOTH npm trusted publishing/provenance AND NuGet/login
 
 concurrency:
@@ -47,15 +46,8 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      # The three @ancplua/* emitters are workspace members and resolve locally; the
-      # scope map and token remain for Renovate and for any future GitHub Packages
-      # dependency, which would be the first one bun has to authenticate. node comes from
-      # mise.toml; setup-node installs no Node here and only writes that scope auth.
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
-        with:
-          registry-url: 'https://npm.pkg.github.com'
-          scope: '@ancplua'
-
+      # node, bun and dotnet come from mise.toml. The three @ancplua/* emitters are workspace
+      # members and resolve locally, so install authenticates against nothing.
       - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
 
       # Trusted publishing to npmjs needs npm >= 11.5.1; Node 24 bundles an older npm.
@@ -74,8 +66,6 @@ jobs:
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build local emitters
         run: bun run build:emitters

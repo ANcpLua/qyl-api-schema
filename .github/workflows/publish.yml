@@ -49,22 +49,21 @@ jobs:
 
       # The three @ancplua/* emitters are workspace members and resolve locally; the
       # scope map and token remain for Renovate and for any future GitHub Packages
-      # dependency, which would be the first one bun has to authenticate.
+      # dependency, which would be the first one bun has to authenticate. node comes from
+      # mise.toml; setup-node installs no Node here and only writes that scope auth.
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
-          node-version: '24'
           registry-url: 'https://npm.pkg.github.com'
           scope: '@ancplua'
 
       - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
 
       # Trusted publishing to npmjs needs npm >= 11.5.1; Node 24 bundles an older npm.
+      # It runs after mise-action so the upgrade lands in the Node that is first on PATH.
       # npm survives here for exactly three commands -- version, pack, publish -- because
       # bun publish has no OIDC trusted-publishing or provenance path. Install and lint are bun.
       - name: Upgrade npm for trusted publishing
         run: npm install -g npm@latest
-
-      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
 
       - name: Verify package.json is not private
         run: |

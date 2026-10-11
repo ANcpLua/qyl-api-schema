@@ -4,11 +4,11 @@ The consumer-facing overview is the [README](README.md); this file is the workin
 
 ## Develop
 
-Development and CI use Node.js 24 LTS, with Bun as the package manager (pinned by
-`packageManager` in package.json). The three emitters under `emitters/` are workspace
-members, not `file:` dependencies: bun copies a `file:` dependency before `prepare`
-builds it, which leaves TypeSpec resolving a library with no `dist/`. Published npm
-artifacts support maintained Node.js releases from 22 onward.
+Development and CI use Node.js 24 LTS, with Bun as the package manager; `mise.toml`
+pins both. The three emitters under `emitters/` are workspace members, not `file:`
+dependencies: bun copies a `file:` dependency before `prepare` builds it, which leaves
+TypeSpec resolving a library with no `dist/`. Published npm artifacts support
+maintained Node.js releases from 22 onward.
 
 ```bash
 bun install --frozen-lockfile

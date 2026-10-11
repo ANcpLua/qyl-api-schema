@@ -52,9 +52,9 @@ bun is the package manager (`bun.lock`); npm is used only for `npm version`, `np
 5. The moment both are indexed: stop watching and notify the consumers (section "Notify"),
    qyl before qyl.mcp.
 6. Record the published version in
-   `/Users/alexandernachtmann/Downloads/qyl-codex-claude/qyl-handoff-for-codex.md` and rewrite
-   `/Users/alexandernachtmann/Downloads/qyl-codex-claude/qyl-published-versions.yaml` (the
-   registries are the truth; this file is the snapshot every agent reads first).
+   `/Users/alexandernachtmann/Downloads/qyl-codex-claude/qyl-handoff-for-codex.md` and run
+   `/Users/alexandernachtmann/Downloads/qyl-codex-claude/refresh-published-versions.sh`, which rewrites
+   `qyl-published-versions.yaml` beside it from the registries (the snapshot every agent reads first).
 
 ## Notify
 

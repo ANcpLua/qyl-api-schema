@@ -1,5 +1,7 @@
 # qyl-api-schema
 
+Release, re-pin and agent hand-offs: follow [`SKILL.md`](SKILL.md) at this repo root (canonical clone `/Users/alexandernachtmann/RiderProjects/qyl-api-schema/SKILL.md`); the one command is `./release.sh`. Published versions: `/Users/alexandernachtmann/Downloads/qyl-codex-claude/qyl-published-versions.yaml`.
+
 ## Publishing across the qyl-dev repos
 
 Push to `main` directly; no pull request, review or CI wait is required. CI runs on the push and reports; nothing gates on it.

@@ -13113,7 +13113,7 @@
           },
           "values": {
             "type": "object",
-            "unevaluatedProperties": {
+            "additionalProperties": {
               "$ref": "#/components/schemas/Common.AttributeValue"
             }
           }
@@ -14365,7 +14365,7 @@
           },
           "entries": {
             "type": "object",
-            "unevaluatedProperties": {
+            "additionalProperties": {
               "$ref": "#/components/schemas/Health.HealthCheckEntry"
             }
           },

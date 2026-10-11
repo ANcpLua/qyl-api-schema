@@ -86,7 +86,7 @@ const losslessAttributeValue = attributeVariants.length === 5
     && schema.$defs["Common.AttributeInt64"]?.type === "string"
     && JSON.stringify(attributeDouble?.anyOf?.[1]?.enum) === JSON.stringify(["NaN", "Infinity", "-Infinity"])
     && schema.$defs["Common.AttributeBytesValue"]?.properties?.base64?.contentEncoding === "base64"
-    && schema.$defs["Common.AttributeKeyValueListValue"]?.properties?.values?.unevaluatedProperties?.$ref
+    && schema.$defs["Common.AttributeKeyValueListValue"]?.properties?.values?.additionalProperties?.$ref
         === "#/$defs/Common.AttributeValue";
 
 const kvlistFixture = {

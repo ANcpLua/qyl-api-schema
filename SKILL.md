@@ -44,7 +44,8 @@ bun is the package manager (`bun.lock`); npm is used only for `npm version`, `np
 ## Releasing
 
 1. `./build.sh Check` is green on `main`.
-2. `./release.sh <x.y.z> --dry-run`; fix whatever it refuses.
+2. `./release.sh <x.y.z> --dry-run` only when a step is new or unsure; otherwise go straight to
+   the release, the script refuses before it publishes when anything is off.
 3. `./release.sh <x.y.z>`.
 4. Watch indexing: the script prints the npm version and polls the NuGet index. If it ends with
    "not indexed yet", keep polling every 30 s. Until both are indexed, do nothing else about

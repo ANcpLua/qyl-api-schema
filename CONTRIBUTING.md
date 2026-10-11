@@ -18,12 +18,31 @@ bun run compile
 ./build.sh Check
 ```
 
-Important generated outputs include:
+`bun run compile` writes everything under `generated/`. Only the OpenAPI document is
+tracked; the rest is gitignored, rebuilt by `compile` and by `prepack`, and packed from
+there:
 
-- `generated/openapi/qyl.openapi.json`
-- `generated/json-schema/qyl-api-schema.json`
-- `generated/contracts/**/*.cs`
-- `generated/ts-types/**`
+- `generated/openapi/qyl.openapi.json` — tracked; `VerifyGeneratedArtifactsCurrent`
+  fails when it lags the `.tsp` sources
+- `generated/json-schema/qyl-api-schema.json` — the `./json-schema` export, projected
+  from the OpenAPI document
+- `generated/contracts/**/*.cs` — the `Qyl.Api.Contracts` NuGet, including
+  `Qyl/Api/ContractRevision.cs` from `scripts/emit-contract-revision.mjs`
+- `generated/ts-types/**` — the TypeScript emitter's `api.ts` (with the
+  `CONTRACT_REVISION` block appended by the same script), `runtime.ts` and `schemas.ts`
+- `generated/ts-runtime/**` — the `./types` export: `generated/ts-types` compiled to
+  `.js` + `.d.ts` by `tsconfig.contracts.json`
+- `generated/zod-runtime/**` — the `./zod` export: `src/zod/` compiled by
+  `tsconfig.zod.json`
+- `generated/runtime/**` — the `./runtime` export: `src/runtime/` compiled by
+  `tsconfig.runtime.json`
+
+Two pull-request gates run: `ci.yml` is the fast bun-only pass (lint both TypeSpec
+surfaces, `compile`, `lint:js`), and `fallout.yml` is the full `./build.sh Check`
+(adds the generated-current, route, fixture, Zod-parity, lint-rule and determinism
+invariants and installs the packed npm and NuGet artifacts into clean consumers), so
+a contract break is named within minutes while the release path is still proven on
+every PR.
 
 Generated files are not editing surfaces. OpenAPI comes from the official TypeSpec
 emitter; the bundled JSON Schema is a deterministic projection of its component

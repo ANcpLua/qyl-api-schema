@@ -4,12 +4,31 @@ The TypeSpec source of truth for Qyl's client-visible product API. This reposito
 emits the public schema and contract artifacts; it does not implement the server,
 storage engine, or OTLP receiver.
 
-Qyl stores and exposes traces, logs, and metrics. The metric surface is read-only.
-`GET /api/v1/metrics` lists the metric descriptors recorded for a project,
-`GET /api/v1/metrics/{metric_name}/series` lists the distinct attribute streams
-under one metric name, and `GET /api/v1/metrics/{metric_name}/query` aggregates one
-metric over a time range into buckets. Metric points are written over OTLP, which
-this contract does not describe. Profiles are not supported.
+The contract covers every client-visible surface of a qyl collector and runner:
+
+- **Traces** — `GET /api/v1/traces`, one trace, and its spans (`api/routes.tsp`,
+  `otel/span.tsp`).
+- **Logs** — `GET /api/v1/logs` and the live SSE stream `GET /api/v1/stream/logs`
+  with its heartbeat (`api/streaming.tsp`, `otel/logs.tsp`).
+- **Metrics**, read-only — `GET /api/v1/metrics` lists the metric descriptors
+  recorded for a project, `GET /api/v1/metrics/{metric_name}/series` lists the
+  distinct attribute streams under one metric name, and
+  `GET /api/v1/metrics/{metric_name}/query` aggregates one metric over a time range
+  into buckets (`models/metrics.tsp`). Metric points are written over OTLP, which
+  this contract does not describe. Profiles are not supported.
+- **Sessions** — `GET /api/v1/sessions`, one session, its traces and `/stats`
+  (`models/session.tsp`).
+- **Health** — `GET /health` and `GET /alive`, whose `HealthReport` carries the
+  `contract_revision` handshake (`models/health.tsp`).
+- **MCP tools** — the input and structured-output models of the qyl MCP tools
+  (`models/mcp-tools.tsp`).
+- **Workbench** — the local MCP workbench: sessions, workspaces, servers, protocol
+  streams, executions, test cases, suites, evaluation runs and exports
+  (`api/workbench.tsp`, `models/workbench.tsp`).
+- **Runner** — the local runner's loopback-only `/runner/resources` snapshot, SSE
+  streams, logs and restart/stop actions (`api/runner.tsp`, `models/runner.tsp`).
+- **Shared** — `ProblemDetails` errors, cursor pagination and the common scalars
+  (`common/`), plus the OTel resource, span and log projections (`otel/`).
 
 ## Contract pipeline
 
@@ -55,6 +74,18 @@ rather than from prose here; this line moves faster than a README is revised.
 
 `main.tsp` is the local compile entry point and includes emitter routing. `index.tsp`
 is the published TypeSpec entry point and contains only the client-facing contract.
+
+### Package exports
+
+| Subpath | Content |
+| --- | --- |
+| `@ancplua/qyl-api-schema` | `index.tsp`, the whole TypeSpec contract |
+| `@ancplua/qyl-api-schema/otel` | `otel/otel-conventions.tsp`: only the OTel-shaped resource, span and log models, for TypeSpec consumers that do not want the qyl API |
+| `@ancplua/qyl-api-schema/types` | Generated TypeScript contract types and the `CONTRACT_REVISION` constant |
+| `@ancplua/qyl-api-schema/openapi` | `qyl.openapi.json` |
+| `@ancplua/qyl-api-schema/json-schema` | The bundled JSON Schema |
+| `@ancplua/qyl-api-schema/zod` | Runtime validators, below |
+| `@ancplua/qyl-api-schema/runtime` | Presentation helpers over the generated `AttributeValue` matcher (`decodeAttributeValue`, `formatAttributeValue`, `attributeString`, `attributeNumber`, `attributeIdentity`, `matchAttributeValue`) and the `UnixNanos` string helpers (`parseUnixNanos`, `compareUnixNanos`, `unixNanosDelta`, `unixNanosToEpochMs`, `unixNanosToIso`, `epochMsToUnixNanos`). Authored in `src/runtime/`, compiled to `generated/runtime/` |
 
 ## Runtime validation
 

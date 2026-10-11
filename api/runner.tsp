@@ -22,6 +22,7 @@ namespace Qyl.Api.Contracts.Runner {
     message: RunnerLogLine,
   }
 
+  @doc("Served only by the local qyl runner on a loopback (127.0.0.1) listener that also rejects non-loopback Host and Origin headers, so these operations carry no API-key authentication.")
   @route("/runner/resources")
   @tag("Runner resources")
   interface RunnerResourcesApi {
@@ -81,3 +82,4 @@ namespace Qyl.Api.Contracts.Runner {
       | InternalServerError;
   }
 }
+

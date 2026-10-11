@@ -69,6 +69,7 @@
     "common/pagination.tsp",
     "common/types.tsp",
     "models/health.tsp",
+    "models/metrics.tsp",
     "models/runner.tsp",
     "models/workbench.tsp",
     "models/mcp-tools.tsp",

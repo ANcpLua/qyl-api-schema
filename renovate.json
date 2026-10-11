@@ -4,6 +4,6 @@
     "github>ANcpLua/github-settings-automation"
   ],
   "constraints": {
-    "bun": "1.4.2"
+    "bun": "1.4.3"
   }
 }

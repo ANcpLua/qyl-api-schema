@@ -3,6 +3,9 @@
 [tools]
 "bun" = "1.4.2"
 "dotnet" = "10.0.401"
+# bun installs and runs the scripts; node runs the TypeSpec compiler, the scripts/*.mjs gates
+# and npm's version/pack/publish, so it must stay inside engines.node (>=22).
+"node" = "24"
 
 [tasks.check]
 description = "The gate: what CI runs, in order"

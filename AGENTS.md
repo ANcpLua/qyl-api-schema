@@ -10,13 +10,20 @@ A release is done from the developer's machine with the registry API keys regist
 
 | Repo | Version source | Publishes |
 |---|---|---|
-| qyl-api-schema | `package.json` via `npm version` (one version for npm and NuGet) | `@ancplua/qyl-api-schema` (npm), `Qyl.Api.Contracts` (NuGet) |
-| SemanticConventions | `Directory.Build.props` `VersionPrefix`, `registry/manifest.yaml` `schema_url` and a `CHANGELOG.md` entry; `scripts/generate.sh` must agree; `qyl.at/schemas/<version>` is served first | the three `Qyl.Telemetry.SemanticConventions*` packages (NuGet) |
+| qyl-api-schema | release tag (one version for npm and NuGet; `package.json` stays development on main) | `@ancplua/qyl-api-schema` (npm), `Qyl.Api.Contracts` (NuGet) |
+| SemanticConventions | `Directory.Build.props` `VersionPrefix`, `registry/manifest.yaml` `schema_url` and a `CHANGELOG.md` entry; `scripts/generate.sh` must agree; `qyl.at/schemas/<version>` is served first | the three `Qyl.Telemetry.SemanticConventions*` packages (NuGet) and `@ancplua/qyl-semantic-conventions` (npm), at one version |
 | AutoInstrumentation | `Directory.Build.props` `Version` | the six `Qyl.Telemetry.*` packages (NuGet) |
 | qyl | `Version.props` `QylVersion` | `qyl`, `qyl.<rid>` ×6, `Qyl.Api.Sdk` (NuGet) |
 | qyl.mcp | `server/package.json` `version` plus a `server/README.md` release-notes entry | `qyl-mcp-server` (npm) |
-| qyl.at | none | pushing `main` deploys `qyl.at` |
+| qyl.at | none | `./release.sh` deploys `qyl.at` from `main` |
 
-Downstream pins move in the change that consumes the publish: qyl-api-schema → qyl (`Version.props` `QylApiContractsVersion`, `services/qyl.dashboard/package.json`, `bun.lock`, the README table) → qyl.mcp (`server`, `workbench` and `dashboard` `package.json`, `bun.lock`); SemanticConventions → AutoInstrumentation (`Directory.Packages.props`, `SEMCONV_REF`) and qyl (`QylSemanticConventionsVersion`), with qyl.at serving `public/schemas/<version>`; AutoInstrumentation → qyl (`QylTelemetryVersion`); every producer → qyl.at `src/data/site.ts`. One production rule stays: when the contract revision changes, push the Collector (qyl `main`) first, wait until `api.qyl.at/health` serves the new revision, then push qyl.mcp; `mcp.qyl.at` refuses a Collector on another revision.
+Downstream pins move in the change that consumes the publish: qyl-api-schema → qyl (`Version.props` `QylApiContractsVersion`, `services/qyl.dashboard/package.json`, `bun.lock`, the README table) → qyl.mcp (`server`, `workbench` and `dashboard` `package.json`, `bun.lock`); SemanticConventions → AutoInstrumentation (`Directory.Packages.props`, `SEMCONV_REF`) qyl (`QylSemanticConventionsVersion`) and qyl.mcp (`server` and `workbench` convention-package references and `bun.lock`), with qyl.at serving `public/schemas/<version>`; AutoInstrumentation → qyl (`QylTelemetryVersion`); every producer → qyl.at `src/data/site.ts`. One production rule stays: when the contract revision changes, push the Collector (qyl `main`) first, wait until `api.qyl.at/health` serves the new revision, then push qyl.mcp; `mcp.qyl.at` refuses a Collector on another revision.
 
-Pushing `main` also deploys: qyl → `qyl-collector` (`api.qyl.at`, Railway), qyl.mcp → `qyl-mcp` (`mcp.qyl.at`, Railway), qyl.at → the `qyl-at` Worker (`qyl.at`, Cloudflare).
+Pushing `main` also deploys: qyl → `qyl-collector` (`api.qyl.at`, Railway), qyl.mcp → `qyl-mcp` (`mcp.qyl.at`, Railway). qyl.at deploys the `qyl-at` Worker (`qyl.at`, Cloudflare) through `./release.sh`.
+
+## Telemetry boundary
+
+This repository shares product API models, schemas, validators and the contract handshake.
+The separate qyl-owned SemanticConventions registry generates C# and TypeScript telemetry
+definitions for qyl instrumentation and qyl.mcp. Keep official SDKs and exporters in their
+consumer repositories; API contracts do not acquire telemetry runtime dependencies.

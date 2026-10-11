@@ -22,7 +22,7 @@ namespace Qyl.Api.Contracts.Runner {
     message: RunnerLogLine,
   }
 
-  @doc("Served only by the local qyl runner on a loopback (127.0.0.1) listener that also rejects non-loopback Host and Origin headers, so these operations carry no API-key authentication.")
+  @doc("Served only by the local qyl runner on a loopback (127.0.0.1) listener. It rejects every request whose remote address or Host is not loopback, and checks the Origin header only on the mutating restart and stop operations, so these operations carry no API-key authentication.")
   @route("/runner/resources")
   @tag("Runner resources")
   interface RunnerResourcesApi {

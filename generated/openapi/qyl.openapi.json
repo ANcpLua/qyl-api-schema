@@ -45,6 +45,12 @@
       "name": "Sessions"
     },
     {
+      "name": "Annotations"
+    },
+    {
+      "name": "Saved queries"
+    },
+    {
       "name": "Health"
     }
   ],
@@ -77,6 +83,996 @@
         },
         "tags": [
           "Health"
+        ]
+      }
+    },
+    "/api/v1/annotations": {
+      "post": {
+        "operationId": "AnnotationsApi_create",
+        "description": "Attach a note of at most 2000 characters to a trace, span or session.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectScopeHeader"
+          },
+          {
+            "$ref": "#/components/parameters/Common.IdempotencyKeyHeader"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "The request has succeeded and a new resource has been created as a result.",
+            "headers": {
+              "Location": {
+                "required": true,
+                "description": "URL of the created annotation.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "ETag": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Common.ETag"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Annotations.Annotation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - validation failed (400)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - authentication required (401)",
+            "headers": {
+              "WWW-Authenticate": {
+                "required": false,
+                "description": "Authentication scheme expected",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - insufficient permissions (403)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ForbiddenError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found (404)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.NotFoundError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - resource state conflict (409)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ConflictError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (500)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.InternalServerError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Annotations"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Annotations.AnnotationCreateRequest"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "QylWriteKeyAuth": []
+          }
+        ]
+      },
+      "get": {
+        "operationId": "AnnotationsApi_list",
+        "description": "List annotations, newest first, optionally only those attached to one trace, span or session.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectScopeHeader"
+          },
+          {
+            "name": "trace_id",
+            "in": "query",
+            "required": false,
+            "description": "Annotations on this trace, including those on its spans.",
+            "schema": {
+              "$ref": "#/components/schemas/Common.TraceId"
+            },
+            "explode": false
+          },
+          {
+            "name": "span_id",
+            "in": "query",
+            "required": false,
+            "description": "Annotations on this span; requires `trace_id`.",
+            "schema": {
+              "$ref": "#/components/schemas/Common.SpanId"
+            },
+            "explode": false
+          },
+          {
+            "name": "session_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/Common.SessionId"
+            },
+            "explode": false
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1,
+              "maximum": 1000,
+              "default": 100
+            },
+            "explode": false
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/Common.Cursor"
+            },
+            "explode": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The request has succeeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "items",
+                    "has_more"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Annotations.Annotation"
+                      },
+                      "description": "List of items in this page"
+                    },
+                    "next_cursor": {
+                      "type": "string",
+                      "description": "Cursor for the next page (null if no more pages)"
+                    },
+                    "prev_cursor": {
+                      "type": "string",
+                      "description": "Cursor for the previous page (null if first page)"
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "Whether there are more items available"
+                    }
+                  },
+                  "unevaluatedProperties": {
+                    "not": {}
+                  },
+                  "description": "Cursor-based paginated response wrapper"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - validation failed (400)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - authentication required (401)",
+            "headers": {
+              "WWW-Authenticate": {
+                "required": false,
+                "description": "Authentication scheme expected",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.UnauthorizedError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (500)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.InternalServerError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Annotations"
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/annotations/{annotation_id}": {
+      "get": {
+        "operationId": "AnnotationsApi_get",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectScopeHeader"
+          },
+          {
+            "name": "annotation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Common.ResourceId"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The request has succeeded.",
+            "headers": {
+              "ETag": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Common.ETag"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Annotations.Annotation"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - authentication required (401)",
+            "headers": {
+              "WWW-Authenticate": {
+                "required": false,
+                "description": "Authentication scheme expected",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.UnauthorizedError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found (404)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.NotFoundError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (500)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.InternalServerError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Annotations"
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "AnnotationsApi_update",
+        "description": "Replace the text of an annotation. The target is fixed at creation.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectScopeHeader"
+          },
+          {
+            "$ref": "#/components/parameters/Common.IfMatchHeader"
+          },
+          {
+            "name": "annotation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Common.ResourceId"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The request has succeeded.",
+            "headers": {
+              "ETag": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Common.ETag"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Annotations.Annotation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - validation failed (400)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - authentication required (401)",
+            "headers": {
+              "WWW-Authenticate": {
+                "required": false,
+                "description": "Authentication scheme expected",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - insufficient permissions (403)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ForbiddenError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found (404)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.NotFoundError"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Precondition failed - the If-Match entity tag is no longer current (412)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.PreconditionFailedError"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Precondition required - the request must send If-Match (428)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.PreconditionRequiredError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (500)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.InternalServerError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Annotations"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Annotations.AnnotationUpdateRequest"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "QylWriteKeyAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "AnnotationsApi_delete",
+        "description": "Delete one annotation. Telemetry is never deleted.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectScopeHeader"
+          },
+          {
+            "$ref": "#/components/parameters/Common.IfMatchHeader"
+          },
+          {
+            "name": "annotation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Common.ResourceId"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "There is no content to send for this request, but the headers may be useful."
+          },
+          "401": {
+            "description": "Unauthorized - authentication required (401)",
+            "headers": {
+              "WWW-Authenticate": {
+                "required": false,
+                "description": "Authentication scheme expected",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - insufficient permissions (403)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ForbiddenError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found (404)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.NotFoundError"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Precondition failed - the If-Match entity tag is no longer current (412)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.PreconditionFailedError"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Precondition required - the request must send If-Match (428)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.PreconditionRequiredError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (500)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.InternalServerError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Annotations"
+        ],
+        "security": [
+          {
+            "QylDeleteKeyAuth": []
+          }
         ]
       }
     },
@@ -171,6 +1167,15 @@
               "minimum": 1,
               "maximum": 10000,
               "default": 100
+            },
+            "explode": false
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/Common.Cursor"
             },
             "explode": false
           }
@@ -339,6 +1344,15 @@
               "minimum": 1,
               "maximum": 1000,
               "default": 200
+            },
+            "explode": false
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/Common.Cursor"
             },
             "explode": false
           }
@@ -775,6 +1789,15 @@
               "default": 200
             },
             "explode": false
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/Common.Cursor"
+            },
+            "explode": false
           }
         ],
         "responses": {
@@ -939,6 +1962,1136 @@
         ]
       }
     },
+    "/api/v1/saved-queries": {
+      "post": {
+        "operationId": "SavedQueriesApi_create",
+        "description": "Save a named filter. A name already used in the project is refused with 409.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectScopeHeader"
+          },
+          {
+            "$ref": "#/components/parameters/Common.IdempotencyKeyHeader"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "The request has succeeded and a new resource has been created as a result.",
+            "headers": {
+              "Location": {
+                "required": true,
+                "description": "URL of the created saved query.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "ETag": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Common.ETag"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedQueries.SavedQuery"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - validation failed (400)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - authentication required (401)",
+            "headers": {
+              "WWW-Authenticate": {
+                "required": false,
+                "description": "Authentication scheme expected",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - insufficient permissions (403)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ForbiddenError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - resource state conflict (409)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ConflictError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (500)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.InternalServerError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Saved queries"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SavedQueries.SavedQueryCreateRequest"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "QylWriteKeyAuth": []
+          }
+        ]
+      },
+      "get": {
+        "operationId": "SavedQueriesApi_list",
+        "description": "List the project's saved queries by name.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectScopeHeader"
+          },
+          {
+            "name": "signal",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/SavedQueries.SavedQuerySignal"
+            },
+            "explode": false
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1,
+              "maximum": 1000,
+              "default": 100
+            },
+            "explode": false
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/Common.Cursor"
+            },
+            "explode": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The request has succeeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "items",
+                    "has_more"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/SavedQueries.SavedQuery"
+                      },
+                      "description": "List of items in this page"
+                    },
+                    "next_cursor": {
+                      "type": "string",
+                      "description": "Cursor for the next page (null if no more pages)"
+                    },
+                    "prev_cursor": {
+                      "type": "string",
+                      "description": "Cursor for the previous page (null if first page)"
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "Whether there are more items available"
+                    }
+                  },
+                  "unevaluatedProperties": {
+                    "not": {}
+                  },
+                  "description": "Cursor-based paginated response wrapper"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - validation failed (400)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - authentication required (401)",
+            "headers": {
+              "WWW-Authenticate": {
+                "required": false,
+                "description": "Authentication scheme expected",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.UnauthorizedError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (500)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.InternalServerError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Saved queries"
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/saved-queries/{saved_query_id}": {
+      "get": {
+        "operationId": "SavedQueriesApi_get",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectScopeHeader"
+          },
+          {
+            "name": "saved_query_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Common.ResourceId"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The request has succeeded.",
+            "headers": {
+              "ETag": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Common.ETag"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedQueries.SavedQuery"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - authentication required (401)",
+            "headers": {
+              "WWW-Authenticate": {
+                "required": false,
+                "description": "Authentication scheme expected",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.UnauthorizedError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found (404)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.NotFoundError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (500)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.InternalServerError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Saved queries"
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "SavedQueriesApi_update",
+        "description": "Change a saved query. Renaming onto a name already used in the project is refused with 409.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectScopeHeader"
+          },
+          {
+            "$ref": "#/components/parameters/Common.IfMatchHeader"
+          },
+          {
+            "name": "saved_query_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Common.ResourceId"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The request has succeeded.",
+            "headers": {
+              "ETag": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/Common.ETag"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedQueries.SavedQuery"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - validation failed (400)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - authentication required (401)",
+            "headers": {
+              "WWW-Authenticate": {
+                "required": false,
+                "description": "Authentication scheme expected",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - insufficient permissions (403)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ForbiddenError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found (404)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.NotFoundError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - resource state conflict (409)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ConflictError"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Precondition failed - the If-Match entity tag is no longer current (412)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.PreconditionFailedError"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Precondition required - the request must send If-Match (428)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.PreconditionRequiredError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (500)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.InternalServerError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Saved queries"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SavedQueries.SavedQueryUpdateRequest"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "QylWriteKeyAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "SavedQueriesApi_delete",
+        "description": "Delete one saved query.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectScopeHeader"
+          },
+          {
+            "$ref": "#/components/parameters/Common.IfMatchHeader"
+          },
+          {
+            "name": "saved_query_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Common.ResourceId"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "There is no content to send for this request, but the headers may be useful."
+          },
+          "401": {
+            "description": "Unauthorized - authentication required (401)",
+            "headers": {
+              "WWW-Authenticate": {
+                "required": false,
+                "description": "Authentication scheme expected",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.UnauthorizedError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - insufficient permissions (403)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ForbiddenError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found (404)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.NotFoundError"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Precondition failed - the If-Match entity tag is no longer current (412)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.PreconditionFailedError"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Precondition required - the request must send If-Match (428)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.PreconditionRequiredError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (500)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.InternalServerError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Saved queries"
+        ],
+        "security": [
+          {
+            "QylDeleteKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/saved-queries/{saved_query_id}:run": {
+      "post": {
+        "operationId": "SavedQueriesApi_run",
+        "description": "Evaluate a saved query against current telemetry. Read-only.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ProjectScopeHeader"
+          },
+          {
+            "name": "saved_query_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Common.ResourceId"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The request has succeeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedQueries.SavedQueryRunResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - validation failed (400)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ValidationError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - authentication required (401)",
+            "headers": {
+              "WWW-Authenticate": {
+                "required": false,
+                "description": "Authentication scheme expected",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.UnauthorizedError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found (404)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.NotFoundError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error (500)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.InternalServerError"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Saved queries"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SavedQueries.SavedQueryRunRequest"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      }
+    },
     "/api/v1/sessions": {
       "get": {
         "operationId": "SessionsApi_list",
@@ -993,7 +3146,7 @@
             "in": "query",
             "required": false,
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/Common.Cursor"
             },
             "explode": false
           }
@@ -1406,6 +3559,29 @@
             "schema": {
               "$ref": "#/components/schemas/Common.SessionId"
             }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Page size; the response is bounded even when omitted.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1,
+              "maximum": 1000,
+              "default": 100
+            },
+            "explode": false
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/Common.Cursor"
+            },
+            "explode": false
           }
         ],
         "responses": {
@@ -1444,6 +3620,32 @@
                     "not": {}
                   },
                   "description": "Cursor-based paginated response wrapper"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - validation failed (400)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ValidationError"
                 }
               }
             }
@@ -1778,6 +3980,48 @@
             "$ref": "#/components/parameters/ProjectScopeHeader"
           },
           {
+            "name": "start_time",
+            "in": "query",
+            "required": false,
+            "description": "Keep traces that started at or after this time.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "explode": false
+          },
+          {
+            "name": "end_time",
+            "in": "query",
+            "required": false,
+            "description": "Keep traces that started before this time.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "explode": false
+          },
+          {
+            "name": "service_name",
+            "in": "query",
+            "required": false,
+            "description": "Keep traces with at least one span from this service.",
+            "schema": {
+              "type": "string"
+            },
+            "explode": false
+          },
+          {
+            "name": "errors_only",
+            "in": "query",
+            "required": false,
+            "description": "Keep only traces with at least one error span.",
+            "schema": {
+              "type": "boolean"
+            },
+            "explode": false
+          },
+          {
             "name": "limit",
             "in": "query",
             "required": false,
@@ -1795,7 +4039,7 @@
             "in": "query",
             "required": false,
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/Common.Cursor"
             },
             "explode": false
           }
@@ -2073,6 +4317,28 @@
             "schema": {
               "$ref": "#/components/schemas/Common.TraceId"
             }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Page size. Omitted, every span of the trace is returned in one page.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1,
+              "maximum": 10000
+            },
+            "explode": false
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/Common.Cursor"
+            },
+            "explode": false
           }
         ],
         "responses": {
@@ -2111,6 +4377,32 @@
                     "not": {}
                   },
                   "description": "Cursor-based paginated response wrapper"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - validation failed (400)",
+            "headers": {
+              "X-Trace-Id": {
+                "required": false,
+                "description": "Trace ID for correlation",
+                "schema": {
+                  "$ref": "#/components/schemas/Common.TraceId"
+                }
+              },
+              "X-Request-Id": {
+                "required": false,
+                "description": "Request ID for support",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Common.Errors.ValidationError"
                 }
               }
             }
@@ -12976,6 +15268,26 @@
   },
   "components": {
     "parameters": {
+      "Common.IdempotencyKeyHeader": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": false,
+        "description": "Client-chosen retry key, unique per intended create. A repeat with the same\nkey and body returns the first result; the same key with a different body\nis refused with 409. Keys expire after 24 hours.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      },
+      "Common.IfMatchHeader": {
+        "name": "If-Match",
+        "in": "header",
+        "required": true,
+        "description": "The `etag` of the version being changed. A request without it is refused\nwith 428 Precondition Required; a request whose tag is no longer current is\nrefused with 412 Precondition Failed.",
+        "schema": {
+          "$ref": "#/components/schemas/Common.ETag"
+        }
+      },
       "ProjectScopeHeader": {
         "name": "X-Qyl-Project",
         "in": "header",
@@ -12986,6 +15298,159 @@
       }
     },
     "schemas": {
+      "Annotations.Annotation": {
+        "type": "object",
+        "required": [
+          "target",
+          "text"
+        ],
+        "properties": {
+          "target": {
+            "$ref": "#/components/schemas/Annotations.AnnotationTarget",
+            "description": "What the note is attached to. Fixed at creation."
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000,
+            "description": "The note, plain text, at most 2000 characters."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Common.ResourceBase"
+          }
+        ],
+        "description": "A user note attached to a trace, span or session."
+      },
+      "Annotations.AnnotationCreateRequest": {
+        "type": "object",
+        "required": [
+          "target",
+          "text"
+        ],
+        "properties": {
+          "target": {
+            "$ref": "#/components/schemas/Annotations.AnnotationTarget",
+            "description": "What the note is attached to. Fixed at creation."
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000,
+            "description": "The note, plain text, at most 2000 characters."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Body of POST /api/v1/annotations: the `Lifecycle.Create` members of Annotation."
+      },
+      "Annotations.AnnotationTarget": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Annotations.TraceAnnotationTarget"
+          },
+          {
+            "$ref": "#/components/schemas/Annotations.SpanAnnotationTarget"
+          },
+          {
+            "$ref": "#/components/schemas/Annotations.SessionAnnotationTarget"
+          }
+        ],
+        "description": "Exactly one telemetry object an annotation is attached to."
+      },
+      "Annotations.AnnotationUpdateRequest": {
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000,
+            "description": "The new note, plain text, at most 2000 characters."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Body of PATCH /api/v1/annotations/{annotation_id}: the `Lifecycle.Update` members of Annotation."
+      },
+      "Annotations.SessionAnnotationTarget": {
+        "type": "object",
+        "required": [
+          "kind",
+          "session_id"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "session"
+            ]
+          },
+          "session_id": {
+            "$ref": "#/components/schemas/Common.SessionId"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "An annotation on one session."
+      },
+      "Annotations.SpanAnnotationTarget": {
+        "type": "object",
+        "required": [
+          "kind",
+          "trace_id",
+          "span_id"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "span"
+            ]
+          },
+          "trace_id": {
+            "$ref": "#/components/schemas/Common.TraceId"
+          },
+          "span_id": {
+            "$ref": "#/components/schemas/Common.SpanId"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "An annotation on one span of a trace."
+      },
+      "Annotations.TraceAnnotationTarget": {
+        "type": "object",
+        "required": [
+          "kind",
+          "trace_id"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "trace"
+            ]
+          },
+          "trace_id": {
+            "$ref": "#/components/schemas/Common.TraceId"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "An annotation on one whole trace."
+      },
       "Common.Attribute": {
         "type": "object",
         "required": [
@@ -13198,6 +15663,16 @@
         "minimum": 0,
         "description": "Size in bytes"
       },
+      "Common.CollectorKeyRole": {
+        "type": "string",
+        "enum": [
+          "ingest",
+          "read",
+          "write",
+          "delete"
+        ],
+        "description": "Collector API key roles. Every key sent in `x-otlp-api-key` carries one or\nmore roles: `ingest` accepts OTLP, `read` serves the query routes, `write`\ncreates and updates user resources, and `delete` deletes them. Roles are\nindependent, so a leaked ingest key can neither read, change nor delete\nanything."
+      },
       "Common.ContentType": {
         "type": "string",
         "description": "MIME content type",
@@ -13227,6 +15702,10 @@
         "minimum": 0,
         "description": "Generic non-negative counter"
       },
+      "Common.Cursor": {
+        "type": "string",
+        "description": "Opaque pagination cursor. Pass the `next_cursor` of one page to receive the\nnext page of the same query. Its content is not part of the contract and\nmust not be parsed or built by a client."
+      },
       "Common.DurationMs": {
         "type": "number",
         "format": "double",
@@ -13244,6 +15723,12 @@
         "format": "double",
         "minimum": 0,
         "description": "Duration in seconds"
+      },
+      "Common.ETag": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "description": "Opaque entity tag of one resource version. It changes on every successful\nupdate; send it back in `If-Match` to update or delete that version."
       },
       "Common.EntityAttributeKey": {
         "type": "string",
@@ -13303,6 +15788,12 @@
           },
           {
             "$ref": "#/components/schemas/Common.Errors.ConflictError"
+          },
+          {
+            "$ref": "#/components/schemas/Common.Errors.PreconditionFailedError"
+          },
+          {
+            "$ref": "#/components/schemas/Common.Errors.PreconditionRequiredError"
           },
           {
             "$ref": "#/components/schemas/Common.Errors.RateLimitError"
@@ -13457,6 +15948,63 @@
           }
         ],
         "description": "Resource not found (404)"
+      },
+      "Common.Errors.PreconditionFailedError": {
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "enum": [
+              "Precondition Failed"
+            ]
+          },
+          "current_etag": {
+            "type": "string",
+            "description": "Entity tag of the current version, when the caller may read it"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Common.Errors.ProblemDetails"
+          }
+        ],
+        "description": "Precondition failed - the If-Match entity tag is no longer current (412)"
+      },
+      "Common.Errors.PreconditionRequiredError": {
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "enum": [
+              "Precondition Required"
+            ]
+          },
+          "required_header": {
+            "type": "string",
+            "enum": [
+              "If-Match"
+            ],
+            "description": "The header the request must carry"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Common.Errors.ProblemDetails"
+          }
+        ],
+        "description": "Precondition required - the request must send If-Match (428)"
       },
       "Common.Errors.ProblemDetails": {
         "type": "object",
@@ -13888,6 +16436,46 @@
         "minimum": 0,
         "maximum": 1,
         "description": "Ratio value (0.0 to 1.0)"
+      },
+      "Common.ResourceBase": {
+        "type": "object",
+        "required": [
+          "id",
+          "created_at",
+          "updated_at",
+          "etag"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Common.ResourceId",
+            "description": "Server-assigned identifier.",
+            "readOnly": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the resource was created.",
+            "readOnly": true
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the resource was last changed.",
+            "readOnly": true
+          },
+          "etag": {
+            "$ref": "#/components/schemas/Common.ETag",
+            "description": "Entity tag of this version; also served as the `ETag` response header.",
+            "readOnly": true
+          }
+        },
+        "description": "Base of every user-created collector resource."
+      },
+      "Common.ResourceId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "description": "Opaque, server-assigned identifier of a user-created collector resource."
       },
       "Common.SemVer": {
         "type": "string",
@@ -14388,6 +16976,22 @@
         ],
         "description": "Health state reported by a qyl-managed process."
       },
+      "Mcp.Tools.AnnotationOutput": {
+        "type": "object",
+        "properties": {
+          "annotation": {
+            "$ref": "#/components/schemas/Annotations.Annotation"
+          },
+          "error": {
+            "$ref": "#/components/schemas/Mcp.Tools.ToolError",
+            "description": "Set when the call failed."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Structured output for create_annotation and update_annotation."
+      },
       "Mcp.Tools.CiLogInput": {
         "type": "object",
         "properties": {
@@ -14439,6 +17043,10 @@
           },
           "mode": {
             "$ref": "#/components/schemas/Mcp.Tools.McpDataMode"
+          },
+          "error": {
+            "$ref": "#/components/schemas/Mcp.Tools.ToolError",
+            "description": "Set when the call failed."
           }
         },
         "unevaluatedProperties": {
@@ -14530,14 +17138,115 @@
         },
         "description": "One CI run, summarized from the session its telemetry is grouped under."
       },
+      "Mcp.Tools.CreateAnnotationInput": {
+        "type": "object",
+        "required": [
+          "target",
+          "text"
+        ],
+        "properties": {
+          "target": {
+            "$ref": "#/components/schemas/Annotations.AnnotationTarget",
+            "description": "What the note is attached to. Fixed at creation."
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000,
+            "description": "The note, plain text, at most 2000 characters."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Input for create_annotation."
+      },
+      "Mcp.Tools.CreateSavedQueryInput": {
+        "type": "object",
+        "required": [
+          "name",
+          "filter"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Unique within the project; a duplicate is refused with 409."
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "filter": {
+            "$ref": "#/components/schemas/SavedQueries.SavedQueryFilter"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Input for create_saved_query."
+      },
+      "Mcp.Tools.DeletableKind": {
+        "type": "string",
+        "enum": [
+          "annotation",
+          "saved_query"
+        ],
+        "description": "The user-created resource kinds the delete tool accepts."
+      },
+      "Mcp.Tools.DeleteInput": {
+        "type": "object",
+        "required": [
+          "kind",
+          "id",
+          "etag"
+        ],
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/Mcp.Tools.DeletableKind"
+          },
+          "id": {
+            "$ref": "#/components/schemas/Common.ResourceId"
+          },
+          "etag": {
+            "$ref": "#/components/schemas/Common.ETag",
+            "description": "The resource's current `etag`, sent as If-Match."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Input for the delete tool. Telemetry is never deletable."
+      },
+      "Mcp.Tools.DeleteOutput": {
+        "type": "object",
+        "required": [
+          "deleted"
+        ],
+        "properties": {
+          "deleted": {
+            "type": "boolean"
+          },
+          "error": {
+            "$ref": "#/components/schemas/Mcp.Tools.ToolError",
+            "description": "Set when the call failed."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Structured output for the delete tool."
+      },
       "Mcp.Tools.DisplayMcpDashboardInput": {
         "type": "object",
         "properties": {
           "hours": {
-            "type": "number",
-            "format": "double",
+            "type": "integer",
+            "format": "int32",
             "minimum": 1,
             "maximum": 168,
+            "description": "Window length in whole hours.",
             "default": 24
           }
         },
@@ -14554,6 +17263,10 @@
         "properties": {
           "stats": {
             "$ref": "#/components/schemas/Mcp.Tools.McpDashboardStats"
+          },
+          "error": {
+            "$ref": "#/components/schemas/Mcp.Tools.ToolError",
+            "description": "Set when the call failed."
           }
         },
         "unevaluatedProperties": {
@@ -14565,16 +17278,19 @@
         "type": "object",
         "properties": {
           "trace_id": {
-            "$ref": "#/components/schemas/Common.TraceId"
+            "$ref": "#/components/schemas/Common.TraceId",
+            "description": "Open this trace selected; omit to list recent traces."
           },
           "session_id": {
-            "$ref": "#/components/schemas/Common.SessionId"
+            "$ref": "#/components/schemas/Common.SessionId",
+            "description": "List only the traces of this session."
           },
           "limit": {
             "type": "integer",
             "format": "int32",
             "minimum": 1,
             "maximum": 100,
+            "description": "Maximum traces to list.",
             "default": 20
           }
         },
@@ -14601,6 +17317,10 @@
           },
           "mode": {
             "$ref": "#/components/schemas/Mcp.Tools.McpDataMode"
+          },
+          "error": {
+            "$ref": "#/components/schemas/Mcp.Tools.ToolError",
+            "description": "Set when the call failed."
           }
         },
         "unevaluatedProperties": {
@@ -14610,12 +17330,42 @@
       },
       "Mcp.Tools.FetchTelemetryInput": {
         "type": "object",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Mcp.Tools.FetchTelemetryTracesInput"
+          },
+          {
+            "$ref": "#/components/schemas/Mcp.Tools.FetchTelemetryTraceInput"
+          },
+          {
+            "$ref": "#/components/schemas/Mcp.Tools.FetchTelemetryLogsInput"
+          },
+          {
+            "$ref": "#/components/schemas/Mcp.Tools.FetchTelemetryMcpStatsInput"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "view",
+          "mapping": {
+            "traces": "#/components/schemas/Mcp.Tools.FetchTelemetryTracesInput",
+            "trace": "#/components/schemas/Mcp.Tools.FetchTelemetryTraceInput",
+            "logs": "#/components/schemas/Mcp.Tools.FetchTelemetryLogsInput",
+            "mcp_stats": "#/components/schemas/Mcp.Tools.FetchTelemetryMcpStatsInput"
+          }
+        },
+        "description": "Input for the app-only fetch_telemetry tool: exactly one view and the members that view takes."
+      },
+      "Mcp.Tools.FetchTelemetryLogsInput": {
+        "type": "object",
         "required": [
           "view"
         ],
         "properties": {
           "view": {
-            "$ref": "#/components/schemas/Mcp.Tools.FetchTelemetryView"
+            "type": "string",
+            "enum": [
+              "logs"
+            ]
           },
           "trace_id": {
             "$ref": "#/components/schemas/Common.TraceId"
@@ -14637,18 +17387,37 @@
             "format": "int32",
             "minimum": 1,
             "maximum": 200
-          },
-          "hours": {
-            "type": "number",
-            "format": "double",
-            "minimum": 1,
-            "maximum": 168
           }
         },
         "unevaluatedProperties": {
           "not": {}
         },
-        "description": "Input for the app-only fetch_telemetry tool."
+        "description": "fetch_telemetry input for log records (view `logs`)."
+      },
+      "Mcp.Tools.FetchTelemetryMcpStatsInput": {
+        "type": "object",
+        "required": [
+          "view"
+        ],
+        "properties": {
+          "view": {
+            "type": "string",
+            "enum": [
+              "mcp_stats"
+            ]
+          },
+          "hours": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 168,
+            "description": "Window length in whole hours."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "fetch_telemetry input for MCP traffic statistics (view `mcp_stats`)."
       },
       "Mcp.Tools.FetchTelemetryOutput": {
         "type": "object",
@@ -14676,12 +17445,66 @@
           },
           "mode": {
             "$ref": "#/components/schemas/Mcp.Tools.McpDataMode"
+          },
+          "error": {
+            "$ref": "#/components/schemas/Mcp.Tools.ToolError",
+            "description": "Set when the call failed."
           }
         },
         "unevaluatedProperties": {
           "not": {}
         },
         "description": "Structured output for the app-only fetch_telemetry tool."
+      },
+      "Mcp.Tools.FetchTelemetryTraceInput": {
+        "type": "object",
+        "required": [
+          "view",
+          "trace_id"
+        ],
+        "properties": {
+          "view": {
+            "type": "string",
+            "enum": [
+              "trace"
+            ]
+          },
+          "trace_id": {
+            "$ref": "#/components/schemas/Common.TraceId"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "fetch_telemetry input for one trace (view `trace`)."
+      },
+      "Mcp.Tools.FetchTelemetryTracesInput": {
+        "type": "object",
+        "required": [
+          "view"
+        ],
+        "properties": {
+          "view": {
+            "type": "string",
+            "enum": [
+              "traces"
+            ]
+          },
+          "trace_id": {
+            "$ref": "#/components/schemas/Common.TraceId",
+            "description": "Return this one trace as the list, selected."
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 200
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "fetch_telemetry input for the trace list (view `traces`)."
       },
       "Mcp.Tools.FetchTelemetryView": {
         "type": "string",
@@ -14692,6 +17515,72 @@
           "mcp_stats"
         ],
         "description": "Data projection requested by the app-only fetch_telemetry tool."
+      },
+      "Mcp.Tools.GetMetricSeriesInput": {
+        "type": "object",
+        "required": [
+          "metric_name"
+        ],
+        "properties": {
+          "metric_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "matchers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OTel.Metrics.MetricAttributeMatcher"
+            },
+            "maxItems": 32,
+            "description": "Attribute matchers a series must all satisfy; serialized to `attr` and `attr_prefix`."
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 1000,
+            "default": 200
+          },
+          "cursor": {
+            "$ref": "#/components/schemas/Common.Cursor",
+            "description": "`next_cursor` of a previous get_metric_series call with the same filters."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Input for get_metric_series."
+      },
+      "Mcp.Tools.GetMetricSeriesOutput": {
+        "type": "object",
+        "required": [
+          "items",
+          "has_more"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OTel.Metrics.MetricSeries"
+            }
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "Whether more items exist beyond this page. False only when the result is complete."
+          },
+          "next_cursor": {
+            "$ref": "#/components/schemas/Common.Cursor",
+            "description": "Pass as `cursor` to the same tool with the same filters for the next page."
+          },
+          "error": {
+            "$ref": "#/components/schemas/Mcp.Tools.ToolError",
+            "description": "Set when the call failed."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Structured output for get_metric_series."
       },
       "Mcp.Tools.GetTraceInput": {
         "type": "object",
@@ -14737,12 +17626,131 @@
           },
           "mode": {
             "$ref": "#/components/schemas/Mcp.Tools.McpDataMode"
+          },
+          "annotations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Annotations.Annotation"
+            },
+            "description": "Annotations on the trace and its spans, newest first."
+          },
+          "error": {
+            "$ref": "#/components/schemas/Mcp.Tools.ToolError",
+            "description": "Set when the call failed."
           }
         },
         "unevaluatedProperties": {
           "not": {}
         },
         "description": "Structured output for get_trace."
+      },
+      "Mcp.Tools.ListMetricsInput": {
+        "type": "object",
+        "properties": {
+          "name_prefix": {
+            "type": "string",
+            "description": "Return only names starting with this prefix."
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 1000,
+            "default": 200
+          },
+          "cursor": {
+            "$ref": "#/components/schemas/Common.Cursor",
+            "description": "`next_cursor` of a previous list_metrics call with the same prefix."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Input for list_metrics."
+      },
+      "Mcp.Tools.ListMetricsOutput": {
+        "type": "object",
+        "required": [
+          "items",
+          "has_more"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OTel.Metrics.MetricDescriptor"
+            }
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "Whether more items exist beyond this page. False only when the result is complete."
+          },
+          "next_cursor": {
+            "$ref": "#/components/schemas/Common.Cursor",
+            "description": "Pass as `cursor` to the same tool with the same filters for the next page."
+          },
+          "error": {
+            "$ref": "#/components/schemas/Mcp.Tools.ToolError",
+            "description": "Set when the call failed."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Structured output for list_metrics."
+      },
+      "Mcp.Tools.ListSavedQueriesInput": {
+        "type": "object",
+        "properties": {
+          "signal": {
+            "$ref": "#/components/schemas/SavedQueries.SavedQuerySignal"
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 20
+          },
+          "cursor": {
+            "$ref": "#/components/schemas/Common.Cursor"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Input for list_saved_queries."
+      },
+      "Mcp.Tools.ListSavedQueriesOutput": {
+        "type": "object",
+        "required": [
+          "saved_queries",
+          "has_more"
+        ],
+        "properties": {
+          "saved_queries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SavedQueries.SavedQuery"
+            }
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "Whether more items exist beyond this page. False only when the result is complete."
+          },
+          "next_cursor": {
+            "$ref": "#/components/schemas/Common.Cursor",
+            "description": "Pass as `cursor` to the same tool with the same filters for the next page."
+          },
+          "error": {
+            "$ref": "#/components/schemas/Mcp.Tools.ToolError",
+            "description": "Set when the call failed."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Structured output for list_saved_queries."
       },
       "Mcp.Tools.ListSessionsInput": {
         "type": "object",
@@ -14752,10 +17760,26 @@
             "format": "int32",
             "minimum": 1,
             "maximum": 100,
+            "description": "Maximum sessions to return in this page.",
             "default": 20
           },
           "active_only": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "Return only sessions that are still active; omitted or false includes ended sessions."
+          },
+          "start_time": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Start of the window (inclusive), RFC 3339."
+          },
+          "end_time": {
+            "type": "string",
+            "format": "date-time",
+            "description": "End of the window (exclusive), RFC 3339."
+          },
+          "cursor": {
+            "$ref": "#/components/schemas/Common.Cursor",
+            "description": "`next_cursor` of a previous list_sessions call with the same filters."
           }
         },
         "unevaluatedProperties": {
@@ -14767,7 +17791,8 @@
         "type": "object",
         "required": [
           "sessions",
-          "mode"
+          "mode",
+          "has_more"
         ],
         "properties": {
           "sessions": {
@@ -14778,6 +17803,25 @@
           },
           "mode": {
             "$ref": "#/components/schemas/Mcp.Tools.McpDataMode"
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "Whether more items exist beyond this page. False only when the result is complete."
+          },
+          "next_cursor": {
+            "$ref": "#/components/schemas/Common.Cursor",
+            "description": "Pass as `cursor` to the same tool with the same filters for the next page."
+          },
+          "annotations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Annotations.Annotation"
+            },
+            "description": "Annotations on the listed sessions, newest first; each names its session in `target`."
+          },
+          "error": {
+            "$ref": "#/components/schemas/Mcp.Tools.ToolError",
+            "description": "Set when the call failed."
           }
         },
         "unevaluatedProperties": {
@@ -14793,7 +17837,30 @@
             "format": "int32",
             "minimum": 1,
             "maximum": 100,
+            "description": "Maximum traces to return in this page.",
             "default": 20
+          },
+          "start_time": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Start of the window (inclusive), RFC 3339."
+          },
+          "end_time": {
+            "type": "string",
+            "format": "date-time",
+            "description": "End of the window (exclusive), RFC 3339."
+          },
+          "service_name": {
+            "type": "string",
+            "description": "Keep traces with at least one span from this service."
+          },
+          "errors_only": {
+            "type": "boolean",
+            "description": "Keep only traces with at least one error span."
+          },
+          "cursor": {
+            "$ref": "#/components/schemas/Common.Cursor",
+            "description": "`next_cursor` of a previous list_traces call with the same filters."
           }
         },
         "unevaluatedProperties": {
@@ -14805,7 +17872,8 @@
         "type": "object",
         "required": [
           "traces",
-          "mode"
+          "mode",
+          "has_more"
         ],
         "properties": {
           "traces": {
@@ -14816,6 +17884,18 @@
           },
           "mode": {
             "$ref": "#/components/schemas/Mcp.Tools.McpDataMode"
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "Whether more items exist beyond this page. False only when the result is complete."
+          },
+          "next_cursor": {
+            "$ref": "#/components/schemas/Common.Cursor",
+            "description": "Pass as `cursor` to the same tool with the same filters for the next page."
+          },
+          "error": {
+            "$ref": "#/components/schemas/Mcp.Tools.ToolError",
+            "description": "Set when the call failed."
           }
         },
         "unevaluatedProperties": {
@@ -14964,9 +18044,10 @@
             "format": "date-time"
           },
           "bucket_ms": {
-            "type": "number",
-            "format": "double",
-            "minimum": 0
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "description": "Bucket width in integer milliseconds."
           }
         },
         "unevaluatedProperties": {
@@ -15000,6 +18081,15 @@
         "unevaluatedProperties": {
           "not": {}
         }
+      },
+      "Mcp.Tools.McpScope": {
+        "type": "string",
+        "enum": [
+          "qyl:read",
+          "qyl:write",
+          "qyl:delete"
+        ],
+        "description": "OAuth scopes of the qyl MCP server. `qyl:read` alone keeps the read-only\ntool surface; `qyl:write` adds the create and update tools; `qyl:delete`\nadds the one delete tool. No scope deletes telemetry."
       },
       "Mcp.Tools.McpToolStats": {
         "type": "object",
@@ -15046,30 +18136,244 @@
           "not": {}
         }
       },
+      "Mcp.Tools.QueryMetricInput": {
+        "type": "object",
+        "required": [
+          "metric_name",
+          "start_time",
+          "end_time"
+        ],
+        "properties": {
+          "metric_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "start_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "step_ms": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 86400000,
+            "description": "Bucket width in integer milliseconds.",
+            "default": 60000
+          },
+          "aggregation": {
+            "$ref": "#/components/schemas/OTel.Metrics.MetricAggregation",
+            "default": "avg"
+          },
+          "group_by": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 16,
+            "description": "Attribute keys to split the result by."
+          },
+          "matchers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OTel.Metrics.MetricAttributeMatcher"
+            },
+            "maxItems": 32,
+            "description": "Attribute matchers a series must all satisfy; serialized to `attr` and `attr_prefix`."
+          },
+          "series_limit": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 500,
+            "default": 50
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Input for query_metric."
+      },
+      "Mcp.Tools.QueryMetricOutput": {
+        "type": "object",
+        "required": [
+          "name",
+          "kind",
+          "aggregation",
+          "step_ms",
+          "start_time",
+          "end_time",
+          "series",
+          "truncated"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Instrument name the query ran against."
+          },
+          "kind": {
+            "$ref": "#/components/schemas/OTel.Metrics.MetricKind"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "aggregation": {
+            "$ref": "#/components/schemas/OTel.Metrics.MetricAggregation"
+          },
+          "step_ms": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Bucket width actually used, which may be widened from the requested step."
+          },
+          "start_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "series": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OTel.Metrics.MetricSeriesResult"
+            }
+          },
+          "truncated": {
+            "type": "boolean",
+            "description": "Whether streams were dropped because the result exceeded the series limit."
+          },
+          "error": {
+            "$ref": "#/components/schemas/Mcp.Tools.ToolError",
+            "description": "Set when the call failed."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Structured output for query_metric: the collector's range-query result."
+      },
+      "Mcp.Tools.RunSavedQueryInput": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Common.ResourceId"
+          },
+          "start_time": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Overrides the saved look-back window together with `end_time`."
+          },
+          "end_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 1000,
+            "description": "Page size for trace and log runs.",
+            "default": 100
+          },
+          "cursor": {
+            "$ref": "#/components/schemas/Common.Cursor",
+            "description": "`next_cursor` of a previous run of the same saved query."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Input for run_saved_query."
+      },
+      "Mcp.Tools.RunSavedQueryOutput": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "$ref": "#/components/schemas/SavedQueries.SavedQueryRunResult"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/Mcp.Tools.McpDataMode"
+          },
+          "error": {
+            "$ref": "#/components/schemas/Mcp.Tools.ToolError",
+            "description": "Set when the call failed."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Structured output for run_saved_query."
+      },
+      "Mcp.Tools.SavedQueryOutput": {
+        "type": "object",
+        "properties": {
+          "saved_query": {
+            "$ref": "#/components/schemas/SavedQueries.SavedQuery"
+          },
+          "error": {
+            "$ref": "#/components/schemas/Mcp.Tools.ToolError",
+            "description": "Set when the call failed."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Structured output for create_saved_query and update_saved_query."
+      },
       "Mcp.Tools.SearchLogsInput": {
         "type": "object",
         "properties": {
           "trace_id": {
-            "$ref": "#/components/schemas/Common.TraceId"
+            "$ref": "#/components/schemas/Common.TraceId",
+            "description": "Return only log records correlated with this trace."
           },
           "service_name": {
-            "type": "string"
+            "type": "string",
+            "description": "Return only log records from this service."
           },
           "severity_min": {
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 24
+            "maximum": 24,
+            "description": "Minimum OpenTelemetry severity number: 9 info, 13 warn, 17 error."
           },
           "query": {
-            "type": "string"
+            "type": "string",
+            "description": "Substring searched in the log body."
           },
           "limit": {
             "type": "integer",
             "format": "int32",
             "minimum": 1,
             "maximum": 200,
+            "description": "Maximum log records to return in this page.",
             "default": 50
+          },
+          "session_id": {
+            "$ref": "#/components/schemas/Common.SessionId",
+            "description": "Return only log records of this session."
+          },
+          "start_time": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Start of the window (inclusive), RFC 3339."
+          },
+          "end_time": {
+            "type": "string",
+            "format": "date-time",
+            "description": "End of the window (exclusive), RFC 3339."
+          },
+          "cursor": {
+            "$ref": "#/components/schemas/Common.Cursor",
+            "description": "`next_cursor` of a previous search_logs call with the same filters."
           }
         },
         "unevaluatedProperties": {
@@ -15081,7 +18385,8 @@
         "type": "object",
         "required": [
           "logs",
-          "mode"
+          "mode",
+          "has_more"
         ],
         "properties": {
           "logs": {
@@ -15092,12 +18397,170 @@
           },
           "mode": {
             "$ref": "#/components/schemas/Mcp.Tools.McpDataMode"
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "Whether more items exist beyond this page. False only when the result is complete."
+          },
+          "next_cursor": {
+            "$ref": "#/components/schemas/Common.Cursor",
+            "description": "Pass as `cursor` to the same tool with the same filters for the next page."
+          },
+          "error": {
+            "$ref": "#/components/schemas/Mcp.Tools.ToolError",
+            "description": "Set when the call failed."
           }
         },
         "unevaluatedProperties": {
           "not": {}
         },
         "description": "Structured output for search_logs."
+      },
+      "Mcp.Tools.ToolError": {
+        "type": "object",
+        "required": [
+          "code",
+          "message",
+          "retryable"
+        ],
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/Mcp.Tools.ToolErrorCode"
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable description of this failure."
+          },
+          "retryable": {
+            "type": "boolean",
+            "description": "Whether the same call can succeed when repeated unchanged."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "A failed tool call, carried in structuredContent.error."
+      },
+      "Mcp.Tools.ToolErrorCode": {
+        "type": "string",
+        "enum": [
+          "invalid_argument",
+          "not_found",
+          "no_project_access",
+          "collector_unreachable",
+          "collector_timeout",
+          "cancelled",
+          "collector_unauthorized",
+          "collector_rate_limited",
+          "collector_rejected",
+          "collector_error",
+          "contract_mismatch",
+          "insufficient_scope",
+          "conflict",
+          "precondition_failed",
+          "precondition_required",
+          "internal"
+        ],
+        "description": "Stable failure code of a qyl MCP tool result. A model branches on the code, never on the message."
+      },
+      "Mcp.Tools.ToolPage": {
+        "type": "object",
+        "required": [
+          "has_more"
+        ],
+        "properties": {
+          "has_more": {
+            "type": "boolean",
+            "description": "Whether more items exist beyond this page. False only when the result is complete."
+          },
+          "next_cursor": {
+            "$ref": "#/components/schemas/Common.Cursor",
+            "description": "Pass as `cursor` to the same tool with the same filters for the next page."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Pagination members of a paged tool output."
+      },
+      "Mcp.Tools.ToolTimeRange": {
+        "type": "object",
+        "properties": {
+          "start_time": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Start of the window (inclusive), RFC 3339."
+          },
+          "end_time": {
+            "type": "string",
+            "format": "date-time",
+            "description": "End of the window (exclusive), RFC 3339."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Time-range members of a tool input."
+      },
+      "Mcp.Tools.UpdateAnnotationInput": {
+        "type": "object",
+        "required": [
+          "id",
+          "etag",
+          "text"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Common.ResourceId"
+          },
+          "etag": {
+            "$ref": "#/components/schemas/Common.ETag",
+            "description": "The annotation's current `etag`, sent as If-Match."
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000,
+            "description": "The new note, plain text, at most 2000 characters."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Input for update_annotation."
+      },
+      "Mcp.Tools.UpdateSavedQueryInput": {
+        "type": "object",
+        "required": [
+          "id",
+          "etag"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Common.ResourceId"
+          },
+          "etag": {
+            "$ref": "#/components/schemas/Common.ETag",
+            "description": "The saved query's current `etag`, sent as If-Match."
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "New name, unique within the project; a duplicate is refused with 409."
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "filter": {
+            "$ref": "#/components/schemas/SavedQueries.SavedQueryFilter"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Input for update_saved_query."
       },
       "OTel.Enums.ErrorType": {
         "type": "string",
@@ -15336,6 +18799,33 @@
         ],
         "description": "Server-side reducer applied to the points falling in one time bucket."
       },
+      "OTel.Metrics.MetricAttributeMatcher": {
+        "type": "object",
+        "required": [
+          "key",
+          "op",
+          "value"
+        ],
+        "properties": {
+          "key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "description": "Attribute key, e.g. `http.route`."
+          },
+          "op": {
+            "$ref": "#/components/schemas/OTel.Metrics.MetricMatcherOp"
+          },
+          "value": {
+            "type": "string",
+            "maxLength": 1024
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "One structured attribute matcher. Tool inputs and saved queries carry\nmatchers in this form; the HTTP routes keep their `key=value` string\nparameters, and a client serializes each matcher to one of them."
+      },
       "OTel.Metrics.MetricBucket": {
         "type": "object",
         "required": [
@@ -15430,6 +18920,14 @@
           "exponential_histogram"
         ],
         "description": "Shape of a stored metric stream."
+      },
+      "OTel.Metrics.MetricMatcherOp": {
+        "type": "string",
+        "enum": [
+          "eq",
+          "prefix"
+        ],
+        "description": "How a structured attribute matcher compares an attribute value."
       },
       "OTel.Metrics.MetricQueryResult": {
         "type": "object",
@@ -16328,6 +19826,392 @@
           "not": {}
         },
         "description": "Current client-visible state of one runner resource."
+      },
+      "SavedQueries.SavedLogQueryFilter": {
+        "type": "object",
+        "required": [
+          "signal"
+        ],
+        "properties": {
+          "signal": {
+            "type": "string",
+            "enum": [
+              "logs"
+            ]
+          },
+          "lookback_minutes": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 43200,
+            "description": "Window ending at the time of the run, in minutes. Omitted, the run's own `start_time`/`end_time` or the last 60 minutes apply."
+          },
+          "service_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "severity_min": {
+            "$ref": "#/components/schemas/OTel.Enums.SeverityNumber"
+          },
+          "session_id": {
+            "$ref": "#/components/schemas/Common.SessionId"
+          },
+          "trace_id": {
+            "$ref": "#/components/schemas/Common.TraceId"
+          },
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024,
+            "description": "Substring searched in the log body."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "A saved filter over log records."
+      },
+      "SavedQueries.SavedLogQueryRun": {
+        "type": "object",
+        "required": [
+          "signal",
+          "items",
+          "has_more"
+        ],
+        "properties": {
+          "signal": {
+            "type": "string",
+            "enum": [
+              "logs"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OTel.Logs.LogRecord"
+            }
+          },
+          "next_cursor": {
+            "$ref": "#/components/schemas/Common.Cursor"
+          },
+          "has_more": {
+            "type": "boolean"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "One page of log records produced by a saved log query."
+      },
+      "SavedQueries.SavedMetricQueryFilter": {
+        "type": "object",
+        "required": [
+          "signal",
+          "metric_name"
+        ],
+        "properties": {
+          "signal": {
+            "type": "string",
+            "enum": [
+              "metrics"
+            ]
+          },
+          "lookback_minutes": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 43200,
+            "description": "Window ending at the time of the run, in minutes. Omitted, the run's own `start_time`/`end_time` or the last 60 minutes apply."
+          },
+          "metric_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "aggregation": {
+            "$ref": "#/components/schemas/OTel.Metrics.MetricAggregation",
+            "default": "avg"
+          },
+          "step_ms": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 86400000,
+            "description": "Bucket width in integer milliseconds.",
+            "default": 60000
+          },
+          "group_by": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 16,
+            "description": "Attribute keys to split the result by."
+          },
+          "matchers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OTel.Metrics.MetricAttributeMatcher"
+            },
+            "maxItems": 32,
+            "description": "Attribute matchers a series must all satisfy."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "A saved metric range query."
+      },
+      "SavedQueries.SavedMetricQueryRun": {
+        "type": "object",
+        "required": [
+          "signal",
+          "result"
+        ],
+        "properties": {
+          "signal": {
+            "type": "string",
+            "enum": [
+              "metrics"
+            ]
+          },
+          "result": {
+            "$ref": "#/components/schemas/OTel.Metrics.MetricQueryResult"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "The range-query result produced by a saved metric query."
+      },
+      "SavedQueries.SavedQuery": {
+        "type": "object",
+        "required": [
+          "name",
+          "filter"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Unique within the project; a duplicate is refused with 409."
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "filter": {
+            "$ref": "#/components/schemas/SavedQueries.SavedQueryFilter"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Common.ResourceBase"
+          }
+        ],
+        "description": "A named filter for traces, logs or metrics, owned by one project."
+      },
+      "SavedQueries.SavedQueryCreateRequest": {
+        "type": "object",
+        "required": [
+          "name",
+          "filter"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Unique within the project; a duplicate is refused with 409."
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "filter": {
+            "$ref": "#/components/schemas/SavedQueries.SavedQueryFilter"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Body of POST /api/v1/saved-queries: the `Lifecycle.Create` members of SavedQuery."
+      },
+      "SavedQueries.SavedQueryFilter": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/SavedQueries.SavedTraceQueryFilter"
+          },
+          {
+            "$ref": "#/components/schemas/SavedQueries.SavedLogQueryFilter"
+          },
+          {
+            "$ref": "#/components/schemas/SavedQueries.SavedMetricQueryFilter"
+          }
+        ],
+        "description": "Exactly one structured filter; `signal` selects which."
+      },
+      "SavedQueries.SavedQueryRunRequest": {
+        "type": "object",
+        "properties": {
+          "start_time": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Overrides the saved look-back window together with `end_time`."
+          },
+          "end_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 1000,
+            "description": "Page size for trace and log runs.",
+            "default": 100
+          },
+          "cursor": {
+            "$ref": "#/components/schemas/Common.Cursor",
+            "description": "`next_cursor` of a previous run of the same saved query."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Optional overrides for one run of a saved query."
+      },
+      "SavedQueries.SavedQueryRunResult": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/SavedQueries.SavedTraceQueryRun"
+          },
+          {
+            "$ref": "#/components/schemas/SavedQueries.SavedLogQueryRun"
+          },
+          {
+            "$ref": "#/components/schemas/SavedQueries.SavedMetricQueryRun"
+          }
+        ],
+        "description": "The result of running a saved query; `signal` matches the query's filter."
+      },
+      "SavedQueries.SavedQuerySignal": {
+        "type": "string",
+        "enum": [
+          "traces",
+          "logs",
+          "metrics"
+        ],
+        "description": "The telemetry signal a saved query reads."
+      },
+      "SavedQueries.SavedQueryUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "New name, unique within the project; a duplicate is refused with 409."
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "filter": {
+            "$ref": "#/components/schemas/SavedQueries.SavedQueryFilter"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Body of PATCH /api/v1/saved-queries/{saved_query_id}: the `Lifecycle.Update` members of SavedQuery, each optional; omitted members keep their value."
+      },
+      "SavedQueries.SavedQueryWindow": {
+        "type": "object",
+        "properties": {
+          "lookback_minutes": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 43200,
+            "description": "Window ending at the time of the run, in minutes. Omitted, the run's own `start_time`/`end_time` or the last 60 minutes apply."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "Look-back window shared by every saved-query filter."
+      },
+      "SavedQueries.SavedTraceQueryFilter": {
+        "type": "object",
+        "required": [
+          "signal"
+        ],
+        "properties": {
+          "signal": {
+            "type": "string",
+            "enum": [
+              "traces"
+            ]
+          },
+          "lookback_minutes": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 43200,
+            "description": "Window ending at the time of the run, in minutes. Omitted, the run's own `start_time`/`end_time` or the last 60 minutes apply."
+          },
+          "service_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "errors_only": {
+            "type": "boolean",
+            "description": "Keep only traces with at least one error span."
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "A saved filter over traces."
+      },
+      "SavedQueries.SavedTraceQueryRun": {
+        "type": "object",
+        "required": [
+          "signal",
+          "items",
+          "has_more"
+        ],
+        "properties": {
+          "signal": {
+            "type": "string",
+            "enum": [
+              "traces"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OTel.Traces.TraceSummary"
+            }
+          },
+          "next_cursor": {
+            "$ref": "#/components/schemas/Common.Cursor"
+          },
+          "has_more": {
+            "type": "boolean"
+          }
+        },
+        "unevaluatedProperties": {
+          "not": {}
+        },
+        "description": "One page of trace summaries produced by a saved trace query, like list_traces; get_trace reads one full span tree."
       },
       "Streaming.HeartbeatEvent": {
         "type": "object",
@@ -19021,6 +22905,18 @@
         "type": "apiKey",
         "in": "header",
         "name": "x-otlp-api-key"
+      },
+      "QylWriteKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-otlp-api-key",
+        "description": "Collector API key in `x-otlp-api-key` carrying the `write` role (Qyl.Api.Contracts.Common.CollectorKeyRole). Creates and updates user resources."
+      },
+      "QylDeleteKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-otlp-api-key",
+        "description": "Collector API key in `x-otlp-api-key` carrying the `delete` role (Qyl.Api.Contracts.Common.CollectorKeyRole). Deletes user resources, never telemetry."
       }
     }
   }

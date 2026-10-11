@@ -16,6 +16,21 @@ using Qyl.Api.Schema.Emit.TsTypes;
 );
 @@csharpNamespace(Qyl.Api.Contracts.Mcp.Tools, "Qyl.Api.Contracts.Mcp.Tools");
 @@csharpNamespace(Qyl.Api.Contracts.Runner, "Qyl.Api.Contracts.Runner");
+@@csharpNamespace(
+  Qyl.Api.Contracts.Annotations,
+  "Qyl.Api.Contracts.Annotations"
+);
+@@csharpNamespace(
+  Qyl.Api.Contracts.SavedQueries,
+  "Qyl.Api.Contracts.SavedQueries"
+);
+@@csharpPolymorphic(Qyl.Api.Contracts.Annotations.AnnotationTarget, "kind");
+@@csharpPolymorphic(Qyl.Api.Contracts.SavedQueries.SavedQueryFilter, "signal");
+@@csharpPolymorphic(
+  Qyl.Api.Contracts.SavedQueries.SavedQueryRunResult,
+  "signal"
+);
+@@csharpPolymorphic(Qyl.Api.Contracts.Mcp.Tools.FetchTelemetryInput, "view");
 @@csharpNamespace(Qyl.Api.Contracts.Workbench, "Qyl.Api.Contracts.Workbench");
 @@csharpPolymorphic(
   Qyl.Api.Contracts.Workbench.WorkbenchServerConfiguration,
@@ -69,4 +84,3 @@ using Qyl.Api.Schema.Emit.TsTypes;
 @@tsBrand(Qyl.Api.Contracts.Workbench.WorkbenchSuiteId);
 @@tsBrand(Qyl.Api.Contracts.Workbench.WorkbenchEvaluationRunId);
 @@tsBrand(Qyl.Api.Contracts.Workbench.WorkbenchEvaluationExportId);
-

@@ -170,3 +170,29 @@ model MetricQueryResult {
   @doc("Whether streams were dropped because the result exceeded the series limit.")
   truncated: boolean;
 }
+
+@doc("How a structured attribute matcher compares an attribute value.")
+enum MetricMatcherOp {
+  @doc("The attribute equals `value`; serialized to the `attr` query parameter as `key=value`.")
+  eq: "eq",
+
+  @doc("The attribute starts with `value`; serialized to the `attr_prefix` query parameter as `key=value`.")
+  prefix: "prefix",
+}
+
+@doc("""
+  One structured attribute matcher. Tool inputs and saved queries carry
+  matchers in this form; the HTTP routes keep their `key=value` string
+  parameters, and a client serializes each matcher to one of them.
+  """)
+model MetricAttributeMatcher {
+  @doc("Attribute key, e.g. `http.route`.")
+  @minLength(1)
+  @maxLength(256)
+  key: string;
+
+  `op`: MetricMatcherOp;
+
+  @maxLength(1024)
+  value: string;
+}

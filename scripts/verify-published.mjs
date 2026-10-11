@@ -1,7 +1,7 @@
-import { verifyConsumers } from "./verify-consumers.mjs";
+import { releaseVersionPattern, verifyConsumers } from "./verify-consumers.mjs";
 
 const version = process.argv[2];
-if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(version ?? "")) {
+if (!releaseVersionPattern.test(version ?? "")) {
   throw new Error("usage: node scripts/verify-published.mjs <version>");
 }
 

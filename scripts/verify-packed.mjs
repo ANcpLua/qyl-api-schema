@@ -2,10 +2,10 @@ import { spawnSync } from "node:child_process";
 import { access, readFile } from "node:fs/promises";
 import { dirname, join, posix, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { verifyConsumers } from "./verify-consumers.mjs";
+import { releaseVersionPattern, verifyConsumers } from "./verify-consumers.mjs";
 
 const [version, npmTarballArgument, nugetPackageArgument] = process.argv.slice(2);
-if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(version ?? "") ||
+if (!releaseVersionPattern.test(version ?? "") ||
     !npmTarballArgument?.endsWith(".tgz") ||
     !nugetPackageArgument?.endsWith(".nupkg")) {
   throw new Error("usage: node scripts/verify-packed.mjs <version> <npm-tarball.tgz> <nuget-package.nupkg>");

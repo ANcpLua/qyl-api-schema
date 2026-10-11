@@ -4,6 +4,10 @@ import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
+// The version argument both release verifiers take, checked before either one
+// spends a registry poll or a consumer install on it.
+export const releaseVersionPattern = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
+
 const nugetPackage = "Qyl.Api.Contracts";
 const mcpSdkPackage = "ModelContextProtocol.Core";
 const mcpSdkVersion = "1.4.1";

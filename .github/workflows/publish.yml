@@ -17,6 +17,10 @@ name: Publish (npmjs.org + nuget.org)
 # Setup is complete: @ancplua/qyl-api-schema is bootstrapped on npmjs and trusted-publisher policies
 # exist on both registries (Workflow File: publish.yml, Environment: release). Runs unattended on a
 # published GitHub Release whose tag is vMAJOR.MINOR.PATCH[-prerelease].
+#
+# Main ancestry: the release environment admits main and v* tags, but a v* tag can name a commit that
+# never reached main. Every run, release or manual, first proves its commit is reachable from origin
+# main and stops before anything is installed, packed or pushed when it is not.
 
 on:
   release:
@@ -45,6 +49,21 @@ jobs:
     environment: release   # must match the npmjs trusted-publisher AND the nuget.org policy Environment
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0   # full history, so the main-ancestry gate can walk main
+
+      # The main-ancestry gate (see header). refs/heads/main is spelled out because a bare "main"
+      # would resolve a tag named main ahead of the branch.
+      - name: Require the release commit to be on main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin refs/heads/main
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" FETCH_HEAD; then
+            echo "::error::$GITHUB_SHA is not reachable from origin main ($(git rev-parse FETCH_HEAD)); only commits main already contains are published."
+            exit 1
+          fi
+          echo "$GITHUB_SHA is on origin main ($(git rev-parse FETCH_HEAD))."
 
       # node, bun and dotnet come from mise.toml. The three @ancplua/* emitters are workspace
       # members and resolve locally, so install authenticates against nothing.
@@ -226,13 +245,15 @@ jobs:
           user: ANcpLua
 
       - name: Push C# contracts NuGet to nuget.org
+        env:
+          NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
         run: |
           shopt -s nullglob
           pushed=0
           for pkg in Artifacts/nuget/*.nupkg; do
             dotnet nuget push "$pkg" \
               --source https://api.nuget.org/v3/index.json \
-              --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}" \
+              --api-key "$NUGET_API_KEY" \
               --skip-duplicate
             pushed=1
           done

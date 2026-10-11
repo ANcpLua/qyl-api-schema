@@ -57,6 +57,8 @@ npm remains only for `npm version`, `npm pack` and `npm publish`: bun has no OID
 trusted-publishing path. Install, lint, emit and every verify target run on bun.
 
 GitHub Actions publishes both registries through OIDC trusted publishing. A release
-tag supplies one version for npm and NuGet. The workflow validates and packs first,
+tag supplies one version for npm and NuGet. The commit it names must already be on
+`main`: every run, manual ones too, fails before it installs anything when its commit
+is not reachable from `origin/main`. The workflow validates and packs first,
 publishes in an ordered restartable sequence, waits for indexed artifacts, and then
 smokes clean consumers. No long-lived npm or NuGet token is stored.

@@ -130,6 +130,28 @@ model ConflictError extends ProblemDetails {
   conflictingResource?: string;
 }
 
+@doc("Precondition failed - the If-Match entity tag is no longer current (412)")
+@error
+model PreconditionFailedError extends ProblemDetails {
+  @statusCode _: 412;
+  title: "Precondition Failed";
+
+  @doc("Entity tag of the current version, when the caller may read it")
+  @encodedName("application/json", "current_etag")
+  currentEtag?: string;
+}
+
+@doc("Precondition required - the request must send If-Match (428)")
+@error
+model PreconditionRequiredError extends ProblemDetails {
+  @statusCode _: 428;
+  title: "Precondition Required";
+
+  @doc("The header the request must carry")
+  @encodedName("application/json", "required_header")
+  requiredHeader?: "If-Match";
+}
+
 @doc("Rate limited - too many requests (429)")
 @error
 model RateLimitError extends ProblemDetails {
@@ -208,6 +230,12 @@ union ApiError {
 
   @doc("Resource conflict")
   conflict: ConflictError,
+
+  @doc("Entity tag no longer current")
+  preconditionFailed: PreconditionFailedError,
+
+  @doc("If-Match missing")
+  preconditionRequired: PreconditionRequiredError,
 
   @doc("Rate limit exceeded")
   rateLimit: RateLimitError,

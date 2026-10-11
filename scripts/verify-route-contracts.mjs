@@ -160,8 +160,14 @@ for (const operationId of capacityLimitedOperations) {
 }
 
 const validationQueries = new Map([
-  ["GET /api/v1/traces", ["limit", "cursor"]],
-  ["GET /api/v1/logs", ["severity_min", "start_time", "end_time", "limit"]],
+  ["GET /api/v1/traces", ["start_time", "end_time", "service_name", "errors_only", "limit", "cursor"]],
+  ["GET /api/v1/traces/{trace_id}/spans", ["limit", "cursor"]],
+  ["GET /api/v1/logs", ["severity_min", "start_time", "end_time", "limit", "cursor"]],
+  ["GET /api/v1/metrics", ["limit", "cursor"]],
+  ["GET /api/v1/metrics/{metric_name}/series", ["limit", "cursor"]],
+  ["GET /api/v1/sessions/{session_id}/traces", ["limit", "cursor"]],
+  ["GET /api/v1/annotations", ["limit", "cursor"]],
+  ["GET /api/v1/saved-queries", ["signal", "limit", "cursor"]],
   ["GET /api/v1/sessions", ["is_active", "start_time", "end_time", "limit", "cursor"]],
   ["GET /api/v1/sessions/stats", ["start_time", "end_time"]],
   ["GET /api/v1/stream/logs", ["min_severity"]],
@@ -184,6 +190,80 @@ for (const [operationId, runtimeValidatedQueries] of validationQueries) {
   verifyExactResponse(operationId, "400", "ValidationError");
 }
 
+// Every operation that returns a CursorPage takes the cursor that page hands out.
+const cursorPagedOperations = [...operations].filter(([, operation]) => {
+  const schema = operation.responses?.["200"]?.content?.["application/json"]?.schema;
+  return schema?.properties?.has_more !== undefined && schema.properties.next_cursor !== undefined;
+});
+for (const [operationId, operation] of cursorPagedOperations) {
+  const cursor = (operation.parameters ?? []).find((parameter) => parameter.in === "query" && parameter.name === "cursor");
+  if (!cursor || cursor.required === true) {
+    throw new Error(`${operationId} returns a CursorPage but declares no optional cursor query parameter.`);
+  }
+}
+
+// The write surface: user-created resources on the shared write base.
+const writeTags = new Set(["Annotations", "Saved queries"]);
+const expectedWriteOperations = new Map([
+  ["POST /api/v1/annotations", "create"],
+  ["GET /api/v1/annotations", "read"],
+  ["GET /api/v1/annotations/{annotation_id}", "read"],
+  ["PATCH /api/v1/annotations/{annotation_id}", "update"],
+  ["DELETE /api/v1/annotations/{annotation_id}", "delete"],
+  ["POST /api/v1/saved-queries", "create"],
+  ["GET /api/v1/saved-queries", "read"],
+  ["GET /api/v1/saved-queries/{saved_query_id}", "read"],
+  ["PATCH /api/v1/saved-queries/{saved_query_id}", "update"],
+  ["DELETE /api/v1/saved-queries/{saved_query_id}", "delete"],
+  ["POST /api/v1/saved-queries/{saved_query_id}:run", "read"],
+]);
+verifyOperationInventory("Write", writeTags, new Set(expectedWriteOperations.keys()));
+
+const parameterRefs = (operation) => new Set((operation.parameters ?? []).map((parameter) => parameter.$ref).filter(Boolean));
+const componentParameter = (name) => openapi.components?.parameters?.[name];
+const idempotencyKey = componentParameter("Common.IdempotencyKeyHeader");
+if (idempotencyKey?.in !== "header" || idempotencyKey.name !== "Idempotency-Key" || idempotencyKey.required === true) {
+  throw new Error("Common.IdempotencyKeyHeader must be the optional Idempotency-Key header.");
+}
+const ifMatch = componentParameter("Common.IfMatchHeader");
+if (ifMatch?.in !== "header" || ifMatch.name !== "If-Match" || ifMatch.required !== true) {
+  throw new Error("Common.IfMatchHeader must be the required If-Match header.");
+}
+const writeSecurity = {
+  read: "ApiKeyAuth",
+  create: "QylWriteKeyAuth",
+  update: "QylWriteKeyAuth",
+  delete: "QylDeleteKeyAuth",
+};
+for (const [operationId, role] of expectedWriteOperations) {
+  const operation = operations.get(operationId);
+  if (JSON.stringify(operation.security) !== JSON.stringify([{ [writeSecurity[role]]: [] }])) {
+    throw new Error(`${operationId} must require only ${writeSecurity[role]}.`);
+  }
+  const refs = parameterRefs(operation);
+  if (role === "create") {
+    if (!refs.has("#/components/parameters/Common.IdempotencyKeyHeader")) {
+      throw new Error(`${operationId} must accept Idempotency-Key.`);
+    }
+    const created = operation.responses?.["201"];
+    if (created?.headers?.Location?.required !== true || created.headers.ETag?.required !== true) {
+      throw new Error(`${operationId} must answer 201 with required Location and ETag headers.`);
+    }
+    verifyExactResponse(operationId, "409", "ConflictError");
+  }
+  if (role === "update" || role === "delete") {
+    if (!refs.has("#/components/parameters/Common.IfMatchHeader")) {
+      throw new Error(`${operationId} must require If-Match.`);
+    }
+    verifyExactResponse(operationId, "412", "PreconditionFailedError");
+    verifyExactResponse(operationId, "428", "PreconditionRequiredError");
+  }
+  if (role === "delete" && !operation.responses?.["204"]) {
+    throw new Error(`${operationId} must answer 204.`);
+  }
+}
+verifyExactResponse("PATCH /api/v1/saved-queries/{saved_query_id}", "409", "ConflictError");
+
 const resumableSseOperations = new Set([
   "GET /api/v1/stream/logs",
   "GET /runner/resources/{resource}/logs/stream",
@@ -204,7 +284,8 @@ for (const operationId of resumableSseOperations) {
 console.log(
   `Verified ${expectedRunnerOperations.size} runner and ${expectedWorkbenchOperations.size} workbench routes, ` +
   `${expectedWorkbenchOperations.size - publicWorkbenchOperations.size} private workbench operations, ` +
-  `${capacityLimitedOperations.size} capacity responses, and ` +
-  `${validationQueries.size} typed-query validation responses, and ` +
-  `${resumableSseOperations.size} resumable SSE headers.`,
+  `${capacityLimitedOperations.size} capacity responses, ` +
+  `${validationQueries.size} typed-query validation responses, ` +
+  `${resumableSseOperations.size} resumable SSE headers, ` +
+  `${cursorPagedOperations.length} cursor-paged lists, and ${expectedWriteOperations.size} write-surface operations.`,
 );

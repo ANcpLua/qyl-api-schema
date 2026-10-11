@@ -51,6 +51,94 @@ for (const service_prefix of ["", "x".repeat(257), 12, false]) {
 }
 assertInvalid(validateCiLog, { servicePrefix: "custom-ci" }, "ci_log rejects unencoded prefix name");
 
+// MCP requires every tool inputSchema and outputSchema to be `type: "object"` at the root,
+// including the discriminated fetch_telemetry input.
+const nonObjectToolSchemas = Object.entries(defs)
+  .filter(([name]) => /^Mcp\.Tools\.\w+(Input|Output)$/u.test(name))
+  .filter(([, definition]) => definition.type !== "object")
+  .map(([name]) => name);
+if (nonObjectToolSchemas.length > 0) {
+  throw new Error(`MCP tool schemas must be type object at the root: ${nonObjectToolSchemas.join(", ")}.`);
+}
+const fetchTelemetryRoot = defs["Mcp.Tools.FetchTelemetryInput"];
+if (fetchTelemetryRoot?.type !== "object" || fetchTelemetryRoot.oneOf?.length !== 4 ||
+    fetchTelemetryRoot.discriminator?.propertyName !== "view") {
+  throw new Error("Mcp.Tools.FetchTelemetryInput must be an object discriminated on view over four variants.");
+}
+
+// Contract 11.6.0 tool layer: fetch_telemetry views, structured matchers, pagination, errors.
+const traceId = "0123456789abcdef0123456789abcdef";
+const validateFetch = validatorFor("Mcp.Tools.FetchTelemetryInput");
+assertValid(validateFetch, { view: "traces", limit: 20 }, "fetch_telemetry traces view");
+assertValid(validateFetch, { view: "trace", trace_id: traceId }, "fetch_telemetry trace view");
+assertValid(validateFetch, { view: "logs", severity_min: 17 }, "fetch_telemetry logs view");
+assertValid(validateFetch, { view: "mcp_stats", hours: 24 }, "fetch_telemetry mcp_stats view");
+assertInvalid(validateFetch, { view: "trace" }, "fetch_telemetry trace view without trace_id");
+assertInvalid(validateFetch, { view: "mcp_stats", hours: 1.5 }, "fetch_telemetry fractional hours");
+assertInvalid(validateFetch, { view: "traces", hours: 24 }, "fetch_telemetry member of another view");
+
+const validateDashboard = validatorFor("Mcp.Tools.DisplayMcpDashboardInput");
+assertValid(validateDashboard, { hours: 168 }, "display_mcp_dashboard integer hours");
+assertInvalid(validateDashboard, { hours: 2.5 }, "display_mcp_dashboard fractional hours");
+
+const validateListTraces = validatorFor("Mcp.Tools.ListTracesInput");
+assertValid(validateListTraces, {
+  limit: 10, start_time: "2026-10-11T00:00:00Z", end_time: "2026-10-11T01:00:00Z",
+  service_name: "api", errors_only: true, cursor: "opaque",
+}, "list_traces filters and cursor");
+const validateListTracesOutput = validatorFor("Mcp.Tools.ListTracesOutput");
+assertValid(validateListTracesOutput, { traces: [], mode: "live", has_more: true, next_cursor: "n" }, "list_traces page");
+assertInvalid(validateListTracesOutput, { traces: [], mode: "live" }, "list_traces output without has_more");
+
+const validateToolError = validatorFor("Mcp.Tools.ToolError");
+assertValid(validateToolError, { code: "collector_timeout", message: "timed out", retryable: true }, "tool error");
+for (const code of ["insufficient_scope", "conflict", "precondition_failed", "precondition_required"]) {
+  assertValid(validateToolError, { code, message: "write refused", retryable: false }, `tool error ${code}`);
+}
+assertInvalid(validateToolError, { code: "timeout", message: "timed out", retryable: true }, "tool error with an unknown code");
+
+const validateRunResult = validatorFor("SavedQueries.SavedQueryRunResult");
+const traceSummary = {
+  trace_id: traceId, span_count: 3, duration_ns: "1000", start_time: "2026-10-11T00:00:00Z",
+  end_time: "2026-10-11T00:00:01Z", services: ["api"], has_error: false,
+};
+assertValid(validateRunResult, { signal: "traces", items: [traceSummary], has_more: true, next_cursor: "n" }, "saved trace query run page of summaries");
+assertInvalid(validateRunResult, { signal: "traces", items: [{ spans: [] }], has_more: false }, "saved trace query run with a full span tree");
+
+const validateQueryMetric = validatorFor("Mcp.Tools.QueryMetricInput");
+assertValid(validateQueryMetric, {
+  metric_name: "http.server.request.duration", start_time: "2026-10-11T00:00:00Z", end_time: "2026-10-11T01:00:00Z",
+  step_ms: 60000, matchers: [{ key: "http.route", op: "prefix", value: "/api" }], group_by: ["http.route"],
+}, "query_metric structured matchers");
+assertInvalid(validateQueryMetric, {
+  metric_name: "m", start_time: "2026-10-11T00:00:00Z", end_time: "2026-10-11T01:00:00Z", attr: ["a=b"],
+}, "query_metric string matcher");
+assertInvalid(validateQueryMetric, {
+  metric_name: "m", start_time: "2026-10-11T00:00:00Z", end_time: "2026-10-11T01:00:00Z", step_ms: 1.5,
+}, "query_metric fractional step_ms");
+
+// Write resources.
+const validateAnnotationCreate = validatorFor("Annotations.AnnotationCreateRequest");
+assertValid(validateAnnotationCreate, { target: { kind: "trace", trace_id: traceId }, text: "x".repeat(2000) }, "annotation at 2000 characters");
+assertValid(validateAnnotationCreate, {
+  target: { kind: "span", trace_id: traceId, span_id: "b7ad6b7169203331" }, text: "slow span",
+}, "span annotation");
+assertValid(validateAnnotationCreate, { target: { kind: "session", session_id: "s-1" }, text: "note" }, "session annotation");
+assertInvalid(validateAnnotationCreate, { target: { kind: "trace", trace_id: traceId }, text: "x".repeat(2001) }, "annotation over 2000 characters");
+assertInvalid(validateAnnotationCreate, { target: { kind: "span", trace_id: traceId }, text: "x" }, "span annotation without span_id");
+assertInvalid(validateAnnotationCreate, { id: "a", target: { kind: "trace", trace_id: traceId }, text: "x" }, "annotation create with a server-assigned id");
+
+const validateSavedQueryCreate = validatorFor("SavedQueries.SavedQueryCreateRequest");
+assertValid(validateSavedQueryCreate, { name: "errors", filter: { signal: "traces", errors_only: true, lookback_minutes: 60 } }, "saved trace query");
+assertValid(validateSavedQueryCreate, {
+  name: "p95", filter: { signal: "metrics", metric_name: "m", aggregation: "p95", matchers: [{ key: "k", op: "eq", value: "v" }] },
+}, "saved metric query");
+assertInvalid(validateSavedQueryCreate, { name: "m", filter: { signal: "metrics" } }, "saved metric query without metric_name");
+assertInvalid(validateSavedQueryCreate, { name: "x", filter: { signal: "spans" } }, "saved query with an unknown signal");
+const validateSavedQueryUpdate = validatorFor("SavedQueries.SavedQueryUpdateRequest");
+assertValid(validateSavedQueryUpdate, { name: "renamed" }, "saved query partial update");
+assertInvalid(validateSavedQueryUpdate, { etag: "e" }, "saved query update with a server-assigned etag");
+
 function assertReferences(definition, expected) {
   const actual = (defs[definition]?.oneOf ?? []).map((variant) => variant.$ref);
   if (JSON.stringify(actual) !== JSON.stringify(expected)) {
@@ -102,6 +190,10 @@ const cursorPageDefinitions = new Map([
   ["Operations.SessionsApi_getTraces.Response.200", "#/$defs/OTel.Traces.Trace"],
   ["Operations.TracesApi_list.Response.200", "#/$defs/OTel.Traces.Trace"],
   ["Operations.TracesApi_getSpans.Response.200", "#/$defs/OTel.Traces.Span"],
+  ["Operations.MetricsApi_list.Response.200", "#/$defs/OTel.Metrics.MetricDescriptor"],
+  ["Operations.MetricsApi_listSeries.Response.200", "#/$defs/OTel.Metrics.MetricSeries"],
+  ["Operations.AnnotationsApi_list.Response.200", "#/$defs/Annotations.Annotation"],
+  ["Operations.SavedQueriesApi_list.Response.200", "#/$defs/SavedQueries.SavedQuery"],
 ]);
 for (const [definition, itemReference] of cursorPageDefinitions) {
   const page = defs[definition];

@@ -155,7 +155,8 @@ var executionRequest = new WorkbenchExecutionRequest
     IdempotencyKey = "smoke-key",
 };
 
-var toolInput = new FetchTelemetryInput { View = FetchTelemetryView.Traces };
+FetchTelemetryInput toolInput = new FetchTelemetryTracesInput { Limit = 10 };
+var toolInputWire = JsonSerializer.Serialize(toolInput);
 
 // The .NET face of the contract-revision handshake: the package carries the
 // revision it was generated from, and the health surface carries the peer's
@@ -226,7 +227,8 @@ var checks = new (string Name, bool Ok)[]
     ("runnerResourceLifecycleReady", lifecycle == "\"ready\""),
     ("runnerResourceKindStdio", kind == "\"stdio\""),
     ("runnerResourceStateKind", state.Kind == RunnerResourceKind.Stdio),
-    ("fetchTelemetryViewTraces", toolInput.View == FetchTelemetryView.Traces),
+    ("fetchTelemetryViewTraces", toolInputWire.Contains("\"view\":\"traces\"")
+        && JsonSerializer.Deserialize<FetchTelemetryInput>(toolInputWire) is FetchTelemetryTracesInput),
     ("serverConfigurationRoundTrip", serverConfigurationRoundTrip is WorkbenchStdioServerConfiguration),
     ("assertionRoundTrip", assertionRoundTrip is WorkbenchStatusAssertion),
     ("exportPayloadRoundTrip", exportPayloadRoundTrip is WorkbenchEvaluationReportExportPayload),

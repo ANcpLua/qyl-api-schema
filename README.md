@@ -30,6 +30,17 @@ The contract covers every client-visible surface of a qyl collector and runner:
 - **Shared** — `ProblemDetails` errors, cursor pagination and the common scalars
   (`common/`), plus the OTel resource, span and log projections (`otel/`).
 
+Telemetry itself is never changed or deleted through this contract; retention
+removes it. The only writable resources are the ones a user creates:
+annotations (`/api/v1/annotations`, a note of at most 2000 characters on a trace,
+span or session) and saved queries (`/api/v1/saved-queries`, a named structured
+filter for traces, logs or metrics, run with `POST …/{saved_query_id}:run`). Both
+extend the shared write base in `common/resource.tsp`: server-assigned `id`,
+`created_at`, `updated_at` and `etag`; `Idempotency-Key` on create, which answers
+`201` with `Location`; `If-Match` on `PATCH` and `DELETE`, refused with `428` when
+missing and `412` when stale. Collector keys carry the roles `ingest`, `read`,
+`write` and `delete` (`CollectorKeyRole`); writes need `write`, deletes `delete`.
+
 ## Contract pipeline
 
 ```text

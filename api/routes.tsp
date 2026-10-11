@@ -9,6 +9,10 @@ import "../otel/logs.tsp";
 import "../models/session.tsp";
 import "../models/health.tsp";
 import "../models/metrics.tsp";
+import "../common/resource.tsp";
+import "../common/auth.tsp";
+import "../models/annotations.tsp";
+import "../models/saved-queries.tsp";
 
 using TypeSpec.Http;
 using TypeSpec.OpenAPI;
@@ -22,10 +26,13 @@ using Qyl.Api.Contracts.OTel.Metrics;
 using Qyl.Api.Contracts.OTel.Enums;
 using Qyl.Api.Contracts.Domains.Observe.Session;
 using Qyl.Api.Contracts.Health;
+using Qyl.Api.Contracts.Annotations;
+using Qyl.Api.Contracts.SavedQueries;
 
 @service(#{ title: "qyl API" })
 namespace Qyl.Api.Contracts;
 
+// The query routes require a key with the `read` role (CollectorKeyRole.read).
 alias QylApiKeyHeaderAuth = ApiKeyAuth<ApiKeyLocation.header, "x-otlp-api-key">;
 
 @doc("Optional project scope applied to collector query operations.")
@@ -46,12 +53,28 @@ interface TracesApi {
   list(
     ...ProjectScopeHeader,
 
+    @doc("Keep traces that started at or after this time.")
+    @query("start_time")
+    startTime?: utcDateTime,
+
+    @doc("Keep traces that started before this time.")
+    @query("end_time")
+    endTime?: utcDateTime,
+
+    @doc("Keep traces with at least one span from this service.")
+    @query("service_name")
+    serviceName?: string,
+
+    @doc("Keep only traces with at least one error span.")
+    @query("errors_only")
+    errorsOnly?: boolean,
+
     @query
     @minValue(1)
     @maxValue(1000)
     limit?: int32 = 100,
 
-    @query cursor?: string,
+    @query cursor?: Cursor,
   ):
     | CursorPage<Trace>
     | ValidationError
@@ -68,8 +91,20 @@ interface TracesApi {
 
   @get
   @route("/{trace_id}/spans")
-  getSpans(...ProjectScopeHeader, @path("trace_id") traceId: TraceId):
+  getSpans(
+    ...ProjectScopeHeader,
+    @path("trace_id") traceId: TraceId,
+
+    @doc("Page size. Omitted, every span of the trace is returned in one page.")
+    @query
+    @minValue(1)
+    @maxValue(10000)
+    limit?: int32,
+
+    @query cursor?: Cursor,
+  ):
     | CursorPage<Span>
+    | ValidationError
     | NotFoundError
     | UnauthorizedError
     | InternalServerError;
@@ -99,6 +134,8 @@ interface LogsApi {
     @minValue(1)
     @maxValue(10000)
     limit?: int32 = 100,
+
+    @query cursor?: Cursor,
   ):
     | CursorPage<LogRecord>
     | ValidationError
@@ -132,6 +169,8 @@ interface MetricsApi {
     @minValue(1)
     @maxValue(1000)
     limit?: int32 = 200,
+
+    @query cursor?: Cursor,
   ):
     | CursorPage<MetricDescriptor>
     | ValidationError
@@ -160,6 +199,8 @@ interface MetricsApi {
     @minValue(1)
     @maxValue(1000)
     limit?: int32 = 200,
+
+    @query cursor?: Cursor,
   ):
     | CursorPage<MetricSeries>
     | ValidationError
@@ -176,7 +217,6 @@ interface MetricsApi {
   query(
     ...ProjectScopeHeader,
     @path("metric_name") metricName: string,
-
     @query("start_time") startTime: utcDateTime,
     @query("end_time") endTime: utcDateTime,
 
@@ -233,7 +273,7 @@ interface SessionsApi {
     @maxValue(1000)
     limit?: int32 = 100,
 
-    @query cursor?: string,
+    @query cursor?: Cursor,
   ):
     | CursorPage<SessionEntity>
     | ValidationError
@@ -250,8 +290,20 @@ interface SessionsApi {
 
   @get
   @route("/{session_id}/traces")
-  getTraces(...ProjectScopeHeader, @path("session_id") sessionId: SessionId):
+  getTraces(
+    ...ProjectScopeHeader,
+    @path("session_id") sessionId: SessionId,
+
+    @doc("Page size; the response is bounded even when omitted.")
+    @query
+    @minValue(1)
+    @maxValue(1000)
+    limit?: int32 = 100,
+
+    @query cursor?: Cursor,
+  ):
     | CursorPage<Trace>
+    | ValidationError
     | NotFoundError
     | UnauthorizedError
     | InternalServerError;
@@ -263,6 +315,242 @@ interface SessionsApi {
     @query("start_time") startTime?: utcDateTime,
     @query("end_time") endTime?: utcDateTime,
   ): SessionStats | ValidationError | UnauthorizedError | InternalServerError;
+}
+
+// -----------------------------------------------------------------------------
+// Annotations
+//
+// User notes on a trace, span or session (models/annotations.tsp). Reads take
+// a `read` key, create and update a `write` key, delete a `delete` key.
+// -----------------------------------------------------------------------------
+
+@route("/api/v1/annotations")
+@tag("Annotations")
+interface AnnotationsApi {
+  @doc("Attach a note of at most 2000 characters to a trace, span or session.")
+  @useAuth(QylWriteKeyAuth)
+  @post
+  create(
+    ...ProjectScopeHeader,
+    ...IdempotencyKeyHeader,
+    @body request: AnnotationCreateRequest,
+  ):
+    | {
+        @statusCode statusCode: 201;
+
+        @doc("URL of the created annotation.")
+        @header("Location")
+        location: string;
+
+        @header("ETag") etag: ETag;
+        @body body: Annotation;
+      }
+    | ValidationError
+    | UnauthorizedError
+    | ForbiddenError
+    | NotFoundError
+    | ConflictError
+    | InternalServerError;
+
+  @doc("List annotations, newest first, optionally only those attached to one trace, span or session.")
+  @useAuth(QylApiKeyHeaderAuth)
+  @get
+  list(
+    ...ProjectScopeHeader,
+
+    @doc("Annotations on this trace, including those on its spans.")
+    @query("trace_id")
+    traceId?: TraceId,
+
+    @doc("Annotations on this span; requires `trace_id`.")
+    @query("span_id")
+    spanId?: SpanId,
+
+    @query("session_id") sessionId?: SessionId,
+
+    @query
+    @minValue(1)
+    @maxValue(1000)
+    limit?: int32 = 100,
+
+    @query cursor?: Cursor,
+  ):
+    | CursorPage<Annotation>
+    | ValidationError
+    | UnauthorizedError
+    | InternalServerError;
+
+  @useAuth(QylApiKeyHeaderAuth)
+  @get
+  @route("/{annotation_id}")
+  get(...ProjectScopeHeader, @path("annotation_id") annotationId: ResourceId):
+    | {
+        @header("ETag") etag: ETag;
+        @body body: Annotation;
+      }
+    | NotFoundError
+    | UnauthorizedError
+    | InternalServerError;
+
+  @doc("Replace the text of an annotation. The target is fixed at creation.")
+  @useAuth(QylWriteKeyAuth)
+  @patch(#{ implicitOptionality: false })
+  @route("/{annotation_id}")
+  update(
+    ...ProjectScopeHeader,
+    ...IfMatchHeader,
+    @path("annotation_id") annotationId: ResourceId,
+    @body request: AnnotationUpdateRequest,
+  ):
+    | {
+        @header("ETag") etag: ETag;
+        @body body: Annotation;
+      }
+    | ValidationError
+    | UnauthorizedError
+    | ForbiddenError
+    | NotFoundError
+    | PreconditionFailedError
+    | PreconditionRequiredError
+    | InternalServerError;
+
+  @doc("Delete one annotation. Telemetry is never deleted.")
+  @useAuth(QylDeleteKeyAuth)
+  @delete
+  @route("/{annotation_id}")
+  delete(
+    ...ProjectScopeHeader,
+    ...IfMatchHeader,
+    @path("annotation_id") annotationId: ResourceId,
+  ):
+    | NoContentResponse
+    | UnauthorizedError
+    | ForbiddenError
+    | NotFoundError
+    | PreconditionFailedError
+    | PreconditionRequiredError
+    | InternalServerError;
+}
+
+// -----------------------------------------------------------------------------
+// Saved queries
+//
+// Named, structured filters for traces, logs or metrics
+// (models/saved-queries.tsp). Names are unique per project.
+// -----------------------------------------------------------------------------
+
+@route("/api/v1/saved-queries")
+@tag("Saved queries")
+interface SavedQueriesApi {
+  @doc("Save a named filter. A name already used in the project is refused with 409.")
+  @useAuth(QylWriteKeyAuth)
+  @post
+  create(
+    ...ProjectScopeHeader,
+    ...IdempotencyKeyHeader,
+    @body request: SavedQueryCreateRequest,
+  ):
+    | {
+        @statusCode statusCode: 201;
+
+        @doc("URL of the created saved query.")
+        @header("Location")
+        location: string;
+
+        @header("ETag") etag: ETag;
+        @body body: SavedQuery;
+      }
+    | ValidationError
+    | UnauthorizedError
+    | ForbiddenError
+    | ConflictError
+    | InternalServerError;
+
+  @doc("List the project's saved queries by name.")
+  @useAuth(QylApiKeyHeaderAuth)
+  @get
+  list(
+    ...ProjectScopeHeader,
+    @query signal?: SavedQuerySignal,
+
+    @query
+    @minValue(1)
+    @maxValue(1000)
+    limit?: int32 = 100,
+
+    @query cursor?: Cursor,
+  ):
+    | CursorPage<SavedQuery>
+    | ValidationError
+    | UnauthorizedError
+    | InternalServerError;
+
+  @useAuth(QylApiKeyHeaderAuth)
+  @get
+  @route("/{saved_query_id}")
+  get(...ProjectScopeHeader, @path("saved_query_id") savedQueryId: ResourceId):
+    | {
+        @header("ETag") etag: ETag;
+        @body body: SavedQuery;
+      }
+    | NotFoundError
+    | UnauthorizedError
+    | InternalServerError;
+
+  @doc("Change a saved query. Renaming onto a name already used in the project is refused with 409.")
+  @useAuth(QylWriteKeyAuth)
+  @patch(#{ implicitOptionality: false })
+  @route("/{saved_query_id}")
+  update(
+    ...ProjectScopeHeader,
+    ...IfMatchHeader,
+    @path("saved_query_id") savedQueryId: ResourceId,
+    @body request: SavedQueryUpdateRequest,
+  ):
+    | {
+        @header("ETag") etag: ETag;
+        @body body: SavedQuery;
+      }
+    | ValidationError
+    | UnauthorizedError
+    | ForbiddenError
+    | NotFoundError
+    | ConflictError
+    | PreconditionFailedError
+    | PreconditionRequiredError
+    | InternalServerError;
+
+  @doc("Delete one saved query.")
+  @useAuth(QylDeleteKeyAuth)
+  @delete
+  @route("/{saved_query_id}")
+  delete(
+    ...ProjectScopeHeader,
+    ...IfMatchHeader,
+    @path("saved_query_id") savedQueryId: ResourceId,
+  ):
+    | NoContentResponse
+    | UnauthorizedError
+    | ForbiddenError
+    | NotFoundError
+    | PreconditionFailedError
+    | PreconditionRequiredError
+    | InternalServerError;
+
+  @doc("Evaluate a saved query against current telemetry. Read-only.")
+  @useAuth(QylApiKeyHeaderAuth)
+  @post
+  @route("/{saved_query_id}:run")
+  run(
+    ...ProjectScopeHeader,
+    @path("saved_query_id") savedQueryId: ResourceId,
+    @body request: SavedQueryRunRequest,
+  ):
+    | SavedQueryRunResult
+    | ValidationError
+    | UnauthorizedError
+    | NotFoundError
+    | InternalServerError;
 }
 
 // -----------------------------------------------------------------------------

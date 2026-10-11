@@ -205,6 +205,24 @@ const inheritanceCases = {
     own: {},
     baseRequired: "status",
   },
+  "Annotations.Annotation": {
+    body: {
+      id: "ann-1",
+      created_at: "2026-10-11T10:15:00Z",
+      updated_at: "2026-10-11T10:15:00Z",
+      etag: "e-1",
+      target: { kind: "trace", trace_id: "0af7651916cd43dd8448eb211c80319c" },
+      text: "slow cold start",
+    },
+    own: {},
+    baseRequired: "etag",
+  },
+  "Common.Errors.PreconditionFailedError": {
+    body: problemDetails("Precondition Failed", 412), own: { current_etag: "e-2" }, baseRequired: "status",
+  },
+  "Common.Errors.PreconditionRequiredError": {
+    body: problemDetails("Precondition Required", 428), own: { required_header: "If-Match" }, baseRequired: "status",
+  },
   "OTel.Traces.Trace": {
     body: {
       trace_id: "0af7651916cd43dd8448eb211c80319c",
@@ -218,6 +236,18 @@ const inheritanceCases = {
     },
     own: {},
     baseRequired: "trace_id",
+  },
+  "SavedQueries.SavedQuery": {
+    body: {
+      id: "sq-1",
+      created_at: "2026-10-11T10:15:00Z",
+      updated_at: "2026-10-11T10:15:00Z",
+      etag: "e-1",
+      name: "errors last hour",
+      filter: { signal: "traces", errors_only: true, lookback_minutes: 60 },
+    },
+    own: { description: "every failing trace" },
+    baseRequired: "id",
   },
   "Workbench.WorkbenchSessionBootstrapResponse": {
     body: {

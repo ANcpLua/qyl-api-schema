@@ -48,7 +48,7 @@ jobs:
 
       # node, bun and dotnet come from mise.toml. The three @ancplua/* emitters are workspace
       # members and resolve locally, so install authenticates against nothing.
-      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+      - uses: jdx/mise-action@2d8d4cafcbd33be2ea37d2b6f5ad595363d1f1ca # v5.1.1
 
       # Trusted publishing to npmjs needs npm >= 11.5.1; Node 24 bundles an older npm.
       # It runs after mise-action so the upgrade lands in the Node that is first on PATH.

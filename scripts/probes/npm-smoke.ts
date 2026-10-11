@@ -14,9 +14,12 @@ import type {
     Attribute,
     AttributeValue,
     CiLogOutput,
+    CursorPageTrace,
     EntityRef,
     HealthReport,
     LogRecord,
+    NotFoundError,
+    ProblemDetails,
     Resource,
     SessionEvent,
     SessionId,
@@ -100,7 +103,39 @@ const sessionEvent: SessionEvent = {
     event_domain: "session",
 };
 
+// A problem names its type by URI and by code, and each error type fixes both.
+const notFound: NotFoundError = {
+    type: "https://qyl.at/problems/not-found",
+    code: "not_found",
+    title: "Not Found",
+    status: 404,
+    resource_type: "trace",
+};
+const problem: ProblemDetails = notFound;
+const mislabelledProblem: NotFoundError = {
+    type: "https://qyl.at/problems/not-found",
+    // @ts-expect-error A not-found problem carries the not_found code and no other.
+    code: "conflict",
+    title: "Not Found",
+    status: 404,
+};
+
+// The last page omits the cursor, and no page hands out a backward one.
+const lastPage: CursorPageTrace = { items: [], has_more: false };
+const backwardPage: CursorPageTrace = {
+    items: [],
+    has_more: true,
+    next_cursor: "next",
+    // @ts-expect-error Pages are forward-only; prev_cursor is gone.
+    prev_cursor: "previous",
+};
+
 void [
+    notFound,
+    problem,
+    mislabelledProblem,
+    lastPage,
+    backwardPage,
     eventLog,
     emptyAttribute,
     intAttribute,

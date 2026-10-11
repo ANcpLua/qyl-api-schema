@@ -23,7 +23,10 @@ tracked; the rest is gitignored, rebuilt by `compile` and by `prepack`, and pack
 there:
 
 - `generated/openapi/qyl.openapi.json` — tracked; `VerifyGeneratedArtifactsCurrent`
-  fails when it lags the `.tsp` sources
+  fails when it lags the `.tsp` sources. Its `info.version` is TypeSpec's `0.0.0`:
+  `prepack` stamps the package version into the packed copy
+  (`scripts/stamp-openapi-version.mjs`) and `postpack` puts `0.0.0` back, so a local
+  pack leaves no diff
 - `generated/json-schema/qyl-api-schema.json` — the `./json-schema` export, projected
   from the OpenAPI document
 - `generated/contracts/**/*.cs` — the `Qyl.Api.Contracts` NuGet, including

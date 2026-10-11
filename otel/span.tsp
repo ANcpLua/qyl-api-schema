@@ -189,55 +189,6 @@ model Trace extends TraceSummary {
 }
 
 // =============================================================================
-// Span Query Filters
-// =============================================================================
-
-@doc("Filter parameters for querying spans")
-model SpanQueryFilters {
-  @doc("Filter by trace ID")
-  @query("trace_id")
-  @encodedName("application/json", "trace_id")
-  traceId?: TraceId;
-
-  @doc("Filter by parent span ID")
-  @query("parent_span_id")
-  @encodedName("application/json", "parent_span_id")
-  parentSpanId?: SpanId;
-
-  @doc("Filter by span name (supports wildcards)")
-  @query
-  name?: string;
-
-  @doc("Filter by span kind")
-  @query
-  kind?: SpanKind;
-
-  @doc("Filter by service name")
-  @query("service_name")
-  @encodedName("application/json", "service_name")
-  serviceName?: string;
-
-  @doc("Filter by status code")
-  @query("status_code")
-  @encodedName("application/json", "status_code")
-  statusCode?: SpanStatusCode;
-
-  @doc("Minimum duration in nanoseconds")
-  @query("min_duration_ns")
-  @encodedName("application/json", "min_duration_ns")
-  minDurationNs?: DurationNs;
-
-  @doc("Maximum duration in nanoseconds")
-  @query("max_duration_ns")
-  @encodedName("application/json", "max_duration_ns")
-  maxDurationNs?: DurationNs;
-
-  @doc("Filter by attribute key-value pair")
-  @query
-  attribute?: string;
-}
-
-// =============================================================================
 // Span Aggregations
 // =============================================================================
 

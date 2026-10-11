@@ -14,8 +14,9 @@
 //   name -> key   an identity's wire key is exactly snake(name); unlike an
 //                 ordinary property it may not be renamed on the wire
 //
-// Header properties are deliberately not skipped: `ProblemDetails.traceId` is
-// both a header and an identity, and it was one of the bare-`string` defects.
+// Header properties are deliberately not skipped: `CollectorServerErrorResponse.traceId`
+// is both a header and an identity, and the same header on the old ProblemDetails
+// body was one of the bare-`string` defects.
 
 import type { Model, ModelProperty } from "@typespec/compiler";
 import {
@@ -102,8 +103,8 @@ export const identityBindingRule = createRule({
           }
         }
 
-        // name -> type. Checked for headers too: ProblemDetails.traceId is a
-        // header whose value is still a TraceId and must be typed as one.
+        // name -> type. Checked for headers too: CollectorServerErrorResponse.traceId
+        // is a header whose value is still a TraceId and must be typed as one.
         if (reserved && !carried) {
           const isArray = property.type.kind === "Model" && isArrayModelType(property.type as Model);
           const actual = isArray

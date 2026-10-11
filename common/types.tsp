@@ -159,10 +159,18 @@ scalar Temperature extends float64;
 @maxLength(64)
 scalar Sha256Hash extends string;
 
+@doc("""
+  Opaque pagination cursor. Pass the `next_cursor` of one page to receive the
+  next page of the same query. Its content is not part of the contract and
+  must not be parsed or built by a client.
+  """)
+scalar Cursor extends string;
+
 // The revision is a canonical digest of the semantic OpenAPI projection and the
 // exported telemetry-key projection, not a package version. Presentation-only
-// fields do not change it. Truncated to 16 hex characters because it is compared
-// for equality, never used as a security boundary.
+// fields and the release version stamped into `info.version` do not change it.
+// Truncated to 16 hex characters because it is compared for equality, never used
+// as a security boundary.
 @doc("Deterministic revision of the generated API contract: 'sha256:' followed by the first 16 hex characters of its canonical semantic digest.")
 @pattern("^sha256:[a-f0-9]{16}$")
 @minLength(23)

@@ -170,6 +170,20 @@ var healthReport = new HealthReport
 };
 var healthReportWire = JsonSerializer.Serialize(healthReport);
 
+// A problem names its type by URI and by code; the generated enums must reach
+// the wire as those exact strings, which is what a server writes and a client
+// branches on.
+var notFound = new NotFoundError
+{
+    Type = ProblemType.NotFound,
+    Code = ProblemCode.NotFound,
+    Title = "Not Found",
+    Status = 404,
+    ResourceType = "trace",
+};
+var notFoundWire = JsonSerializer.Serialize(notFound);
+var notFoundRoundTrip = JsonSerializer.Deserialize<NotFoundError>(notFoundWire);
+
 // The .NET half of the cross-language wire fixture; see npm-smoke.mjs for why
 // SessionEvent is the shape both faces are compared on.
 var sessionEvent = new SessionEvent
@@ -215,6 +229,9 @@ var metricContractsPresent = new[] { "MetricDescriptor", "MetricSeries", "Metric
 var checks = new (string Name, bool Ok)[]
 {
     ("problemDetailsMediaType", ProblemDetailsMediaType.Value == "application/problem+json"),
+    ("problemTypeUriWire", notFoundWire.Contains("\"type\":\"https://qyl.at/problems/not-found\"")),
+    ("problemCodeWire", notFoundWire.Contains("\"code\":\"not_found\"")),
+    ("problemRoundTrip", notFoundRoundTrip is { Type: ProblemType.NotFound, Code: ProblemCode.NotFound }),
     ("eventLogWireEventName", eventLogWire.Contains("\"event_name\":\"gen_ai.evaluation.result\"")),
     ("otlpFidelityValid", otlpFidelityValid),
     ("identityAgreesAcrossLanguages", identityAgreesAcrossLanguages),

@@ -156,13 +156,13 @@ if (byteSize.safeParse(1.5).success) {
 //    base's `required` set has to survive the flattening too). The case list is
 //    checked against the published schema, so a new `extends` model fails here
 //    until it has a case.
-const problemDetails = (title, status) => ({
-  type: "about:blank",
+const problemDetails = (slug, code, title, status) => ({
+  type: `https://qyl.at/problems/${slug}`,
   title,
   status,
   detail: "what went wrong in this occurrence",
   instance: "https://api.qyl.at/api/v1/traces/0af7651916cd43dd8448eb211c80319c",
-  timestamp: "2026-07-28T10:15:00Z",
+  code,
 });
 const evaluationRunRequest = {
   idempotency_key: "run-2026-07-28-0001",
@@ -172,34 +172,41 @@ const evaluationRunRequest = {
 };
 const inheritanceCases = {
   "Common.Errors.BadGatewayError": {
-    body: problemDetails("Bad Gateway", 502), own: { dependency: "storage" }, baseRequired: "status",
+    body: problemDetails("bad-gateway", "bad_gateway", "Bad Gateway", 502),
+    own: { dependency: "storage" },
+    baseRequired: "status",
   },
   "Common.Errors.ConflictError": {
-    body: problemDetails("Conflict", 409), own: { conflicting_resource: "ws-1" }, baseRequired: "status",
+    body: problemDetails("conflict", "conflict", "Conflict", 409),
+    own: { conflicting_resource: "ws-1" },
+    baseRequired: "status",
   },
   "Common.Errors.ForbiddenError": {
-    body: problemDetails("Forbidden", 403), own: { required_permission: "qyl:read" }, baseRequired: "status",
+    body: problemDetails("forbidden", "forbidden", "Forbidden", 403),
+    own: { required_permission: "qyl:read" },
+    baseRequired: "status",
   },
   "Common.Errors.InternalServerError": {
-    body: problemDetails("Internal Server Error", 500), own: { error_code: "E1001" }, baseRequired: "status",
+    body: problemDetails("internal-error", "internal_error", "Internal Server Error", 500),
+    own: {},
+    baseRequired: "status",
   },
   "Common.Errors.NotFoundError": {
-    body: problemDetails("Not Found", 404),
+    body: problemDetails("not-found", "not_found", "Not Found", 404),
     own: { resource_type: "trace", resource_id: "0af7651916cd43dd8448eb211c80319c" },
     baseRequired: "status",
   },
-  "Common.Errors.RateLimitError": {
-    body: problemDetails("Too Many Requests", 429), own: {}, baseRequired: "status",
-  },
   "Common.Errors.ServiceUnavailableError": {
-    body: problemDetails("Service Unavailable", 503), own: { reason: "overloaded" }, baseRequired: "status",
+    body: problemDetails("service-unavailable", "service_unavailable", "Service Unavailable", 503),
+    own: { reason: "overloaded" },
+    baseRequired: "status",
   },
   "Common.Errors.UnauthorizedError": {
-    body: problemDetails("Unauthorized", 401), own: {}, baseRequired: "status",
+    body: problemDetails("unauthorized", "unauthorized", "Unauthorized", 401), own: {}, baseRequired: "status",
   },
   "Common.Errors.ValidationError": {
     body: {
-      ...problemDetails("Validation Failed", 400),
+      ...problemDetails("validation-failed", "validation_failed", "Validation Failed", 400),
       errors: [{ field: "limit", message: "must be at most 1000", code: "max_value", rejected_value: "5000" }],
     },
     own: {},
@@ -218,10 +225,14 @@ const inheritanceCases = {
     baseRequired: "etag",
   },
   "Common.Errors.PreconditionFailedError": {
-    body: problemDetails("Precondition Failed", 412), own: { current_etag: "e-2" }, baseRequired: "status",
+    body: problemDetails("precondition-failed", "precondition_failed", "Precondition Failed", 412),
+    own: { current_etag: "e-2" },
+    baseRequired: "status",
   },
   "Common.Errors.PreconditionRequiredError": {
-    body: problemDetails("Precondition Required", 428), own: { required_header: "If-Match" }, baseRequired: "status",
+    body: problemDetails("precondition-required", "precondition_required", "Precondition Required", 428),
+    own: { required_header: "If-Match" },
+    baseRequired: "status",
   },
   "OTel.Traces.Trace": {
     body: {

@@ -169,6 +169,13 @@ export async function verifyConsumers({ version, npmSpec, npmInstallArgs = [], n
       );
     }
 
+    const openApiVersion = probeValue(npmProbeOutput, "openapi-version");
+    if (openApiVersion !== version) {
+      throw new Error(
+        `packed OpenAPI info.version is ${openApiVersion}, not the package version ${version}`,
+      );
+    }
+
     const npmSessionEventFixture = probeValue(npmProbeOutput, "session-event-fixture");
     const dotnetSessionEventFixture = probeValue(dotnetProbeOutput, "session-event-fixture");
     if (npmSessionEventFixture !== dotnetSessionEventFixture) {

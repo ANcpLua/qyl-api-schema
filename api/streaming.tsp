@@ -46,5 +46,10 @@ interface StreamingApi {
     @query("service_name") serviceName?: string,
     @query("min_severity") @minValue(1) @maxValue(24) minSeverity?: int32,
     @query query?: string,
-  ): SSEStream<LogEvents> | ValidationError | UnauthorizedError | ServiceUnavailableError | InternalServerError;
+  ):
+    | SSEStream<LogEvents>
+    | ValidationError
+    | UnauthorizedError
+    | ServiceUnavailableError
+    | Qyl.Api.Contracts.CollectorServerErrorResponse;
 }

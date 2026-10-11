@@ -27,8 +27,9 @@ The contract covers every client-visible surface of a qyl collector and runner:
   (`api/workbench.tsp`, `models/workbench.tsp`).
 - **Runner** — the local runner's loopback-only `/runner/resources` snapshot, SSE
   streams, logs and restart/stop actions (`api/runner.tsp`, `models/runner.tsp`).
-- **Shared** — `ProblemDetails` errors, cursor pagination and the common scalars
-  (`common/`), plus the OTel resource, span and log projections (`otel/`).
+- **Shared** — RFC 9457 problem details (`common/errors.tsp`), cursor pagination
+  (`common/pagination.tsp`) and the common scalars (`common/`), plus the OTel
+  resource, span and log projections (`otel/`).
 
 Telemetry itself is never changed or deleted through this contract; retention
 removes it. The only writable resources are the ones a user creates:
@@ -40,6 +41,21 @@ extend the shared write base in `common/resource.tsp`: server-assigned `id`,
 `201` with `Location`; `If-Match` on `PATCH` and `DELETE`, refused with `428` when
 missing and `412` when stale. Collector keys carry the roles `ingest`, `read`,
 `write` and `delete` (`CollectorKeyRole`); writes need `write`, deletes `delete`.
+
+## Errors and pages
+
+Every error body is an RFC 9457 problem served as `application/problem+json`: `type`,
+`title`, `status`, `detail` and `instance`, plus the extension member `code`. Each
+problem type fixes its `type` URI (`https://qyl.at/problems/<name>`) and its `code`
+(`not_found`, `validation_failed`, …), so a client branches on either and never on
+`title` or `detail`. Problem bodies carry no headers. A response header is declared on
+the operations whose server sends it: `X-Trace-Id` on the collector's 500 responses,
+`WWW-Authenticate` on the workbench's 401 responses.
+
+Every list operation pages forward with an opaque cursor. It takes `limit`
+(`PageLimit`: 1 to 1000, 100 when omitted) and `cursor`, and its page carries
+`has_more` and, on every page but the last, `next_cursor`, which the next request
+sends back as `cursor`.
 
 ## Contract pipeline
 
@@ -129,6 +145,11 @@ against on its health response, so a client can detect a peer built from a diffe
 contract instead of discovering the mismatch one malformed field at a time. Read the
 current value from a running collector or the generated artifacts; it is derived, never
 hand-maintained.
+
+The OpenAPI `info.version` is the release version: `prepack` stamps it into the packed
+document from the release tag, and the tracked document keeps TypeSpec's `0.0.0`. The
+digest excludes `info.version`, so a release that changes nothing but its version keeps
+the revision.
 
 ## Contributing
 

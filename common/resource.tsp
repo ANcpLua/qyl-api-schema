@@ -33,13 +33,6 @@ scalar ResourceId extends string;
 scalar ETag extends string;
 
 @doc("""
-  Opaque pagination cursor. Pass the `next_cursor` of one page to receive the
-  next page of the same query. Its content is not part of the contract and
-  must not be parsed or built by a client.
-  """)
-scalar Cursor extends string;
-
-@doc("""
   Collector API key roles. Every key sent in `x-otlp-api-key` carries one or
   more roles: `ingest` accepts OTLP, `read` serves the query routes, `write`
   creates and updates user resources, and `delete` deletes them. Roles are

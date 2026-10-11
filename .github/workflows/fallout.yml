@@ -16,7 +16,6 @@ on:
 
 permissions:
   contents: read
-  packages: read      # kept for a future GitHub Packages @ancplua/* dep; the emitters are workspace members and resolve locally
 
 concurrency:
   group: fallout-${{ github.ref }}
@@ -29,17 +28,9 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      # RestoreTypeSpecDeps is `bun install --frozen-lockfile` now, and the internal
-      # @ancplua/* emitters are workspace members that resolve locally. The scope map
-      # and token stay for Renovate and for any future GitHub Packages dependency
-      # (e.g. @ancplua/typespec-otel-semconv); that would be the first one bun has to
-      # authenticate, which this workflow has not yet exercised. node comes from mise.toml;
-      # setup-node installs no Node here and only writes that scope auth.
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
-        with:
-          registry-url: 'https://npm.pkg.github.com'
-          scope: '@ancplua'
-
+      # node, bun and dotnet come from mise.toml. RestoreTypeSpecDeps is
+      # `bun install --frozen-lockfile`; the @ancplua/* emitters are workspace members that
+      # resolve locally, so nothing authenticates against GitHub Packages.
       - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
 
       - name: Show toolchain
@@ -51,5 +42,3 @@ jobs:
 
       - name: Run Fallout Check
         run: ./build.sh Check
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}   # npm ci auth for GitHub Packages

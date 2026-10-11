@@ -147,21 +147,135 @@ if (byteSize.safeParse(1.5).success) {
   throw new Error("Common.ByteSize must still reject a fractional value.");
 }
 
-// 5. Sealed objects stay sealed through `allOf` inheritance. Building the
-//    derivative as an intersection instead of a flattened object silently
-//    reopens it, and nothing else in this gate would notice.
-const badGateway = publishedContractSchema("Common.Errors.BadGatewayError");
-const badGatewayBody = { type: "about:blank", title: "Bad Gateway", status: 502 };
-if (!badGateway.safeParse(badGatewayBody).success) {
-  throw new Error("Common.Errors.BadGatewayError must accept an inherited ProblemDetails body.");
-}
-if (!badGateway.safeParse({ ...badGatewayBody, dependency: "storage" }).success) {
-  throw new Error("Common.Errors.BadGatewayError must accept its own declared `dependency` property.");
-}
-if (badGateway.safeParse({ ...badGatewayBody, invented: true }).success) {
+// 5. Sealed objects stay sealed through `allOf` inheritance, for every model the
+//    contract declares with `extends`. Building the derivative as an intersection
+//    instead of a flattened object silently reopens it, and nothing else in this
+//    gate would notice. Each case carries the base's fields (accepted), one own
+//    property where the model declares one (accepted), an invented key
+//    (rejected), and the body minus one base-required field (rejected: the
+//    base's `required` set has to survive the flattening too). The case list is
+//    checked against the published schema, so a new `extends` model fails here
+//    until it has a case.
+const problemDetails = (title, status) => ({
+  type: "about:blank",
+  title,
+  status,
+  detail: "what went wrong in this occurrence",
+  instance: "https://api.qyl.at/api/v1/traces/0af7651916cd43dd8448eb211c80319c",
+  timestamp: "2026-07-28T10:15:00Z",
+});
+const evaluationRunRequest = {
+  idempotency_key: "run-2026-07-28-0001",
+  confirmation: { acknowledged: true, acknowledgement: "run the suite" },
+  concurrency: 2,
+  fail_fast: true,
+};
+const inheritanceCases = {
+  "Common.Errors.BadGatewayError": {
+    body: problemDetails("Bad Gateway", 502), own: { dependency: "storage" }, baseRequired: "status",
+  },
+  "Common.Errors.ConflictError": {
+    body: problemDetails("Conflict", 409), own: { conflicting_resource: "ws-1" }, baseRequired: "status",
+  },
+  "Common.Errors.ForbiddenError": {
+    body: problemDetails("Forbidden", 403), own: { required_permission: "qyl:read" }, baseRequired: "status",
+  },
+  "Common.Errors.InternalServerError": {
+    body: problemDetails("Internal Server Error", 500), own: { error_code: "E1001" }, baseRequired: "status",
+  },
+  "Common.Errors.NotFoundError": {
+    body: problemDetails("Not Found", 404),
+    own: { resource_type: "trace", resource_id: "0af7651916cd43dd8448eb211c80319c" },
+    baseRequired: "status",
+  },
+  "Common.Errors.RateLimitError": {
+    body: problemDetails("Too Many Requests", 429), own: {}, baseRequired: "status",
+  },
+  "Common.Errors.ServiceUnavailableError": {
+    body: problemDetails("Service Unavailable", 503), own: { reason: "overloaded" }, baseRequired: "status",
+  },
+  "Common.Errors.UnauthorizedError": {
+    body: problemDetails("Unauthorized", 401), own: {}, baseRequired: "status",
+  },
+  "Common.Errors.ValidationError": {
+    body: {
+      ...problemDetails("Validation Failed", 400),
+      errors: [{ field: "limit", message: "must be at most 1000", code: "max_value", rejected_value: "5000" }],
+    },
+    own: {},
+    baseRequired: "status",
+  },
+  "OTel.Traces.Trace": {
+    body: {
+      trace_id: "0af7651916cd43dd8448eb211c80319c",
+      span_count: 0,
+      duration_ns: "1500000",
+      start_time: "2026-07-28T10:15:00Z",
+      end_time: "2026-07-28T10:15:00.001500Z",
+      services: ["qyl-collector"],
+      has_error: false,
+      spans: [],
+    },
+    own: {},
+    baseRequired: "trace_id",
+  },
+  "Workbench.WorkbenchSessionBootstrapResponse": {
+    body: {
+      id: "wbs-1",
+      principal: { id: "local-user", display_name: "Local user", local: true },
+      workspace_ids: ["ws-1"],
+      active_workspace_id: "ws-1",
+      created_at: "2026-07-28T10:15:00Z",
+      expires_at: "2026-07-28T22:15:00Z",
+    },
+    own: {},
+    baseRequired: "principal",
+  },
+  "Workbench.WorkbenchSuiteRunRequest": {
+    body: evaluationRunRequest, own: { selected_test_case_ids: ["tc-1"] }, baseRequired: "idempotency_key",
+  },
+  "Workbench.WorkbenchTestCaseRunRequest": {
+    body: evaluationRunRequest, own: {}, baseRequired: "idempotency_key",
+  },
+};
+
+const derivedDefinitions = Object.entries(contractSchema.$defs)
+  .filter(([, definition]) =>
+    definition.type === "object" &&
+    Array.isArray(definition.allOf) &&
+    definition.allOf.every((entry) => typeof entry?.$ref === "string"))
+  .map(([name]) => name)
+  .sort((a, b) => a.localeCompare(b));
+const casedDefinitions = Object.keys(inheritanceCases).sort((a, b) => a.localeCompare(b));
+if (JSON.stringify(derivedDefinitions) !== JSON.stringify(casedDefinitions)) {
   throw new Error(
-    "Common.Errors.BadGatewayError accepted an undeclared key. Inheritance flattening is not sealing the " +
-    "derived object; `unevaluatedProperties: { not: {} }` must survive as `additionalProperties: false`.",
+    "The `extends` models in the published schema and the inheritance cases in this gate differ.\n" +
+    `  published: ${derivedDefinitions.join(", ")}\n  cased:     ${casedDefinitions.join(", ")}\n` +
+    "Add a case for each new derived model (base fields, one own property, the base-required field to drop).",
+  );
+}
+
+const inheritanceFailures = [];
+for (const [definition, { body, own, baseRequired }] of Object.entries(inheritanceCases)) {
+  const schema = publishedContractSchema(definition);
+  const judge = (fixture, expected, why) => {
+    if (schema.safeParse(fixture).success !== expected) {
+      inheritanceFailures.push(`${definition}: ${why} must be ${expected ? "accepted" : "rejected"}`);
+    }
+  };
+  judge(body, true, "the inherited base fields");
+  if (Object.keys(own).length > 0) judge({ ...body, ...own }, true, `its own ${Object.keys(own).join(", ")}`);
+  judge({ ...body, ...own, invented: true }, false, "an undeclared key");
+  const withoutBaseRequired = { ...body };
+  delete withoutBaseRequired[baseRequired];
+  judge(withoutBaseRequired, false, `a body missing the base-required \`${baseRequired}\``);
+}
+if (inheritanceFailures.length > 0) {
+  throw new Error(
+    `${inheritanceFailures.length} inheritance checks failed. Inheritance flattening is not sealing the ` +
+    "derived object or is losing the base's key set; `unevaluatedProperties: { not: {} }` must survive as " +
+    `\`additionalProperties: false\` with the base's properties and required inlined:\n  ${
+      inheritanceFailures.join("\n  ")}`,
   );
 }
 
@@ -169,5 +283,6 @@ console.log(
   `Verified ${definitionNames.length} published definitions build as Zod schemas, ` +
   `${exercisedFixtures.length} contract fixtures across ` +
   `${new Set(exercisedFixtures.map((entry) => entry.definition)).size} definitions agree with the published ` +
-  `JSON Schema, and RFC 3339 date-times, 64-bit integers, and inherited object sealing hold.`,
+  `JSON Schema, and RFC 3339 date-times, 64-bit integers, and sealed inheritance across ` +
+  `${derivedDefinitions.length} derived models hold.`,
 );

@@ -17,7 +17,7 @@ NPM_REGISTRY=https://registry.npmjs.org
 NUGET_SOURCE=https://api.nuget.org/v3/index.json
 NUGET_FLAT=https://api.nuget.org/v3-flatcontainer/qyl.api.contracts
 NPM_TOKEN_FILE=$HOME/.config/vitals/npm-qyl-manual-publish-token          # vitals keys: "... manual publish and release (npm)"
-NUGET_KEY_FILE=$HOME/.config/vitals/nuget-qyl-api-schema-manual-publish-key  # vitals keys: "... manual publish and release (NuGet)"
+NUGET_KEY_FILE=$HOME/.config/vitals/nuget-qyl-manual-publish-key  # vitals keys: "qyl-dev manual publish and release (NuGet)"
 
 version=${1:-}
 dry=0; [[ ${2:-} == --dry-run ]] && dry=1

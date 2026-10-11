@@ -2,7 +2,7 @@
  * Stamps the release version into the OpenAPI document of the package being
  * packed.
  *
- * The release tag is this contract's only version source: publish.yml writes it
+ * The release tag is this contract's only version source: the local publish writes it
  * into package.json (`npm version`), and `prepack` runs this script after
  * `bun run compile`, so the packed `generated/openapi/qyl.openapi.json` names the
  * version it ships as. `postpack` runs it again with `--reset`, which puts back

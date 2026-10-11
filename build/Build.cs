@@ -253,7 +253,7 @@ sealed class Build : FalloutBuild
 
     // CompileDomainSpec covers index.tsp, the published subset. main.tsp additionally
     // pulls in emit-config.tsp and anything not re-exported, so a warning there passed
-    // this gate and failed only in publish.yml, which lints both surfaces.
+    // this gate and failed only at publish time, which lints both surfaces.
     Target LintFullSurface => _ => _
         .Description("Compile the full TypeSpec surface (main.tsp) with --warn-as-error via `npm run lint`.")
         .DependsOn(RestoreTypeSpecDeps)
@@ -352,7 +352,7 @@ sealed class Build : FalloutBuild
     // A missing package.json#files entry, a broken exports map, a .d.ts that does not
     // typecheck outside this repo, or a DTO that round-trips under the wrong wire name
     // all pack cleanly and fail on install. Without this in Check they were first seen
-    // by publish.yml, mid-release.
+    // by the local publish, mid-release.
     Target VerifyPackedConsumers => _ => _
         .Description("Install the packed npm tarball and NuGet package into throwaway consumers and run the probes under scripts/probes.")
         .DependsOn(PackApiPackage, PackContractsNuget)
@@ -367,7 +367,7 @@ sealed class Build : FalloutBuild
                 throw new InvalidOperationException(
                     $"VerifyPackedConsumers: PackContractsNuget did not produce '{nupkg}'.");
 
-            // Same script publish.yml runs before it pushes to either registry, so the
+            // Same script the local publish runs before it pushes to either registry, so the
             // release path and this gate cannot drift apart.
             ProcessTasks.StartProcess(
                     "node",

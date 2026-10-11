@@ -56,12 +56,10 @@ the same wire names. Change TypeSpec or the owning generator and regenerate.
 
 ## Publish
 
-npm remains only for `npm version`, `npm pack` and `npm publish`: bun has no OIDC
-trusted-publishing path. Install, lint, emit and every verify target run on bun.
+npm remains only for `npm version`, `npm pack` and `npm publish`. Install, lint, emit and every
+verify target run on bun.
 
-GitHub Actions publishes both registries through OIDC trusted publishing. A release
-tag supplies one version for npm and NuGet. The commit it names must already be on
-`main`: every run, manual ones too, fails before it installs anything when its commit
-is not reachable from `origin/main`. The workflow validates and packs first,
-publishes in an ordered restartable sequence, waits for indexed artifacts, and then
-smokes clean consumers. No long-lived npm or NuGet token is stored.
+A release is published from your machine: `npm version <x.y.z>` sets the one version for npm and
+NuGet, `bun run compile` and `./build.sh Check` pass, then `npm publish --registry=https://registry.npmjs.org`
+and `dotnet nuget push` of `Qyl.Api.Contracts` with the npm token and the NuGet API key registered
+in Vitals (never in the repository), then the `v<x.y.z>` tag and the GitHub release.

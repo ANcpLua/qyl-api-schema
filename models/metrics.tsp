@@ -1,3 +1,4 @@
+import "../common/telemetry-query.tsp";
 import "../common/types.tsp";
 
 using Qyl.Api.Contracts.Common;
@@ -63,6 +64,11 @@ enum MetricAggregation {
   This is the catalog entry a client reads before it knows which series exist.
   """)
 model MetricDescriptor {
+  @encodedName("application/json", "supported_aggregations")
+  supportedAggregations?: MetricAggregation[];
+  services?: string[];
+  conflicts?: MetricDescriptorConflict[];
+
   @doc("Instrument name, e.g. `http.server.request.duration`.")
   name: string;
 
@@ -90,6 +96,9 @@ model MetricDescriptor {
 
 @doc("One distinct attribute stream recorded under a metric name.")
 model MetricSeries {
+  new?: boolean;
+  stale?: boolean;
+
   @doc("Stable identifier for this stream, derived from its name, attributes and resource.")
   @encodedName("application/json", "series_id")
   seriesId: string;
@@ -172,13 +181,7 @@ model MetricQueryResult {
 }
 
 @doc("How a structured attribute matcher compares an attribute value.")
-enum MetricMatcherOp {
-  @doc("The attribute equals `value`; serialized to the `attr` query parameter as `key=value`.")
-  eq: "eq",
-
-  @doc("The attribute starts with `value`; serialized to the `attr_prefix` query parameter as `key=value`.")
-  prefix: "prefix",
-}
+enum MetricMatcherOp { eq, neq, `in`, prefix, contains, exists, gt, gte, lt, lte }
 
 @doc("""
   One structured attribute matcher. Tool inputs and saved queries carry
@@ -186,13 +189,12 @@ enum MetricMatcherOp {
   parameters, and a client serializes each matcher to one of them.
   """)
 model MetricAttributeMatcher {
-  @doc("Attribute key, e.g. `http.route`.")
-  @minLength(1)
-  @maxLength(256)
-  key: string;
+  ...TelemetryMatcher;
+}
 
-  `op`: MetricMatcherOp;
-
-  @maxLength(1024)
-  value: string;
+@doc("MetricDescriptorConflict contract.")
+model MetricDescriptorConflict {
+  kind: MetricKind;
+  unit?: string;
+  services: string[];
 }

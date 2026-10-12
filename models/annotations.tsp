@@ -1,3 +1,4 @@
+import "../common/telemetry-query.tsp";
 // =============================================================================
 // Annotations: user notes on a trace, span or session
 // =============================================================================
@@ -49,10 +50,15 @@ union AnnotationTarget {
   trace: TraceAnnotationTarget,
   span: SpanAnnotationTarget,
   session: SessionAnnotationTarget,
+  failure: FailureAnnotationTarget,
 }
 
 @doc("A user note attached to a trace, span or session.")
 model Annotation extends ResourceBase {
+  @maxItems(10)
+  labels?: AnnotationLabel[];
+  classification?: AnnotationClassification;
+
   @doc("What the note is attached to. Fixed at creation.")
   @visibility(Lifecycle.Read, Lifecycle.Create)
   target: AnnotationTarget;
@@ -65,6 +71,10 @@ model Annotation extends ResourceBase {
 
 @doc("Body of POST /api/v1/annotations: the `Lifecycle.Create` members of Annotation.")
 model AnnotationCreateRequest {
+  @maxItems(10)
+  labels?: AnnotationLabel[];
+  classification?: AnnotationClassification;
+
   @doc("What the note is attached to. Fixed at creation.")
   target: AnnotationTarget;
 
@@ -76,8 +86,28 @@ model AnnotationCreateRequest {
 
 @doc("Body of PATCH /api/v1/annotations/{annotation_id}: the `Lifecycle.Update` members of Annotation.")
 model AnnotationUpdateRequest {
+  @maxItems(10)
+  labels?: AnnotationLabel[];
+  classification?: AnnotationClassification;
+
   @doc("The new note, plain text, at most 2000 characters.")
   @minLength(1)
   @maxLength(2000)
-  text: string;
+  text?: string;
 }
+
+@doc("FailureAnnotationTarget contract.")
+model FailureAnnotationTarget {
+  kind: "failure";
+  @encodedName("application/json", "failure_id")
+  failureId: FailureId;
+}
+
+
+@doc("Classification of the human annotation.")
+enum AnnotationClassification { note, hypothesis, finding, rejected }
+
+@doc("A short user-defined annotation label.")
+@minLength(1)
+@maxLength(64)
+scalar AnnotationLabel extends string;

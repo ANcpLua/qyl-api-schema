@@ -163,7 +163,7 @@ function collectOperationDefinitions(program: Program, definitions: Map<string, 
       const container = op.interface?.name;
       const operationId = explicit ?? (container ? `${container}_${op.name}` : op.name);
       const request = operation.parameters.body;
-      if (request && isJsonBody(request.contentTypes) && request.type.kind === "Model") {
+      if (request && isJsonBody(request.contentTypes) && (request.type.kind === "Model" || request.type.kind === "Union")) {
         definitions.set(`Operations.${operationId}.Request`, bodyTypeName(program, request.type));
       }
       for (const response of operation.responses) {

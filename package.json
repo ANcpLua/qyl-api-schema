@@ -95,7 +95,10 @@
     "generated/zod-runtime/index.js",
     "README.md",
     "LICENSE",
-    "generated/runtime"
+    "generated/runtime",
+    "common/telemetry-query.tsp",
+    "models/mcp-analysis.tsp",
+    "api/analysis.tsp"
   ],
   "publishConfig": {
     "access": "public",

@@ -61,9 +61,9 @@ if (nonObjectToolSchemas.length > 0) {
   throw new Error(`MCP tool schemas must be type object at the root: ${nonObjectToolSchemas.join(", ")}.`);
 }
 const fetchTelemetryRoot = defs["Mcp.Tools.FetchTelemetryInput"];
-if (fetchTelemetryRoot?.type !== "object" || fetchTelemetryRoot.oneOf?.length !== 4 ||
+if (fetchTelemetryRoot?.type !== "object" || fetchTelemetryRoot.oneOf?.length !== 5 ||
     fetchTelemetryRoot.discriminator?.propertyName !== "view") {
-  throw new Error("Mcp.Tools.FetchTelemetryInput must be an object discriminated on view over four variants.");
+  throw new Error("Mcp.Tools.FetchTelemetryInput must be an object discriminated on view over five variants.");
 }
 
 // Contract 11.6.0 tool layer: fetch_telemetry views, structured matchers, pagination, errors.
@@ -87,7 +87,7 @@ assertValid(validateListTraces, {
   service_name: "api", errors_only: true, cursor: "opaque",
 }, "list_traces filters and cursor");
 const validateListTracesOutput = validatorFor("Mcp.Tools.ListTracesOutput");
-assertValid(validateListTracesOutput, { traces: [], mode: "live", has_more: true, next_cursor: "n" }, "list_traces page");
+assertValid(validateListTracesOutput, { traces: [], mode: "live", has_more: true, next_cursor: "n", window: {start_time: "2026-10-12T00:00:00Z", end_time: "2026-10-12T01:00:00Z"}, coverage: {examined: 0, matched: 0, returned: 0, truncated: false, scan_complete: true, as_of: "2026-10-12T01:00:00Z"} }, "list_traces page");
 assertInvalid(validateListTracesOutput, { traces: [], mode: "live" }, "list_traces output without has_more");
 
 const validateToolError = validatorFor("Mcp.Tools.ToolError");
@@ -864,3 +864,5 @@ const missingMetricSurface = [
 if (missingMetricSurface.length > 0) {
   throw new Error(`Metric query contract is incomplete: ${missingMetricSurface.join(", ")}.`);
 }
+
+await import("./verify-analysis-contracts.mjs");

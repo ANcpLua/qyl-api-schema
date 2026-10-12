@@ -1,3 +1,6 @@
+import "./mcp-analysis.tsp";
+import "../common/telemetry-query.tsp";
+import "../common/errors.tsp";
 import "../common/types.tsp";
 import "../otel/logs.tsp";
 import "../otel/span.tsp";
@@ -8,6 +11,7 @@ import "./saved-queries.tsp";
 import "../common/resource.tsp";
 
 using TypeSpec.OpenAPI;
+using Qyl.Api.Contracts.Common.Errors;
 using Qyl.Api.Contracts.Common;
 using Qyl.Api.Contracts.Annotations;
 using Qyl.Api.Contracts.SavedQueries;
@@ -66,6 +70,10 @@ union ToolErrorCode {
 
 @doc("A failed tool call, carried in structuredContent.error.")
 model ToolError {
+  fields?: ValidationErrorDetail[];
+  @encodedName("application/json", "problem_type")
+  problemType?: ProblemType;
+
   code: ToolErrorCode;
 
   @doc("Human-readable description of this failure.")
@@ -88,6 +96,10 @@ model ToolPage {
 
 @doc("Time-range members of a tool input.")
 model ToolTimeRange {
+  @minValue(1) @maxValue(43200)
+  @encodedName("application/json", "lookback_minutes")
+  lookbackMinutes?: int32;
+
   @doc("Start of the window (inclusive), RFC 3339.")
   @encodedName("application/json", "start_time")
   startTime?: utcDateTime;
@@ -103,10 +115,32 @@ enum FetchTelemetryView {
   trace: "trace",
   logs: "logs",
   mcpStats: "mcp_stats",
+  compare: "compare",
 }
 
 @doc("Input for display_traces.")
 model DisplayTracesInput {
+  @encodedName("application/json", "failure_class")
+  failureClass?: McpFailureClass;
+  @encodedName("application/json", "server_name")
+  serverName?: string;
+  @encodedName("application/json", "tool_name")
+  toolName?: string;
+  transport?: string;
+
+  @encodedName("application/json", "failure_id")
+  failureId?: FailureId;
+  @encodedName("application/json", "compare_to")
+  comparisonTraceId?: TraceId;
+  @encodedName("application/json", "selected_span_id")
+  selectedSpanId?: SpanId;
+  cursor?: Cursor;
+
+  @maxItems(32)
+  matchers?: TelemetryMatcher[];
+
+  ...ToolTimeRange;
+
   @doc("Open this trace selected; omit to list recent traces.")
   @encodedName("application/json", "trace_id")
   traceId?: TraceId;
@@ -123,7 +157,13 @@ model DisplayTracesInput {
 
 @doc("Structured output for display_traces.")
 model DisplayTracesOutput {
-  traces: Trace[];
+  @encodedName("application/json", "selected_span_id")
+  selectedSpanId?: SpanId;
+  comparison?: CompareTracesOutput;
+
+  ...ToolReadContext;
+
+  traces: ToolTrace[];
 
   @encodedName("application/json", "selected_trace_id")
   selectedTraceId?: TraceId;
@@ -136,6 +176,16 @@ model DisplayTracesOutput {
 
 @doc("Input for display_mcp_dashboard.")
 model DisplayMcpDashboardInput {
+  @encodedName("application/json", "server_name")
+  serverName?: string;
+  @encodedName("application/json", "tool_name")
+  toolName?: string;
+  transport?: string;
+  @encodedName("application/json", "compare_to")
+  compareTo?: McpStatsComparison;
+
+  ...ToolTimeRange;
+
   @doc("Window length in whole hours.")
   @minValue(1)
   @maxValue(168)
@@ -144,6 +194,8 @@ model DisplayMcpDashboardInput {
 
 @doc("Structured output for display_mcp_dashboard.")
 model DisplayMcpDashboardOutput {
+  ...ToolReadContext;
+
   stats: McpDashboardStats;
 
   @doc("Set when the call failed.")
@@ -152,6 +204,37 @@ model DisplayMcpDashboardOutput {
 
 @doc("Input for list_traces.")
 model ListTracesInput {
+  @encodedName("application/json", "failure_class")
+  failureClass?: McpFailureClass;
+  @encodedName("application/json", "server_name")
+  serverName?: string;
+  @encodedName("application/json", "tool_name")
+  toolName?: string;
+  transport?: string;
+
+  @encodedName("application/json", "session_id")
+  sessionId?: SessionId;
+  @encodedName("application/json", "root_span_name")
+  rootSpanName?: string;
+  @encodedName("application/json", "min_duration_ms")
+  minDurationMs?: DurationMs;
+  @encodedName("application/json", "max_duration_ms")
+  maxDurationMs?: DurationMs;
+  release?: string;
+  @encodedName("application/json", "failure_id")
+  failureId?: FailureId;
+  @encodedName("application/json", "error_scope")
+  errorScope?: "any" | "root";
+  @encodedName("application/json", "annotation_label")
+  annotationLabel?: string;
+  @encodedName("application/json", "group_by")
+  groupBy?: "failure_id" | "root_span" | "service";
+  @encodedName("application/json", "sort_by")
+  sortBy?: "start_time" | "duration" | "errors";
+
+  @maxItems(32)
+  matchers?: TelemetryMatcher[];
+
   @doc("Maximum traces to return in this page.")
   @minValue(1)
   @maxValue(100)
@@ -173,7 +256,11 @@ model ListTracesInput {
 
 @doc("Structured output for list_traces.")
 model ListTracesOutput {
-  traces: TraceSummary[];
+  groups?: TraceGroup[];
+
+  ...ToolReadContext;
+
+  traces: ToolTraceSummary[];
   mode: McpDataMode;
   ...ToolPage;
 
@@ -183,6 +270,14 @@ model ListTracesOutput {
 
 @doc("Input for get_trace.")
 model GetTraceInput {
+  selection?: "all" | "errors" | "errors_with_ancestors" | "critical_path";
+  attributes?: string[];
+  @minValue(0) @maxValue(50)
+  @encodedName("application/json", "include_logs")
+  includeLogs?: int32;
+
+  ...ToolTimeRange;
+
   @encodedName("application/json", "trace_id")
   traceId: TraceId;
 
@@ -203,7 +298,18 @@ model GetTraceInput {
 
 @doc("Structured output for get_trace.")
 model GetTraceOutput {
-  trace: Trace;
+  @encodedName("application/json", "span_roles")
+  spanRoles?: SpanEvidenceRole[];
+  omitted?: TraceOmitted;
+  @encodedName("application/json", "missing_parent_span_ids")
+  missingParentSpanIds?: SpanId[];
+  links?: TraceLinkAvailability[];
+  logs?: LogRecord[];
+  settled?: boolean;
+
+  ...ToolReadContext;
+
+  trace: ToolTrace;
   mode: McpDataMode;
 
   @doc("Annotations on the trace and its spans, newest first.")
@@ -215,6 +321,27 @@ model GetTraceOutput {
 
 @doc("Input for list_sessions.")
 model ListSessionsInput {
+  @encodedName("application/json", "has_error")
+  hasError?: boolean;
+  @encodedName("application/json", "min_errors")
+  minErrors?: int64;
+  @encodedName("application/json", "service_name")
+  serviceName?: string;
+  @encodedName("application/json", "agent_name")
+  agentName?: string;
+  `model`?: string;
+  @encodedName("application/json", "min_tokens")
+  minTokens?: int64;
+  @encodedName("application/json", "min_duration_ms")
+  minDurationMs?: DurationMs;
+  @encodedName("application/json", "annotation_label")
+  annotationLabel?: string;
+  @encodedName("application/json", "sort_by")
+  sortBy?: "last_activity" | "errors" | "duration" | "tokens";
+
+  @maxItems(32)
+  matchers?: TelemetryMatcher[];
+
   @doc("Maximum sessions to return in this page.")
   @minValue(1)
   @maxValue(100)
@@ -232,7 +359,9 @@ model ListSessionsInput {
 
 @doc("Structured output for list_sessions.")
 model ListSessionsOutput {
-  sessions: SessionEntity[];
+  ...ToolReadContext;
+
+  sessions: ToolSession[];
   mode: McpDataMode;
   ...ToolPage;
 
@@ -245,6 +374,16 @@ model ListSessionsOutput {
 
 @doc("Input for search_logs.")
 model SearchLogsInput {
+  @encodedName("application/json", "span_id")
+  spanId?: SpanId;
+  @encodedName("application/json", "group_by")
+  groupBy?: "pattern";
+  @minValue(0) @maxValue(10)
+  context?: int32;
+
+  @maxItems(32)
+  matchers?: TelemetryMatcher[];
+
   @doc("Return only log records correlated with this trace.")
   @encodedName("application/json", "trace_id")
   traceId?: TraceId;
@@ -279,6 +418,12 @@ model SearchLogsInput {
 
 @doc("Structured output for search_logs.")
 model SearchLogsOutput {
+  @encodedName("application/json", "total_matched")
+  totalMatched?: int64;
+  patterns?: LogPattern[];
+
+  ...ToolReadContext;
+
   logs: LogRecord[];
   mode: McpDataMode;
   ...ToolPage;
@@ -296,6 +441,22 @@ enum CiPhaseStatus {
 
 @doc("Input for ci_log.")
 model CiLogInput {
+  cursor?: Cursor;
+  branch?: string;
+  commit?: string;
+  leg?: string;
+  phase?: string;
+  @encodedName("application/json", "phase_cursor")
+  phaseCursor?: Cursor;
+  outcome?: "failed" | "passed" | "all";
+  @encodedName("application/json", "compare_to")
+  compareTo?: string;
+
+  @maxItems(32)
+  matchers?: TelemetryMatcher[];
+
+  ...ToolTimeRange;
+
   @doc("Session id of one CI run for a per-leg phase breakdown; omit to list recent runs.")
   @encodedName("application/json", "run_id")
   runId?: SessionId;
@@ -314,6 +475,15 @@ model CiLogInput {
 
 @doc("One CI run, summarized from the session its telemetry is grouped under.")
 model CiRunSummary {
+  @encodedName("application/json", "session_id")
+  sessionId?: SessionId;
+  @encodedName("application/json", "provider_run_id")
+  providerRunId?: string;
+  @encodedName("application/json", "provider_run_url")
+  providerRunUrl?: UrlString;
+  attempt?: int32;
+  attempts?: CiAttempt[];
+
   @encodedName("application/json", "run_id")
   runId: SessionId;
 
@@ -336,6 +506,15 @@ model CiRunSummary {
 
 @doc("One phase span of a CI run, attributed to the leg that executed it.")
 model CiPhase {
+  @encodedName("application/json", "span_id")
+  spanId?: SpanId;
+  @encodedName("application/json", "trace_ids")
+  traceIds?: TraceId[];
+  @encodedName("application/json", "error_log_count")
+  errorLogCount?: int64;
+  @encodedName("application/json", "error_logs")
+  errorLogs?: CiErrorExcerpt[];
+
   @doc("Value of the span's ci.leg attribute, falling back to its service name.")
   leg: string;
 
@@ -353,6 +532,11 @@ model CiPhase {
 
 @doc("Structured output for ci_log: recent runs, or one run's phases.")
 model CiLogOutput {
+  ...ToolPage;
+  comparison?: CiComparison;
+
+  ...ToolReadContext;
+
   runs?: CiRunSummary[];
 
   @encodedName("application/json", "run_id")
@@ -367,6 +551,30 @@ model CiLogOutput {
 
 @doc("fetch_telemetry input for the trace list (view `traces`).")
 model FetchTelemetryTracesInput {
+  @encodedName("application/json", "failure_class")
+  failureClass?: McpFailureClass;
+  @encodedName("application/json", "server_name")
+  serverName?: string;
+  @encodedName("application/json", "tool_name")
+  toolName?: string;
+  transport?: string;
+
+  @encodedName("application/json", "session_id")
+  sessionId?: SessionId;
+  @encodedName("application/json", "failure_id")
+  failureId?: FailureId;
+  @encodedName("application/json", "compare_to")
+  comparisonTraceId?: TraceId;
+  @encodedName("application/json", "selected_span_id")
+  selectedSpanId?: SpanId;
+  cursor?: Cursor;
+
+  ...ToolTimeRange;
+  @encodedName("application/json", "since_cursor")
+  sinceCursor?: Cursor;
+  fields?: string[];
+  matchers?: TelemetryMatcher[];
+
   view: "traces";
 
   @doc("Return this one trace as the list, selected.")
@@ -380,6 +588,17 @@ model FetchTelemetryTracesInput {
 
 @doc("fetch_telemetry input for one trace (view `trace`).")
 model FetchTelemetryTraceInput {
+  selection?: "all" | "errors" | "errors_with_ancestors" | "critical_path";
+  attributes?: string[];
+  @encodedName("application/json", "include_logs")
+  includeLogs?: int32;
+
+  ...ToolTimeRange;
+  @encodedName("application/json", "since_cursor")
+  sinceCursor?: Cursor;
+  fields?: string[];
+  matchers?: TelemetryMatcher[];
+
   view: "trace";
 
   @encodedName("application/json", "trace_id")
@@ -388,6 +607,12 @@ model FetchTelemetryTraceInput {
 
 @doc("fetch_telemetry input for log records (view `logs`).")
 model FetchTelemetryLogsInput {
+  ...ToolTimeRange;
+  @encodedName("application/json", "since_cursor")
+  sinceCursor?: Cursor;
+  fields?: string[];
+  matchers?: TelemetryMatcher[];
+
   view: "logs";
 
   @encodedName("application/json", "trace_id")
@@ -410,6 +635,20 @@ model FetchTelemetryLogsInput {
 
 @doc("fetch_telemetry input for MCP traffic statistics (view `mcp_stats`).")
 model FetchTelemetryMcpStatsInput {
+  @encodedName("application/json", "server_name")
+  serverName?: string;
+  @encodedName("application/json", "tool_name")
+  toolName?: string;
+  transport?: string;
+  @encodedName("application/json", "compare_to")
+  compareTo?: McpStatsComparison;
+
+  ...ToolTimeRange;
+  @encodedName("application/json", "since_cursor")
+  sinceCursor?: Cursor;
+  fields?: string[];
+  matchers?: TelemetryMatcher[];
+
   view: "mcp_stats";
 
   @doc("Window length in whole hours.")
@@ -425,12 +664,21 @@ union FetchTelemetryInput {
   trace: FetchTelemetryTraceInput,
   logs: FetchTelemetryLogsInput,
   mcp_stats: FetchTelemetryMcpStatsInput,
+  compare: FetchTelemetryCompareInput,
 }
 
 @doc("Structured output for the app-only fetch_telemetry tool.")
 model FetchTelemetryOutput {
-  traces?: Trace[];
-  trace?: Trace;
+  comparison?: CompareTracesOutput;
+  @encodedName("application/json", "since_cursor")
+  sinceCursor?: Cursor;
+  @encodedName("application/json", "next_cursor")
+  nextCursor?: Cursor;
+
+  ...ToolReadContext;
+
+  traces?: ToolTrace[];
+  trace?: ToolTrace;
   logs?: LogRecord[];
   stats?: McpDashboardStats;
   mode: McpDataMode;
@@ -441,6 +689,12 @@ model FetchTelemetryOutput {
 
 @doc("Aggregate MCP traffic statistics shown by qyl.mcp.")
 model McpDashboardStats {
+  groups?: McpTrafficGroup[];
+  @encodedName("application/json", "failure_classes")
+  failureClasses?: McpFailureClasses;
+  comparison?: McpStatsComparisonResult;
+  coverage?: ToolCoverage;
+
   window: McpDashboardWindow;
   buckets: McpDashboardBucket[];
   totals: McpDashboardTotals;
@@ -485,6 +739,11 @@ model McpDashboardBucket {
 }
 
 model McpDashboardTotals {
+  @encodedName("application/json", "p50_ms")
+  p50Ms?: float64;
+  @encodedName("application/json", "p95_ms")
+  p95Ms?: float64;
+
   @minValue(0)
   requests: int32;
 
@@ -533,6 +792,17 @@ model McpToolStats {
 
 @doc("Input for list_metrics.")
 model ListMetricsInput {
+  text?: string;
+  @encodedName("application/json", "service_name")
+  serviceName?: string;
+  kind?: MetricKind;
+  unit?: string;
+
+  @maxItems(32)
+  matchers?: TelemetryMatcher[];
+
+  ...ToolTimeRange;
+
   @doc("Return only names starting with this prefix.")
   @encodedName("application/json", "name_prefix")
   namePrefix?: string;
@@ -547,6 +817,8 @@ model ListMetricsInput {
 
 @doc("Structured output for list_metrics.")
 model ListMetricsOutput {
+  ...ToolReadContext;
+
   items: MetricDescriptor[];
   ...ToolPage;
 
@@ -556,6 +828,8 @@ model ListMetricsOutput {
 
 @doc("Input for get_metric_series.")
 model GetMetricSeriesInput {
+  ...ToolTimeRange;
+
   @encodedName("application/json", "metric_name")
   @minLength(1)
   metricName: string;
@@ -574,6 +848,12 @@ model GetMetricSeriesInput {
 
 @doc("Structured output for get_metric_series.")
 model GetMetricSeriesOutput {
+  keys?: MetricKeySummary[];
+  @encodedName("application/json", "suggested_group_by")
+  suggestedGroupBy?: string[];
+
+  ...ToolReadContext;
+
   items: MetricSeries[];
   ...ToolPage;
 
@@ -583,15 +863,23 @@ model GetMetricSeriesOutput {
 
 @doc("Input for query_metric.")
 model QueryMetricInput {
+  @encodedName("application/json", "lookback_minutes")
+  lookbackMinutes?: int32;
+  function?: "none" | "rate" | "increase" | "delta";
+  @encodedName("application/json", "compare_to")
+  compareTo?: MetricComparison;
+  @encodedName("application/json", "ratio_of")
+  ratioOf?: MetricRatio;
+
   @encodedName("application/json", "metric_name")
   @minLength(1)
   metricName: string;
 
   @encodedName("application/json", "start_time")
-  startTime: utcDateTime;
+  startTime?: utcDateTime;
 
   @encodedName("application/json", "end_time")
-  endTime: utcDateTime;
+  endTime?: utcDateTime;
 
   @doc("Bucket width in integer milliseconds.")
   @encodedName("application/json", "step_ms")
@@ -618,6 +906,14 @@ model QueryMetricInput {
 
 @doc("Structured output for query_metric: the collector's range-query result.")
 model QueryMetricOutput {
+  method?: string;
+  approximate?: boolean;
+  @encodedName("application/json", "exemplar_trace_ids")
+  exemplarTraceIds?: TraceId[];
+  comparison?: MetricComparisonResult;
+
+  ...ToolReadContext;
+
   ...MetricQueryResult;
 
   @doc("Set when the call failed.")
@@ -630,6 +926,10 @@ model QueryMetricOutput {
 
 @doc("Input for create_annotation.")
 model CreateAnnotationInput {
+  @minLength(1) @maxLength(255)
+  @encodedName("application/json", "idempotency_key")
+  idempotencyKey?: string;
+
   ...AnnotationCreateRequest;
 }
 
@@ -653,6 +953,10 @@ model AnnotationOutput {
 
 @doc("Input for create_saved_query.")
 model CreateSavedQueryInput {
+  @minLength(1) @maxLength(255)
+  @encodedName("application/json", "idempotency_key")
+  idempotencyKey?: string;
+
   ...SavedQueryCreateRequest;
 }
 
@@ -677,6 +981,11 @@ model SavedQueryOutput {
 
 @doc("Input for list_saved_queries.")
 model ListSavedQueriesInput {
+  @maxItems(32)
+  matchers?: TelemetryMatcher[];
+
+  ...ToolTimeRange;
+
   signal?: SavedQuerySignal;
 
   @minValue(1)
@@ -688,6 +997,8 @@ model ListSavedQueriesInput {
 
 @doc("Structured output for list_saved_queries.")
 model ListSavedQueriesOutput {
+  ...ToolReadContext;
+
   @encodedName("application/json", "saved_queries")
   savedQueries: SavedQuery[];
 
@@ -699,12 +1010,17 @@ model ListSavedQueriesOutput {
 
 @doc("Input for run_saved_query.")
 model RunSavedQueryInput {
+  @encodedName("application/json", "lookback_minutes")
+  lookbackMinutes?: int32;
+
   id: ResourceId;
   ...SavedQueryRunRequest;
 }
 
 @doc("Structured output for run_saved_query.")
 model RunSavedQueryOutput {
+  ...ToolReadContext;
+
   result?: SavedQueryRunResult;
   mode?: McpDataMode;
 
@@ -733,4 +1049,13 @@ model DeleteOutput {
 
   @doc("Set when the call failed.")
   error?: ToolError;
+}
+
+@doc("FetchTelemetryCompareInput contract.")
+model FetchTelemetryCompareInput {
+  ...CompareTracesInput;
+  view: "compare";
+  @encodedName("application/json", "since_cursor")
+  sinceCursor?: Cursor;
+  fields?: string[];
 }

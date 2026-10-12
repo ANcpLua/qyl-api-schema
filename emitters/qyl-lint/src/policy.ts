@@ -47,6 +47,8 @@ export interface WireNameException {
 }
 
 export const WIRE_NAME_EXCEPTIONS: Readonly<Record<string, WireNameException>> = {
+  "DisplayTracesInput.comparisonTraceId": { wire: "compare_to", reason: "Public trace viewer comparison input" },
+  "FetchTelemetryTracesInput.comparisonTraceId": { wire: "compare_to", reason: "Public trace viewer comparison input" },
   // The TypeSpec names are prefixed only to stay unique inside the model; on the
   // wire the object already *is* the scope, so OTLP names the fields bare.
   "InstrumentationScope.scopeName": { wire: "name", reason: "OTLP InstrumentationScope.name" },
@@ -54,6 +56,12 @@ export const WIRE_NAME_EXCEPTIONS: Readonly<Record<string, WireNameException>> =
   "InstrumentationScope.scopeAttributes": { wire: "attributes", reason: "OTLP InstrumentationScope.attributes" },
   // GenAI is one token in semantic conventions, so it does not split.
   "SessionStats.sessionsWithGenAi": { wire: "sessions_with_genai", reason: "'genai' is a single semconv token" },
+};
+
+/** Existing public MCP parameter names required by the 32-tool contract. */
+export const IDENTITY_WIRE_NAME_EXCEPTIONS: Readonly<Record<string, string>> = {
+  "DisplayTracesInput.comparisonTraceId": "compare_to",
+  "FetchTelemetryTracesInput.comparisonTraceId": "compare_to",
 };
 
 /** The wire name a property must ship: derived, or the registered exception. */
@@ -102,7 +110,15 @@ export const IDENTITIES: readonly IdentityBinding[] = [
     plural: "traceIds",
     reserved: ["traceId", "traceIds"],
     // A UI selection pointing at one of the traces already in the response.
-    edges: { selectedTraceId: "the trace the client has focused, within a listed set" },
+    edges: {
+      selectedTraceId: "the trace the client has focused, within a listed set",
+      exampleTraceId: "one bounded evidence example trace",
+      exampleTraceIds: "bounded evidence example traces",
+      nearestSuccessTraceId: "the closest successful execution used for comparison",
+      exemplarTraceIds: "metric exemplar traces",
+      comparisonTraceId: "the trace selected as the comparison baseline",
+      recurrences: "bounded trace evidence for failure recurrences",
+    },
   },
   {
     scalar: "SpanId",
@@ -110,7 +126,11 @@ export const IDENTITIES: readonly IdentityBinding[] = [
     plural: "spanIds",
     reserved: ["spanId", "spanIds", "parentSpanId"],
     // The OTLP parent link; absent on a root span.
-    edges: { parentSpanId: "the span this span is a child of" },
+    edges: {
+      parentSpanId: "the span this span is a child of",
+      selectedSpanId: "the viewer focused span",
+      missingParentSpanIds: "parents referenced but absent from storage",
+    },
   },
   {
     scalar: "SessionId",
@@ -123,6 +143,8 @@ export const IDENTITIES: readonly IdentityBinding[] = [
       // A CI workflow run is emitted as one session; `ci_log` names it for the
       // agent in the run's own vocabulary while keeping the session identity.
       runId: "the CI workflow run whose telemetry is grouped under this session",
+      ciRunId: "the CI workflow run selected for failure context",
+      baselineRunId: "the baseline CI session used for comparison",
     },
   },
   {

@@ -26,3 +26,5 @@ import "./api/routes.tsp";
 import "./api/streaming.tsp";
 import "./api/runner.tsp";
 import "./api/workbench.tsp";
+
+import "./api/analysis.tsp";

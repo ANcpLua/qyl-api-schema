@@ -1,3 +1,4 @@
+import "../common/telemetry-query.tsp";
 // =============================================================================
 // Saved queries: named, structured filters for traces, logs or metrics
 // =============================================================================
@@ -44,6 +45,9 @@ model SavedQueryWindow {
 
 @doc("A saved filter over traces.")
 model SavedTraceQueryFilter {
+  @maxItems(32)
+  matchers?: TelemetryMatcher[];
+
   signal: "traces";
   ...SavedQueryWindow;
 
@@ -59,6 +63,9 @@ model SavedTraceQueryFilter {
 
 @doc("A saved filter over log records.")
 model SavedLogQueryFilter {
+  @maxItems(32)
+  matchers?: TelemetryMatcher[];
+
   signal: "logs";
   ...SavedQueryWindow;
 

@@ -171,6 +171,26 @@ const evaluationRunRequest = {
   fail_fast: true,
 };
 const inheritanceCases = {
+  "Mcp.Tools.ToolSpan": {
+    body: {
+      trace_id: "0af7651916cd43dd8448eb211c80319c",
+      span_id: "b7ad6b7169203331", name: "db.query", kind: 3,
+      start_time_unix_nano: "123000000", end_time_unix_nano: "124000000",
+      status: { code: 2 }, resource: { service_name: "orders-db" }, role: "matched",
+    },
+    own: { self_time_ms: 1, self_time_share: 1 },
+    baseRequired: "trace_id",
+  },
+  "Mcp.Tools.ToolTrace": {
+    body: {
+      trace_id: "0af7651916cd43dd8448eb211c80319c", span_count: 0,
+      duration_ns: "1500000", start_time: "2026-07-28T10:15:00Z",
+      end_time: "2026-07-28T10:15:00.001500Z", services: ["orders-db"], has_error: true,
+      spans: [],
+    },
+    own: {}, baseRequired: "trace_id",
+  },
+
   "Common.Errors.BadGatewayError": {
     body: problemDetails("bad-gateway", "bad_gateway", "Bad Gateway", 502),
     own: { dependency: "storage" },

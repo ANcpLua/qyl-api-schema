@@ -34,7 +34,7 @@ git fetch -q origin main
 [[ $(git rev-parse HEAD) == $(git rev-parse origin/main) ]] || die "main differs from origin/main"
 [[ -z $(git ls-remote --tags origin "refs/tags/v$version") ]] || die "tag v$version already on origin"
 git rev-parse -q --verify "refs/tags/v$version" >/dev/null && die "tag v$version already exists locally"
-[[ -z $(npm view "$NPM_PKG@$version" version --registry="$NPM_REGISTRY" 2>/dev/null) ]] || die "$NPM_PKG@$version is already on npm"
+[[ -z $(npm view "$NPM_PKG@$version" version --registry="$NPM_REGISTRY" "--@ancplua:registry=$NPM_REGISTRY" 2>/dev/null) ]] || die "$NPM_PKG@$version is already on npm"
 curl -fsSL "$NUGET_FLAT/index.json" | grep -q "\"$version\"" && die "$NUGET_PKG $version is already on NuGet"
 gh auth status >/dev/null 2>&1 || die "gh is not logged in"
 
@@ -92,7 +92,7 @@ gh release create "v$version" --title "v$version" --generate-notes "./$tgz" "$nu
 rm -f "$tgz"
 
 say "verify"
-echo "npm:   $(npm view "$NPM_PKG@$version" version --registry="$NPM_REGISTRY")"
+echo "npm:   $(npm view "$NPM_PKG@$version" version --registry="$NPM_REGISTRY" "--@ancplua:registry=$NPM_REGISTRY")"
 for _ in $(seq 1 20); do
   if curl -fsSL "$NUGET_FLAT/index.json" | grep -q "\"$version\""; then echo "nuget: $version indexed"; break; fi
   sleep 30

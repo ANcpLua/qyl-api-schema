@@ -28,3 +28,5 @@ import "./api/runner.tsp";
 import "./api/workbench.tsp";
 
 import "./emit-config.tsp";
+
+import "./api/analysis.tsp";

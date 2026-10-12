@@ -30,6 +30,7 @@ import {
 import { isCookieParam, isHeader, isStatusCode } from "@typespec/http";
 import {
   COMMON_NAMESPACE,
+  IDENTITY_WIRE_NAME_EXCEPTIONS,
   PRODUCT_NAMESPACE,
   describeAllowedNames,
   identityOfProperty,
@@ -92,7 +93,7 @@ export const identityBindingRule = createRule({
             !isCookieParam(context.program, property);
           if (hasJsonKey) {
             const wire = resolveEncodedName(context.program, property, "application/json");
-            const expected = snakeCase(property.name);
+            const expected = IDENTITY_WIRE_NAME_EXCEPTIONS[`${property.model?.name}.${property.name}`] ?? snakeCase(property.name);
             if (wire !== expected) {
               context.reportDiagnostic({
                 messageId: "rename",

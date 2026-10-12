@@ -89,6 +89,9 @@ const healthReportSchema: z.ZodType<HealthReport> =
 const parsedHealthReport: HealthReport = healthReportSchema.parse(healthReport);
 
 const ciLog: CiLogOutput = {
+    has_more: false,
+    window: { start_time: "2026-10-12T09:00:00Z", end_time: "2026-10-12T10:00:00Z" },
+    coverage: { examined: 1, matched: 1, returned: 1, truncated: false, scan_complete: true, as_of: "2026-10-12T10:00:00Z" },
     // A CI run id is the session identity, so it keeps that scalar rather than
     // becoming a second spelling of it.
     run_id: "nuget-publish-42" as SessionId,

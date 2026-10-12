@@ -12611,6 +12611,14 @@
           },
           "coverage": {
             "$ref": "#/components/schemas/Common.ToolCoverage"
+          },
+          "page_totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Item totals by paged collection path. Omitted totals are unknown, not zero."
           }
         },
         "unevaluatedProperties": {
@@ -13501,6 +13509,7 @@
         "required": [
           "window",
           "coverage",
+          "has_more",
           "groups",
           "other",
           "units"
@@ -13511,6 +13520,22 @@
           },
           "coverage": {
             "$ref": "#/components/schemas/Common.ToolCoverage"
+          },
+          "page_totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Item totals by paged collection path. Omitted totals are unknown, not zero."
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "Whether more items exist beyond this page. False only when the result is complete; `next_cursor` is present exactly when this is true."
+          },
+          "next_cursor": {
+            "$ref": "#/components/schemas/Common.Cursor",
+            "description": "Pass as `cursor` to the same tool with the same filters for the next page. Absent on the last page."
           },
           "groups": {
             "type": "array",
@@ -13803,6 +13828,7 @@
         "required": [
           "window",
           "coverage",
+          "has_more",
           "silent_services",
           "orphan_spans",
           "semconv_gaps",
@@ -13816,6 +13842,22 @@
           },
           "coverage": {
             "$ref": "#/components/schemas/Common.ToolCoverage"
+          },
+          "page_totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Item totals by paged collection path. Omitted totals are unknown, not zero."
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "Whether more items exist beyond this page. False only when the result is complete; `next_cursor` is present exactly when this is true."
+          },
+          "next_cursor": {
+            "$ref": "#/components/schemas/Common.Cursor",
+            "description": "Pass as `cursor` to the same tool with the same filters for the next page. Absent on the last page."
           },
           "silent_services": {
             "type": "array",
@@ -14033,6 +14075,9 @@
           "mode"
         ],
         "properties": {
+          "next_phase_cursor": {
+            "$ref": "#/components/schemas/Common.Cursor"
+          },
           "has_more": {
             "type": "boolean",
             "description": "Whether more items exist beyond this page. False only when the result is complete; `next_cursor` is present exactly when this is true."
@@ -14049,6 +14094,14 @@
           },
           "coverage": {
             "$ref": "#/components/schemas/Common.ToolCoverage"
+          },
+          "page_totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Item totals by paged collection path. Omitted totals are unknown, not zero."
           },
           "runs": {
             "type": "array",
@@ -14242,7 +14295,8 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Common.TelemetryMatcher"
-            }
+            },
+            "maxItems": 32
           },
           "window": {
             "$ref": "#/components/schemas/Common.ToolWindow"
@@ -14339,6 +14393,7 @@
         "required": [
           "window",
           "coverage",
+          "has_more",
           "discriminators",
           "structural",
           "durations",
@@ -14353,6 +14408,22 @@
           },
           "coverage": {
             "$ref": "#/components/schemas/Common.ToolCoverage"
+          },
+          "page_totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Item totals by paged collection path. Omitted totals are unknown, not zero."
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "Whether more items exist beyond this page. False only when the result is complete; `next_cursor` is present exactly when this is true."
+          },
+          "next_cursor": {
+            "$ref": "#/components/schemas/Common.Cursor",
+            "description": "Pass as `cursor` to the same tool with the same filters for the next page. Absent on the last page."
           },
           "discriminators": {
             "type": "array",
@@ -14451,6 +14522,7 @@
         "required": [
           "window",
           "coverage",
+          "has_more",
           "first_divergence",
           "aligned",
           "after_divergence",
@@ -14463,6 +14535,22 @@
           },
           "coverage": {
             "$ref": "#/components/schemas/Common.ToolCoverage"
+          },
+          "page_totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Item totals by paged collection path. Omitted totals are unknown, not zero."
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "Whether more items exist beyond this page. False only when the result is complete; `next_cursor` is present exactly when this is true."
+          },
+          "next_cursor": {
+            "$ref": "#/components/schemas/Common.Cursor",
+            "description": "Pass as `cursor` to the same tool with the same filters for the next page. Absent on the last page."
           },
           "first_divergence": {
             "anyOf": [
@@ -14690,6 +14778,7 @@
         "required": [
           "window",
           "coverage",
+          "has_more",
           "attributes"
         ],
         "properties": {
@@ -14698,6 +14787,22 @@
           },
           "coverage": {
             "$ref": "#/components/schemas/Common.ToolCoverage"
+          },
+          "page_totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Item totals by paged collection path. Omitted totals are unknown, not zero."
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "Whether more items exist beyond this page. False only when the result is complete; `next_cursor` is present exactly when this is true."
+          },
+          "next_cursor": {
+            "$ref": "#/components/schemas/Common.Cursor",
+            "description": "Pass as `cursor` to the same tool with the same filters for the next page. Absent on the last page."
           },
           "attributes": {
             "type": "array",
@@ -14829,6 +14934,14 @@
           "coverage": {
             "$ref": "#/components/schemas/Common.ToolCoverage"
           },
+          "page_totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Item totals by paged collection path. Omitted totals are unknown, not zero."
+          },
           "stats": {
             "$ref": "#/components/schemas/Mcp.Tools.McpDashboardStats"
           },
@@ -14934,6 +15047,14 @@
           },
           "coverage": {
             "$ref": "#/components/schemas/Common.ToolCoverage"
+          },
+          "page_totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Item totals by paged collection path. Omitted totals are unknown, not zero."
           },
           "traces": {
             "type": "array",
@@ -15173,6 +15294,7 @@
           "affected_sessions",
           "releases_seen",
           "status",
+          "updated_at",
           "annotation_count",
           "example_trace_ids"
         ],
@@ -15226,6 +15348,10 @@
           },
           "status": {
             "$ref": "#/components/schemas/Mcp.Tools.FailureStatus"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
           },
           "ignore_until": {
             "type": "string",
@@ -15470,6 +15596,7 @@
           "affected_sessions",
           "releases_seen",
           "status",
+          "updated_at",
           "annotation_count",
           "example_trace_ids"
         ],
@@ -15523,6 +15650,10 @@
           },
           "status": {
             "$ref": "#/components/schemas/Mcp.Tools.FailureStatus"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
           },
           "ignore_until": {
             "type": "string",
@@ -15679,6 +15810,9 @@
           "view"
         ],
         "properties": {
+          "cursor": {
+            "$ref": "#/components/schemas/Common.Cursor"
+          },
           "lookback_minutes": {
             "type": "integer",
             "format": "int32",
@@ -15708,7 +15842,8 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Common.TelemetryMatcher"
-            }
+            },
+            "maxItems": 32
           },
           "view": {
             "type": "string",
@@ -15749,6 +15884,9 @@
           "view"
         ],
         "properties": {
+          "cursor": {
+            "$ref": "#/components/schemas/Common.Cursor"
+          },
           "server_name": {
             "type": "string"
           },
@@ -15790,7 +15928,8 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Common.TelemetryMatcher"
-            }
+            },
+            "maxItems": 32
           },
           "view": {
             "type": "string",
@@ -15814,11 +15953,55 @@
       "Mcp.Tools.FetchTelemetryOutput": {
         "type": "object",
         "required": [
+          "has_more",
           "window",
           "coverage",
           "mode"
         ],
         "properties": {
+          "has_more": {
+            "type": "boolean"
+          },
+          "context_logs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OTel.Logs.LogRecord"
+            }
+          },
+          "total_matched": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "patterns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Mcp.Tools.LogPattern"
+            }
+          },
+          "span_roles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Mcp.Tools.SpanEvidenceRole"
+            }
+          },
+          "omitted": {
+            "$ref": "#/components/schemas/Mcp.Tools.TraceOmitted"
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Mcp.Tools.TraceLinkAvailability"
+            }
+          },
+          "annotations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Annotations.Annotation"
+            }
+          },
+          "settled": {
+            "type": "boolean"
+          },
           "comparison": {
             "$ref": "#/components/schemas/Mcp.Tools.CompareTracesOutput"
           },
@@ -15833,6 +16016,14 @@
           },
           "coverage": {
             "$ref": "#/components/schemas/Common.ToolCoverage"
+          },
+          "page_totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Item totals by paged collection path. Omitted totals are unknown, not zero."
           },
           "traces": {
             "type": "array",
@@ -15872,6 +16063,15 @@
           "trace_id"
         ],
         "properties": {
+          "cursor": {
+            "$ref": "#/components/schemas/Common.Cursor"
+          },
+          "max_spans": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 1000
+          },
           "selection": {
             "type": "string",
             "enum": [
@@ -15920,7 +16120,8 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Common.TelemetryMatcher"
-            }
+            },
+            "maxItems": 32
           },
           "view": {
             "type": "string",
@@ -15999,7 +16200,8 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Common.TelemetryMatcher"
-            }
+            },
+            "maxItems": 32
           },
           "view": {
             "type": "string",
@@ -16092,6 +16294,7 @@
         "required": [
           "window",
           "coverage",
+          "has_more",
           "run",
           "steps",
           "findings",
@@ -16103,6 +16306,22 @@
           },
           "coverage": {
             "$ref": "#/components/schemas/Common.ToolCoverage"
+          },
+          "page_totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Item totals by paged collection path. Omitted totals are unknown, not zero."
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "Whether more items exist beyond this page. False only when the result is complete; `next_cursor` is present exactly when this is true."
+          },
+          "next_cursor": {
+            "$ref": "#/components/schemas/Common.Cursor",
+            "description": "Pass as `cursor` to the same tool with the same filters for the next page. Absent on the last page."
           },
           "run": {
             "$ref": "#/components/schemas/Mcp.Tools.AgentRun"
@@ -16201,6 +16420,7 @@
         "required": [
           "window",
           "coverage",
+          "has_more",
           "observed",
           "comparison",
           "context",
@@ -16213,6 +16433,22 @@
           },
           "coverage": {
             "$ref": "#/components/schemas/Common.ToolCoverage"
+          },
+          "page_totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Item totals by paged collection path. Omitted totals are unknown, not zero."
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "Whether more items exist beyond this page. False only when the result is complete; `next_cursor` is present exactly when this is true."
+          },
+          "next_cursor": {
+            "$ref": "#/components/schemas/Common.Cursor",
+            "description": "Pass as `cursor` to the same tool with the same filters for the next page. Absent on the last page."
           },
           "observed": {
             "$ref": "#/components/schemas/Mcp.Tools.FailureObserved"
@@ -16312,6 +16548,7 @@
         "required": [
           "window",
           "coverage",
+          "has_more",
           "totals",
           "groups",
           "failure_classes"
@@ -16322,6 +16559,22 @@
           },
           "coverage": {
             "$ref": "#/components/schemas/Common.ToolCoverage"
+          },
+          "page_totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Item totals by paged collection path. Omitted totals are unknown, not zero."
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "Whether more items exist beyond this page. False only when the result is complete; `next_cursor` is present exactly when this is true."
+          },
+          "next_cursor": {
+            "$ref": "#/components/schemas/Common.Cursor",
+            "description": "Pass as `cursor` to the same tool with the same filters for the next page. Absent on the last page."
           },
           "totals": {
             "$ref": "#/components/schemas/Mcp.Tools.McpTrafficTotals"
@@ -16425,6 +16678,14 @@
           "coverage": {
             "$ref": "#/components/schemas/Common.ToolCoverage"
           },
+          "page_totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Item totals by paged collection path. Omitted totals are unknown, not zero."
+          },
           "items": {
             "type": "array",
             "items": {
@@ -16510,6 +16771,7 @@
         "required": [
           "window",
           "coverage",
+          "has_more",
           "nodes",
           "edges",
           "unknown_callers"
@@ -16520,6 +16782,22 @@
           },
           "coverage": {
             "$ref": "#/components/schemas/Common.ToolCoverage"
+          },
+          "page_totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Item totals by paged collection path. Omitted totals are unknown, not zero."
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "Whether more items exist beyond this page. False only when the result is complete; `next_cursor` is present exactly when this is true."
+          },
+          "next_cursor": {
+            "$ref": "#/components/schemas/Common.Cursor",
+            "description": "Pass as `cursor` to the same tool with the same filters for the next page. Absent on the last page."
           },
           "nodes": {
             "type": "array",
@@ -16552,6 +16830,9 @@
           "trace_id"
         ],
         "properties": {
+          "cursor": {
+            "$ref": "#/components/schemas/Common.Cursor"
+          },
           "selection": {
             "type": "string",
             "enum": [
@@ -16618,12 +16899,21 @@
       "Mcp.Tools.GetTraceOutput": {
         "type": "object",
         "required": [
+          "has_more",
           "window",
           "coverage",
           "trace",
           "mode"
         ],
         "properties": {
+          "has_more": {
+            "type": "boolean",
+            "description": "Whether more items exist beyond this page. False only when the result is complete; `next_cursor` is present exactly when this is true."
+          },
+          "next_cursor": {
+            "$ref": "#/components/schemas/Common.Cursor",
+            "description": "Pass as `cursor` to the same tool with the same filters for the next page. Absent on the last page."
+          },
           "span_roles": {
             "type": "array",
             "items": {
@@ -16651,6 +16941,12 @@
               "$ref": "#/components/schemas/OTel.Logs.LogRecord"
             }
           },
+          "context_logs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OTel.Logs.LogRecord"
+            }
+          },
           "settled": {
             "type": "boolean"
           },
@@ -16659,6 +16955,14 @@
           },
           "coverage": {
             "$ref": "#/components/schemas/Common.ToolCoverage"
+          },
+          "page_totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Item totals by paged collection path. Omitted totals are unknown, not zero."
           },
           "trace": {
             "$ref": "#/components/schemas/Mcp.Tools.ToolTrace"
@@ -16834,6 +17138,14 @@
           "coverage": {
             "$ref": "#/components/schemas/Common.ToolCoverage"
           },
+          "page_totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Item totals by paged collection path. Omitted totals are unknown, not zero."
+          },
           "has_more": {
             "type": "boolean",
             "description": "Whether more items exist beyond this page. False only when the result is complete; `next_cursor` is present exactly when this is true."
@@ -16931,6 +17243,14 @@
           "coverage": {
             "$ref": "#/components/schemas/Common.ToolCoverage"
           },
+          "page_totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Item totals by paged collection path. Omitted totals are unknown, not zero."
+          },
           "items": {
             "type": "array",
             "items": {
@@ -17017,6 +17337,14 @@
           "coverage": {
             "$ref": "#/components/schemas/Common.ToolCoverage"
           },
+          "page_totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Item totals by paged collection path. Omitted totals are unknown, not zero."
+          },
           "has_more": {
             "type": "boolean",
             "description": "Whether more items exist beyond this page. False only when the result is complete; `next_cursor` is present exactly when this is true."
@@ -17099,6 +17427,14 @@
           },
           "coverage": {
             "$ref": "#/components/schemas/Common.ToolCoverage"
+          },
+          "page_totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Item totals by paged collection path. Omitted totals are unknown, not zero."
           },
           "saved_queries": {
             "type": "array",
@@ -17222,6 +17558,14 @@
           },
           "coverage": {
             "$ref": "#/components/schemas/Common.ToolCoverage"
+          },
+          "page_totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Item totals by paged collection path. Omitted totals are unknown, not zero."
           },
           "sessions": {
             "type": "array",
@@ -17386,6 +17730,14 @@
           },
           "coverage": {
             "$ref": "#/components/schemas/Common.ToolCoverage"
+          },
+          "page_totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Item totals by paged collection path. Omitted totals are unknown, not zero."
           },
           "traces": {
             "type": "array",
@@ -17755,19 +18107,13 @@
       "Mcp.Tools.McpStatsComparison": {
         "anyOf": [
           {
-            "type": "string",
-            "enum": [
-              "previous_window"
-            ]
+            "type": "string"
           },
           {
             "$ref": "#/components/schemas/Mcp.Tools.McpComparisonOffset"
           },
           {
             "$ref": "#/components/schemas/Mcp.Tools.McpComparisonVersion"
-          },
-          {
-            "type": "string"
           }
         ],
         "description": "MCP comparison window or deployed server version."
@@ -18077,7 +18423,8 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Common.TelemetryMatcher"
-            }
+            },
+            "maxItems": 32
           }
         },
         "unevaluatedProperties": {
@@ -18233,6 +18580,14 @@
           },
           "coverage": {
             "$ref": "#/components/schemas/Common.ToolCoverage"
+          },
+          "page_totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Item totals by paged collection path. Omitted totals are unknown, not zero."
           },
           "name": {
             "type": "string",
@@ -18497,6 +18852,14 @@
           "coverage": {
             "$ref": "#/components/schemas/Common.ToolCoverage"
           },
+          "page_totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Item totals by paged collection path. Omitted totals are unknown, not zero."
+          },
           "result": {
             "$ref": "#/components/schemas/SavedQueries.SavedQueryRunResult"
           },
@@ -18636,6 +18999,14 @@
           },
           "coverage": {
             "$ref": "#/components/schemas/Common.ToolCoverage"
+          },
+          "page_totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Item totals by paged collection path. Omitted totals are unknown, not zero."
           },
           "logs": {
             "type": "array",
@@ -19555,12 +19926,6 @@
             },
             "maxItems": 32
           },
-          "limit": {
-            "type": "integer",
-            "format": "int32",
-            "minimum": 1,
-            "maximum": 200
-          },
           "cursor": {
             "$ref": "#/components/schemas/Common.Cursor"
           },
@@ -19569,6 +19934,12 @@
           },
           "environment": {
             "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 50
           },
           "baseline": {
             "$ref": "#/components/schemas/Mcp.Tools.AnalysisBaseline"
@@ -19584,6 +19955,7 @@
         "required": [
           "window",
           "coverage",
+          "has_more",
           "failures",
           "regressions",
           "releases",
@@ -19595,6 +19967,22 @@
           },
           "coverage": {
             "$ref": "#/components/schemas/Common.ToolCoverage"
+          },
+          "page_totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Item totals by paged collection path. Omitted totals are unknown, not zero."
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "Whether more items exist beyond this page. False only when the result is complete; `next_cursor` is present exactly when this is true."
+          },
+          "next_cursor": {
+            "$ref": "#/components/schemas/Common.Cursor",
+            "description": "Pass as `cursor` to the same tool with the same filters for the next page. Absent on the last page."
           },
           "failures": {
             "type": "array",
@@ -19926,6 +20314,7 @@
         "required": [
           "window",
           "coverage",
+          "has_more",
           "verdict",
           "before",
           "after",
@@ -19939,6 +20328,22 @@
           },
           "coverage": {
             "$ref": "#/components/schemas/Common.ToolCoverage"
+          },
+          "page_totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Item totals by paged collection path. Omitted totals are unknown, not zero."
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "Whether more items exist beyond this page. False only when the result is complete; `next_cursor` is present exactly when this is true."
+          },
+          "next_cursor": {
+            "$ref": "#/components/schemas/Common.Cursor",
+            "description": "Pass as `cursor` to the same tool with the same filters for the next page. Absent on the last page."
           },
           "verdict": {
             "type": "string",

@@ -14,8 +14,8 @@ const V=n=>validatorFor(`Mcp.Tools.${n}`), C=n=>validatorFor(`Common.${n}`);
 const trace='0123456789abcdef0123456789abcdef',span='0123456789abcdef',at='2026-10-12T10:00:00Z';
 const window={start_time:'2026-10-12T09:00:00Z',end_time:at};
 const coverage={examined:40,matched:40,returned:1,truncated:false,scan_complete:true,as_of:at};
-const read={window,coverage};
-const failure={failure_id:'opaque-project-F',etag:'v1',signature:'orders-db|query|timeout',normalized_message:'timeout',operation:'query',service:'orders-db',first_seen:at,last_seen:at,count:3,affected_traces:3,affected_sessions:1,releases_seen:['1.4.1'],status:'open',annotation_count:0,example_trace_ids:[trace]};
+const read={window,coverage,has_more:false};
+const failure={failure_id:'opaque-project-F',etag:'v1',signature:'orders-db|query|timeout',normalized_message:'timeout',operation:'query',service:'orders-db',first_seen:at,last_seen:at,count:3,affected_traces:3,affected_sessions:1,releases_seen:['1.4.1'],status:'open',updated_at:at,annotation_count:0,example_trace_ids:[trace]};
 const tf={failure_id:failure.failure_id,signature:failure.signature,change:'new',count:3,baseline_count:0,affected_traces:3,services:['orders-db'],first_seen:at,coinciding_release:{service:'orders-db',version:'1.4.1',first_seen:at}};
 const es={trace_id:trace,span_id:span,service:'orders-db',name:'db.query',status:'ERROR',key_attributes:[],duration_ms:5,role:'matched'};
 const divergence={a_span:es,b_span:{...es,status:'OK'},kind:'status'};
@@ -51,3 +51,21 @@ assertInvalid(V('AggregateTelemetryInput'),{signal:'spans',measures:['count'],gr
 assertInvalid(V('CreateAnnotationInput'),{target:{kind:'failure',failure_id:'opaque-project-F'},text:'note',labels:['x'.repeat(65)]},'annotation labels bounded');
 assertInvalid(V('UpdateFailureStatusInput'),{failure_id:'opaque-project-F',etag:'v1',status:'closed'},'status closed rejected');
 console.log(`analysis contracts: ${names.length} typed read routes, ${cases.length} answer-key output shapes, ${inputCases.length} upgraded input cases`);
+
+const matcher = {key:'service.name',scope:'resource',op:'exists'};
+for (const [name, base] of [
+ ['CompareGroup',{}], ['MetricRatio',{metric_name:'requests'}],
+ ['FetchTelemetryTracesInput',{view:'traces'}], ['FetchTelemetryTraceInput',{view:'trace',trace_id:trace}],
+ ['FetchTelemetryLogsInput',{view:'logs'}], ['FetchTelemetryMcpStatsInput',{view:'mcp_stats'}],
+]) {
+ assertValid(V(name), {...base,matchers:Array(32).fill(matcher)}, `${name} accepts 32 matchers`);
+ assertInvalid(V(name), {...base,matchers:Array(33).fill(matcher)}, `${name} rejects 33 matchers`);
+}
+assertValid(V('TriageInput'),{limit:50},'triage maximum page');
+assertInvalid(V('TriageInput'),{limit:51},'triage rejects more than fifty');
+for(const compare_to of ['previous_window','7.7.0',{server_version:'7.7.0'},{offset_minutes:60}])
+ assertValid(V('GetMcpStatsInput'),{compare_to},'MCP comparison accepts window and version exactly once');
+for(const [name,value] of cases.filter(([name])=>name!=='UpdateFailureStatusOutput')) {
+ const paged={...value,has_more:true,next_cursor:'opaque',page_totals:{items:200}};
+ assertValid(V(name),paged,`${name} retains paging metadata`);
+}

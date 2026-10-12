@@ -270,6 +270,7 @@ model ListTracesOutput {
 
 @doc("Input for get_trace.")
 model GetTraceInput {
+  cursor?: Cursor;
   selection?: "all" | "errors" | "errors_with_ancestors" | "critical_path";
   attributes?: string[];
   @minValue(0) @maxValue(50)
@@ -298,6 +299,7 @@ model GetTraceInput {
 
 @doc("Structured output for get_trace.")
 model GetTraceOutput {
+  ...ToolPage;
   @encodedName("application/json", "span_roles")
   spanRoles?: SpanEvidenceRole[];
   omitted?: TraceOmitted;
@@ -305,6 +307,8 @@ model GetTraceOutput {
   missingParentSpanIds?: SpanId[];
   links?: TraceLinkAvailability[];
   logs?: LogRecord[];
+  @encodedName("application/json", "context_logs")
+  contextLogs?: LogRecord[];
   settled?: boolean;
 
   ...ToolReadContext;
@@ -532,6 +536,8 @@ model CiPhase {
 
 @doc("Structured output for ci_log: recent runs, or one run's phases.")
 model CiLogOutput {
+  @encodedName("application/json", "next_phase_cursor")
+  nextPhaseCursor?: Cursor;
   ...ToolPage;
   comparison?: CiComparison;
 
@@ -573,6 +579,7 @@ model FetchTelemetryTracesInput {
   @encodedName("application/json", "since_cursor")
   sinceCursor?: Cursor;
   fields?: string[];
+  @maxItems(32)
   matchers?: TelemetryMatcher[];
 
   view: "traces";
@@ -588,6 +595,10 @@ model FetchTelemetryTracesInput {
 
 @doc("fetch_telemetry input for one trace (view `trace`).")
 model FetchTelemetryTraceInput {
+  cursor?: Cursor;
+  @minValue(1) @maxValue(1000)
+  @encodedName("application/json", "max_spans")
+  maxSpans?: int32;
   selection?: "all" | "errors" | "errors_with_ancestors" | "critical_path";
   attributes?: string[];
   @encodedName("application/json", "include_logs")
@@ -597,6 +608,7 @@ model FetchTelemetryTraceInput {
   @encodedName("application/json", "since_cursor")
   sinceCursor?: Cursor;
   fields?: string[];
+  @maxItems(32)
   matchers?: TelemetryMatcher[];
 
   view: "trace";
@@ -607,10 +619,12 @@ model FetchTelemetryTraceInput {
 
 @doc("fetch_telemetry input for log records (view `logs`).")
 model FetchTelemetryLogsInput {
+  cursor?: Cursor;
   ...ToolTimeRange;
   @encodedName("application/json", "since_cursor")
   sinceCursor?: Cursor;
   fields?: string[];
+  @maxItems(32)
   matchers?: TelemetryMatcher[];
 
   view: "logs";
@@ -635,6 +649,7 @@ model FetchTelemetryLogsInput {
 
 @doc("fetch_telemetry input for MCP traffic statistics (view `mcp_stats`).")
 model FetchTelemetryMcpStatsInput {
+  cursor?: Cursor;
   @encodedName("application/json", "server_name")
   serverName?: string;
   @encodedName("application/json", "tool_name")
@@ -647,6 +662,7 @@ model FetchTelemetryMcpStatsInput {
   @encodedName("application/json", "since_cursor")
   sinceCursor?: Cursor;
   fields?: string[];
+  @maxItems(32)
   matchers?: TelemetryMatcher[];
 
   view: "mcp_stats";
@@ -669,6 +685,19 @@ union FetchTelemetryInput {
 
 @doc("Structured output for the app-only fetch_telemetry tool.")
 model FetchTelemetryOutput {
+  @encodedName("application/json", "has_more")
+  hasMore: boolean;
+  @encodedName("application/json", "context_logs")
+  contextLogs?: LogRecord[];
+  @encodedName("application/json", "total_matched")
+  totalMatched?: int64;
+  patterns?: LogPattern[];
+  @encodedName("application/json", "span_roles")
+  spanRoles?: SpanEvidenceRole[];
+  omitted?: TraceOmitted;
+  links?: TraceLinkAvailability[];
+  annotations?: Annotation[];
+  settled?: boolean;
   comparison?: CompareTracesOutput;
   @encodedName("application/json", "since_cursor")
   sinceCursor?: Cursor;

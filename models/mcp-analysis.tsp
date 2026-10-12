@@ -22,7 +22,7 @@ enum FailureChange { new, worsening, ongoing, recovering, regressed }
 union AnalysisBaseline { previous: "previous_window", window: ToolWindow, offset: BaselineOffset }
 
 @doc("MCP comparison window or deployed server version.")
-union McpStatsComparison { previous: "previous_window", offset: McpComparisonOffset, version: McpComparisonVersion, versionText: string }
+union McpStatsComparison { windowOrVersion: string, offset: McpComparisonOffset, version: McpComparisonVersion }
 
 @doc("Metric comparison preceding the selected window.")
 union MetricComparison { previous: "previous_window", offset: MetricComparisonOffset }
@@ -118,6 +118,8 @@ model FailureSummary {
   @encodedName("application/json", "releases_seen")
   releasesSeen: string[];
   status: FailureStatus;
+  @encodedName("application/json", "updated_at")
+  updatedAt: utcDateTime;
   @encodedName("application/json", "ignore_until")
   ignoreUntil?: utcDateTime;
   assignee?: string;
@@ -142,7 +144,9 @@ model FailureDetail {
 
 @doc("TriageInput contract.")
 model TriageInput {
-  ...ServiceAnalysisInput;
+  ...OmitProperties<ServiceAnalysisInput, "limit">;
+  @minValue(1) @maxValue(50)
+  limit?: int32;
   baseline?: AnalysisBaseline;
 }
 
@@ -191,6 +195,7 @@ model SilentService {
 @doc("TriageOutput contract.")
 model TriageOutput {
   ...ToolReadContext;
+  ...ToolPage;
   failures: TriageFailure[];
   regressions: TriageRegression[];
   releases: FailureRelease[];
@@ -346,6 +351,7 @@ model FailureContext {
 @doc("GetFailureContextOutput contract.")
 model GetFailureContextOutput {
   ...ToolReadContext;
+  ...ToolPage;
   observed: FailureObserved;
   comparison: FailureComparison;
   context: FailureContext;
@@ -356,6 +362,7 @@ model GetFailureContextOutput {
 
 @doc("CompareGroup contract.")
 model CompareGroup {
+  @maxItems(32)
   matchers?: TelemetryMatcher[];
   window?: ToolWindow;
   @encodedName("application/json", "failure_id")
@@ -412,6 +419,7 @@ model GroupComposition {
 @doc("CompareGroupsOutput contract.")
 model CompareGroupsOutput {
   ...ToolReadContext;
+  ...ToolPage;
   discriminators: AttributeAssociation[];
   structural: GroupStructure[];
   durations: GroupDurations;
@@ -452,6 +460,7 @@ model AlignedSpans {
 @doc("CompareTracesOutput contract.")
 model CompareTracesOutput {
   ...ToolReadContext;
+  ...ToolPage;
   @encodedName("application/json", "first_divergence")
   firstDivergence: TraceDivergence | null;
   aligned: AlignedSpans[];
@@ -496,6 +505,7 @@ model VerificationNeeds {
 @doc("VerifyFixOutput contract.")
 model VerifyFixOutput {
   ...ToolReadContext;
+  ...ToolPage;
   verdict: "passed" | "failed" | "pending" | "inconclusive";
   before: VerificationPeriod;
   after: VerificationPeriod;
@@ -545,6 +555,7 @@ model AggregateOther {
 @doc("AggregateTelemetryOutput contract.")
 model AggregateTelemetryOutput {
   ...ToolReadContext;
+  ...ToolPage;
   groups: AggregateGroup[];
   other: AggregateOther;
   units: Record<string>;
@@ -594,6 +605,7 @@ model DiscoveredAttribute {
 @doc("DiscoverAttributesOutput contract.")
 model DiscoverAttributesOutput {
   ...ToolReadContext;
+  ...ToolPage;
   attributes: DiscoveredAttribute[];
   error?: ToolError;
 }
@@ -687,6 +699,7 @@ model AgentFindings {
 @doc("GetAgentRunOutput contract.")
 model GetAgentRunOutput {
   ...ToolReadContext;
+  ...ToolPage;
   run: AgentRun;
   steps: AgentStep[];
   findings: AgentFindings;
@@ -773,6 +786,7 @@ model ServiceMapEdge {
 @doc("GetServiceMapOutput contract.")
 model GetServiceMapOutput {
   ...ToolReadContext;
+  ...ToolPage;
   nodes: ServiceMapNode[];
   edges: ServiceMapEdge[];
   @encodedName("application/json", "unknown_callers")
@@ -813,6 +827,7 @@ model TelemetryRetention {
 @doc("CheckTelemetryHealthOutput contract.")
 model CheckTelemetryHealthOutput {
   ...ToolReadContext;
+  ...ToolPage;
   @encodedName("application/json", "silent_services")
   silentServices: SilentService[];
   @encodedName("application/json", "orphan_spans")
@@ -902,6 +917,7 @@ model McpStatsComparisonResult {
 @doc("GetMcpStatsOutput contract.")
 model GetMcpStatsOutput {
   ...ToolReadContext;
+  ...ToolPage;
   totals: McpTrafficTotals;
   groups: McpTrafficGroup[];
   @encodedName("application/json", "failure_classes")
@@ -1035,6 +1051,7 @@ model MetricRatio {
   @encodedName("application/json", "metric_name")
   metricName: string;
   aggregation?: MetricAggregation;
+  @maxItems(32)
   matchers?: TelemetryMatcher[];
 }
 

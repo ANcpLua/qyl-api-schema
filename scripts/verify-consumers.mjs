@@ -153,9 +153,10 @@ export async function verifyConsumers({ version, npmSpec, npmInstallArgs = [], n
     );
 
     await copyFile(join(probesDir, "dotnet-smoke.cs"), join(dotnetDir, "Program.cs"));
+    run("dotnet", ["build", "--configuration", "Release", "--no-restore", "-maxcpucount:4", "-nodeReuse:false"], dotnetDir, dotnetEnvironment);
     const dotnetProbeOutput = run(
       "dotnet",
-      ["run", "--configuration", "Release", "--no-restore"],
+      ["run", "--configuration", "Release", "--no-build", "--no-restore"],
       dotnetDir,
       dotnetEnvironment,
       true,

@@ -58,5 +58,8 @@ model ToolCoverage {
 model ToolReadContext {
   window: ToolWindow;
   coverage: ToolCoverage;
+  @doc("Item totals by paged collection path. Omitted totals are unknown, not zero.")
+  @encodedName("application/json", "page_totals")
+  pageTotals?: Record<int64>;
 }
 

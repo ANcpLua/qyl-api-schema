@@ -7,4 +7,5 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-dotnet run --project ./build/_build.csproj -- "$@"
+dotnet build ./build/_build.csproj -maxcpucount:4 -nodeReuse:false -p:UseSharedCompilation=false
+dotnet run --no-build --project ./build/_build.csproj -- "$@"

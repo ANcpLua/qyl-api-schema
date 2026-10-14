@@ -11,11 +11,7 @@ TypeSpec resolving a library with no `dist/`. Published npm artifacts support
 maintained Node.js releases from 22 onward.
 
 ```bash
-bun install --frozen-lockfile
-bun run lint
-bun run lint:public
-bun run compile
-./build.sh Check
+mise run check
 ```
 
 `bun run compile` writes everything under `generated/`. Only the OpenAPI document is
@@ -40,11 +36,13 @@ there:
 - `generated/runtime/**` — the `./runtime` export: `src/runtime/` compiled by
   `tsconfig.runtime.json`
 
-The one gate is `./build.sh Check` (Fallout): it lints both TypeSpec surfaces, runs
-`compile` and `lint:js`, then the generated-current, route, fixture, Zod-parity, lint-rule
-and determinism invariants, and installs the packed npm and NuGet artifacts into clean
-consumers. Run it before every push; `./release.sh` runs the pack targets again before
-publishing.
+The one gate is `mise run check`: it lints both TypeSpec surfaces, runs `compile` and
+`lint:js`, then `./build.sh Check` (Fallout) runs the generated-current, route, fixture,
+Zod-parity, lint-rule and determinism invariants and installs the packed npm and NuGet
+artifacts into clean consumers. Run it before every push; `./release.sh` runs the pack
+targets again before publishing. It prints one line per step and Fallout target, the failing
+one's last lines and the log path under `artifacts/logs/`; `QYL_VERBOSE=1` (or
+`./build.sh <Target> --verbose`) prints everything.
 
 Generated files are not editing surfaces. OpenAPI comes from the official TypeSpec
 emitter; the bundled JSON Schema is a deterministic projection of its component

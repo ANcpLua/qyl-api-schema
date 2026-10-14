@@ -8,12 +8,14 @@
 "node" = "24.21.0"
 
 [tasks.check]
-description = "The gate before a push or a release, in order"
-run = [
-  "bun install --frozen-lockfile",
-  "bun run lint",
-  "bun run lint:public",
-  "bun run compile",
-  "bun run lint:js",
-  "./build.sh Check",
-]
+description = "The gate before a push or a release, in order; a line per step and Fallout target, full log in artifacts/logs, QYL_VERBOSE=1 prints everything"
+quiet = true
+run = '''
+scripts/quiet.sh check \
+  'bun install --frozen-lockfile' \
+  'bun run lint' \
+  'bun run lint:public' \
+  'bun run compile' \
+  'bun run lint:js' \
+  './build.sh Check'
+'''

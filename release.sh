@@ -215,7 +215,7 @@ if (( dry )); then
   echo "key probe: $NUGET_PKG ok (verified against $published, nothing published)"
 else
   # --skip-duplicate: a rerun after a partial failure (pushed, not indexed yet) goes on.
-  dotnet nuget push "$nupkg" --api-key "$(<"$NUGET_KEY_FILE")" --source "$NUGET_SOURCE" --skip-duplicate
+  NUGET_API_KEY="$(<"$NUGET_KEY_FILE")" dotnet nuget push "$nupkg" --source "$NUGET_SOURCE" --skip-duplicate
 fi
 
 if (( dry )); then

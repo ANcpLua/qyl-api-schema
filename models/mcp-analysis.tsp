@@ -18,7 +18,7 @@ union FailureStatusFilter { status: FailureStatus, all: "all" }
 @doc("Failure trend in the selected comparison window.")
 enum FailureChange { new, worsening, ongoing, recovering, regressed }
 
-@doc("Explicit baseline window or an offset from the selected window.")
+@doc("Comparison window for change detection. Omit for `previous_window`: the window of the same length immediately before the selected one. A `window` object sets explicit `start_time` and `end_time`; an `offset_minutes` object shifts the selected window back by that many minutes.")
 union AnalysisBaseline { previous: "previous_window", window: ToolWindow, offset: BaselineOffset }
 
 @doc("MCP comparison window or deployed server version.")
@@ -30,8 +30,10 @@ union MetricComparison { previous: "previous_window", offset: MetricComparisonOf
 @doc("AnalysisInput contract.")
 model AnalysisInput {
   ...ToolTimeRange;
+  @doc("Attribute predicates that every matched span, resource or log must satisfy; up to 32. Omit for no filtering. discover_attributes lists the keys and values that are recorded.")
   @maxItems(32)
   matchers?: TelemetryMatcher[];
+  @doc("Items per page. Omit for the tool's default: 20 groups for aggregate_telemetry, 100 for list_failures, discover_attributes, get_mcp_stats and the span and log collections of context tools. `has_more` and `next_cursor` continue the same query.")
   @minValue(1) @maxValue(200)
   limit?: int32;
   cursor?: Cursor;
@@ -145,6 +147,7 @@ model FailureDetail {
 @doc("TriageInput contract.")
 model TriageInput {
   ...OmitProperties<ServiceAnalysisInput, "limit">;
+  @doc("Ranked failures to return, 1 to 50. Default 10; new failures keep reserved slots ahead of ongoing ones.")
   @minValue(1) @maxValue(50)
   limit?: int32;
   baseline?: AnalysisBaseline;
@@ -234,9 +237,11 @@ model GetFailureContextInput {
   failureId?: FailureId;
   @encodedName("application/json", "ci_run_id")
   ciRunId?: SessionId;
+  @doc("Maximum error spans in `observed.error_spans`. Default 100 (or `limit` when lower), maximum 1000; `next_cursor` continues.")
   @minValue(1) @maxValue(1000)
   @encodedName("application/json", "max_spans")
   maxSpans?: int32;
+  @doc("Maximum correlated log records in `observed.logs`. Default 100 (or `limit` when lower), maximum 200; `next_cursor` continues.")
   @minValue(1) @maxValue(200)
   @encodedName("application/json", "max_logs")
   maxLogs?: int32;
@@ -521,13 +526,18 @@ model VerifyFixOutput {
 @doc("AggregateTelemetryInput contract.")
 model AggregateTelemetryInput {
   ...AnalysisInput;
+  @doc("Which records to aggregate: `spans` (duration measures apply) or `logs`.")
   signal: "spans" | "logs";
+  @doc("Attribute keys that define the groups, up to 4; omit for one overall group. Each group's `key` echoes the values.")
   @maxItems(4)
   @encodedName("application/json", "group_by")
   groupBy?: string[];
+  @doc("Measures to compute per group; at least one. Accepted values: `count`, `error_count`, `error_rate` (share from 0 to 1), `duration_avg`, `duration_p50`, `duration_p90`, `duration_p95`, `duration_p99`, `duration_max` (milliseconds, spans only) and `sum:<attribute key>` for a numeric attribute. The result's `units` names the unit of each measure. Example: [\"count\", \"error_rate\", \"duration_p95\"].")
   measures: string[];
+  @doc("Bucket width in milliseconds for a per-group time series in `buckets`; omit for group totals only. Equal to the window length, it yields one bucket per group.")
   @encodedName("application/json", "step_ms")
   stepMs?: int64;
+  @doc("One of the requested measures, optionally followed by ` asc` or ` desc`. Default: the first measure, descending. Examples: `error_rate`, `duration_p95 desc`, `count asc`.")
   @encodedName("application/json", "order_by")
   orderBy?: string;
 }

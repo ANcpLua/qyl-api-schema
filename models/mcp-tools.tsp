@@ -94,8 +94,9 @@ model ToolPage {
   nextCursor?: Cursor;
 }
 
-@doc("Time-range members of a tool input.")
+@doc("Time-range members of a tool input. Omit all three for the tool's default window ending now; the result's `window` reports the bounds that were applied, so a follow-up call can pass them as `start_time` and `end_time` to keep the same window.")
 model ToolTimeRange {
+  @doc("Minutes before `end_time` (or now) when `start_time` is omitted. Default 60; list_releases defaults to 10080 (7 days). Maximum 43200 (30 days).")
   @minValue(1) @maxValue(43200)
   @encodedName("application/json", "lookback_minutes")
   lookbackMinutes?: int32;
@@ -271,8 +272,14 @@ model ListTracesOutput {
 @doc("Input for get_trace.")
 model GetTraceInput {
   cursor?: Cursor;
+
+  @doc("Which spans to return: `all` (default), `errors` (error status only), `errors_with_ancestors` (error spans plus their path to the root; the ancestors carry `role: context`) or `critical_path` (the chain of longest child spans from the root, each with `self_time_ms`). Start with `errors_with_ancestors` when diagnosing a failure and widen to `all` only when the error path is not enough.")
   selection?: "all" | "errors" | "errors_with_ancestors" | "critical_path";
+
+  @doc("Attribute keys to keep on each returned span; omit for every recorded attribute.")
   attributes?: string[];
+
+  @doc("Number of correlated log records to include, 0 to 50. Default 0, no logs; search_logs with the same `trace_id` returns the rest.")
   @minValue(0) @maxValue(50)
   @encodedName("application/json", "include_logs")
   includeLogs?: int32;
@@ -286,7 +293,7 @@ model GetTraceInput {
   @encodedName("application/json", "errors_only")
   errorsOnly?: boolean = false;
 
-  @doc("Maximum spans to return after filtering; omit to keep all matching spans.")
+  @doc("Maximum spans per page after `selection` is applied. Default 100, maximum 1000. When more spans match, `has_more` is true and `next_cursor` continues the same trace; `coverage` and `omitted` report what the page left out.")
   @encodedName("application/json", "max_spans")
   @minValue(1)
   @maxValue(1000)

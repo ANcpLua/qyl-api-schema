@@ -13443,7 +13443,8 @@
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 43200
+            "maximum": 43200,
+            "description": "Minutes before `end_time` (or now) when `start_time` is omitted. Default 60; list_releases defaults to 10080 (7 days). Maximum 43200 (30 days)."
           },
           "start_time": {
             "type": "string",
@@ -13460,13 +13461,15 @@
             "items": {
               "$ref": "#/components/schemas/Common.TelemetryMatcher"
             },
-            "maxItems": 32
+            "maxItems": 32,
+            "description": "Attribute predicates that every matched span, resource or log must satisfy; up to 32. Omit for no filtering. discover_attributes lists the keys and values that are recorded."
           },
           "limit": {
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 200
+            "maximum": 200,
+            "description": "Items per page. Omit for the tool's default: 20 groups for aggregate_telemetry, 100 for list_failures, discover_attributes, get_mcp_stats and the span and log collections of context tools. `has_more` and `next_cursor` continue the same query."
           },
           "cursor": {
             "$ref": "#/components/schemas/Common.Cursor"
@@ -13476,27 +13479,32 @@
             "enum": [
               "spans",
               "logs"
-            ]
+            ],
+            "description": "Which records to aggregate: `spans` (duration measures apply) or `logs`."
           },
           "group_by": {
             "type": "array",
             "items": {
               "type": "string"
             },
-            "maxItems": 4
+            "maxItems": 4,
+            "description": "Attribute keys that define the groups, up to 4; omit for one overall group. Each group's `key` echoes the values."
           },
           "measures": {
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "Measures to compute per group; at least one. Accepted values: `count`, `error_count`, `error_rate` (share from 0 to 1), `duration_avg`, `duration_p50`, `duration_p90`, `duration_p95`, `duration_p99`, `duration_max` (milliseconds, spans only) and `sum:<attribute key>` for a numeric attribute. The result's `units` names the unit of each measure. Example: [\"count\", \"error_rate\", \"duration_p95\"]."
           },
           "step_ms": {
             "type": "integer",
-            "format": "int64"
+            "format": "int64",
+            "description": "Bucket width in milliseconds for a per-group time series in `buckets`; omit for group totals only. Equal to the window length, it yields one bucket per group."
           },
           "order_by": {
-            "type": "string"
+            "type": "string",
+            "description": "One of the requested measures, optionally followed by ` asc` or ` desc`. Default: the first measure, descending. Examples: `error_rate`, `duration_p95 desc`, `count asc`."
           }
         },
         "unevaluatedProperties": {
@@ -13602,7 +13610,7 @@
             "$ref": "#/components/schemas/Mcp.Tools.BaselineOffset"
           }
         ],
-        "description": "Explicit baseline window or an offset from the selected window."
+        "description": "Comparison window for change detection. Omit for `previous_window`: the window of the same length immediately before the selected one. A `window` object sets explicit `start_time` and `end_time`; an `offset_minutes` object shifts the selected window back by that many minutes."
       },
       "Mcp.Tools.AnalysisInput": {
         "type": "object",
@@ -13611,7 +13619,8 @@
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 43200
+            "maximum": 43200,
+            "description": "Minutes before `end_time` (or now) when `start_time` is omitted. Default 60; list_releases defaults to 10080 (7 days). Maximum 43200 (30 days)."
           },
           "start_time": {
             "type": "string",
@@ -13628,13 +13637,15 @@
             "items": {
               "$ref": "#/components/schemas/Common.TelemetryMatcher"
             },
-            "maxItems": 32
+            "maxItems": 32,
+            "description": "Attribute predicates that every matched span, resource or log must satisfy; up to 32. Omit for no filtering. discover_attributes lists the keys and values that are recorded."
           },
           "limit": {
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 200
+            "maximum": 200,
+            "description": "Items per page. Omit for the tool's default: 20 groups for aggregate_telemetry, 100 for list_failures, discover_attributes, get_mcp_stats and the span and log collections of context tools. `has_more` and `next_cursor` continue the same query."
           },
           "cursor": {
             "$ref": "#/components/schemas/Common.Cursor"
@@ -13783,7 +13794,8 @@
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 43200
+            "maximum": 43200,
+            "description": "Minutes before `end_time` (or now) when `start_time` is omitted. Default 60; list_releases defaults to 10080 (7 days). Maximum 43200 (30 days)."
           },
           "start_time": {
             "type": "string",
@@ -13800,13 +13812,15 @@
             "items": {
               "$ref": "#/components/schemas/Common.TelemetryMatcher"
             },
-            "maxItems": 32
+            "maxItems": 32,
+            "description": "Attribute predicates that every matched span, resource or log must satisfy; up to 32. Omit for no filtering. discover_attributes lists the keys and values that are recorded."
           },
           "limit": {
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 200
+            "maximum": 200,
+            "description": "Items per page. Omit for the tool's default: 20 groups for aggregate_telemetry, 100 for list_failures, discover_attributes, get_mcp_stats and the span and log collections of context tools. `has_more` and `next_cursor` continue the same query."
           },
           "cursor": {
             "$ref": "#/components/schemas/Common.Cursor"
@@ -14029,7 +14043,8 @@
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 43200
+            "maximum": 43200,
+            "description": "Minutes before `end_time` (or now) when `start_time` is omitted. Default 60; list_releases defaults to 10080 (7 days). Maximum 43200 (30 days)."
           },
           "start_time": {
             "type": "string",
@@ -14322,7 +14337,8 @@
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 43200
+            "maximum": 43200,
+            "description": "Minutes before `end_time` (or now) when `start_time` is omitted. Default 60; list_releases defaults to 10080 (7 days). Maximum 43200 (30 days)."
           },
           "start_time": {
             "type": "string",
@@ -14339,13 +14355,15 @@
             "items": {
               "$ref": "#/components/schemas/Common.TelemetryMatcher"
             },
-            "maxItems": 32
+            "maxItems": 32,
+            "description": "Attribute predicates that every matched span, resource or log must satisfy; up to 32. Omit for no filtering. discover_attributes lists the keys and values that are recorded."
           },
           "limit": {
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 200
+            "maximum": 200,
+            "description": "Items per page. Omit for the tool's default: 20 groups for aggregate_telemetry, 100 for list_failures, discover_attributes, get_mcp_stats and the span and log collections of context tools. `has_more` and `next_cursor` continue the same query."
           },
           "cursor": {
             "$ref": "#/components/schemas/Common.Cursor"
@@ -14477,7 +14495,8 @@
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 43200
+            "maximum": 43200,
+            "description": "Minutes before `end_time` (or now) when `start_time` is omitted. Default 60; list_releases defaults to 10080 (7 days). Maximum 43200 (30 days)."
           },
           "start_time": {
             "type": "string",
@@ -14494,13 +14513,15 @@
             "items": {
               "$ref": "#/components/schemas/Common.TelemetryMatcher"
             },
-            "maxItems": 32
+            "maxItems": 32,
+            "description": "Attribute predicates that every matched span, resource or log must satisfy; up to 32. Omit for no filtering. discover_attributes lists the keys and values that are recorded."
           },
           "limit": {
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 200
+            "maximum": 200,
+            "description": "Items per page. Omit for the tool's default: 20 groups for aggregate_telemetry, 100 for list_failures, discover_attributes, get_mcp_stats and the span and log collections of context tools. `has_more` and `next_cursor` continue the same query."
           },
           "cursor": {
             "$ref": "#/components/schemas/Common.Cursor"
@@ -14725,7 +14746,8 @@
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 43200
+            "maximum": 43200,
+            "description": "Minutes before `end_time` (or now) when `start_time` is omitted. Default 60; list_releases defaults to 10080 (7 days). Maximum 43200 (30 days)."
           },
           "start_time": {
             "type": "string",
@@ -14742,13 +14764,15 @@
             "items": {
               "$ref": "#/components/schemas/Common.TelemetryMatcher"
             },
-            "maxItems": 32
+            "maxItems": 32,
+            "description": "Attribute predicates that every matched span, resource or log must satisfy; up to 32. Omit for no filtering. discover_attributes lists the keys and values that are recorded."
           },
           "limit": {
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 200
+            "maximum": 200,
+            "description": "Items per page. Omit for the tool's default: 20 groups for aggregate_telemetry, 100 for list_failures, discover_attributes, get_mcp_stats and the span and log collections of context tools. `has_more` and `next_cursor` continue the same query."
           },
           "cursor": {
             "$ref": "#/components/schemas/Common.Cursor"
@@ -14894,7 +14918,8 @@
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 43200
+            "maximum": 43200,
+            "description": "Minutes before `end_time` (or now) when `start_time` is omitted. Default 60; list_releases defaults to 10080 (7 days). Maximum 43200 (30 days)."
           },
           "start_time": {
             "type": "string",
@@ -14993,7 +15018,8 @@
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 43200
+            "maximum": 43200,
+            "description": "Minutes before `end_time` (or now) when `start_time` is omitted. Default 60; list_releases defaults to 10080 (7 days). Maximum 43200 (30 days)."
           },
           "start_time": {
             "type": "string",
@@ -15718,7 +15744,8 @@
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 43200
+            "maximum": 43200,
+            "description": "Minutes before `end_time` (or now) when `start_time` is omitted. Default 60; list_releases defaults to 10080 (7 days). Maximum 43200 (30 days)."
           },
           "start_time": {
             "type": "string",
@@ -15735,13 +15762,15 @@
             "items": {
               "$ref": "#/components/schemas/Common.TelemetryMatcher"
             },
-            "maxItems": 32
+            "maxItems": 32,
+            "description": "Attribute predicates that every matched span, resource or log must satisfy; up to 32. Omit for no filtering. discover_attributes lists the keys and values that are recorded."
           },
           "limit": {
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 200
+            "maximum": 200,
+            "description": "Items per page. Omit for the tool's default: 20 groups for aggregate_telemetry, 100 for list_failures, discover_attributes, get_mcp_stats and the span and log collections of context tools. `has_more` and `next_cursor` continue the same query."
           },
           "cursor": {
             "$ref": "#/components/schemas/Common.Cursor"
@@ -15817,7 +15846,8 @@
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 43200
+            "maximum": 43200,
+            "description": "Minutes before `end_time` (or now) when `start_time` is omitted. Default 60; list_releases defaults to 10080 (7 days). Maximum 43200 (30 days)."
           },
           "start_time": {
             "type": "string",
@@ -15903,7 +15933,8 @@
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 43200
+            "maximum": 43200,
+            "description": "Minutes before `end_time` (or now) when `start_time` is omitted. Default 60; list_releases defaults to 10080 (7 days). Maximum 43200 (30 days)."
           },
           "start_time": {
             "type": "string",
@@ -16095,7 +16126,8 @@
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 43200
+            "maximum": 43200,
+            "description": "Minutes before `end_time` (or now) when `start_time` is omitted. Default 60; list_releases defaults to 10080 (7 days). Maximum 43200 (30 days)."
           },
           "start_time": {
             "type": "string",
@@ -16175,7 +16207,8 @@
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 43200
+            "maximum": 43200,
+            "description": "Minutes before `end_time` (or now) when `start_time` is omitted. Default 60; list_releases defaults to 10080 (7 days). Maximum 43200 (30 days)."
           },
           "start_time": {
             "type": "string",
@@ -16243,7 +16276,8 @@
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 43200
+            "maximum": 43200,
+            "description": "Minutes before `end_time` (or now) when `start_time` is omitted. Default 60; list_releases defaults to 10080 (7 days). Maximum 43200 (30 days)."
           },
           "start_time": {
             "type": "string",
@@ -16260,13 +16294,15 @@
             "items": {
               "$ref": "#/components/schemas/Common.TelemetryMatcher"
             },
-            "maxItems": 32
+            "maxItems": 32,
+            "description": "Attribute predicates that every matched span, resource or log must satisfy; up to 32. Omit for no filtering. discover_attributes lists the keys and values that are recorded."
           },
           "limit": {
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 200
+            "maximum": 200,
+            "description": "Items per page. Omit for the tool's default: 20 groups for aggregate_telemetry, 100 for list_failures, discover_attributes, get_mcp_stats and the span and log collections of context tools. `has_more` and `next_cursor` continue the same query."
           },
           "cursor": {
             "$ref": "#/components/schemas/Common.Cursor"
@@ -16357,7 +16393,8 @@
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 43200
+            "maximum": 43200,
+            "description": "Minutes before `end_time` (or now) when `start_time` is omitted. Default 60; list_releases defaults to 10080 (7 days). Maximum 43200 (30 days)."
           },
           "start_time": {
             "type": "string",
@@ -16374,13 +16411,15 @@
             "items": {
               "$ref": "#/components/schemas/Common.TelemetryMatcher"
             },
-            "maxItems": 32
+            "maxItems": 32,
+            "description": "Attribute predicates that every matched span, resource or log must satisfy; up to 32. Omit for no filtering. discover_attributes lists the keys and values that are recorded."
           },
           "limit": {
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 200
+            "maximum": 200,
+            "description": "Items per page. Omit for the tool's default: 20 groups for aggregate_telemetry, 100 for list_failures, discover_attributes, get_mcp_stats and the span and log collections of context tools. `has_more` and `next_cursor` continue the same query."
           },
           "cursor": {
             "$ref": "#/components/schemas/Common.Cursor"
@@ -16401,13 +16440,15 @@
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 1000
+            "maximum": 1000,
+            "description": "Maximum error spans in `observed.error_spans`. Default 100 (or `limit` when lower), maximum 1000; `next_cursor` continues."
           },
           "max_logs": {
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 200
+            "maximum": 200,
+            "description": "Maximum correlated log records in `observed.logs`. Default 100 (or `limit` when lower), maximum 200; `next_cursor` continues."
           }
         },
         "unevaluatedProperties": {
@@ -16484,7 +16525,8 @@
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 43200
+            "maximum": 43200,
+            "description": "Minutes before `end_time` (or now) when `start_time` is omitted. Default 60; list_releases defaults to 10080 (7 days). Maximum 43200 (30 days)."
           },
           "start_time": {
             "type": "string",
@@ -16501,13 +16543,15 @@
             "items": {
               "$ref": "#/components/schemas/Common.TelemetryMatcher"
             },
-            "maxItems": 32
+            "maxItems": 32,
+            "description": "Attribute predicates that every matched span, resource or log must satisfy; up to 32. Omit for no filtering. discover_attributes lists the keys and values that are recorded."
           },
           "limit": {
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 200
+            "maximum": 200,
+            "description": "Items per page. Omit for the tool's default: 20 groups for aggregate_telemetry, 100 for list_failures, discover_attributes, get_mcp_stats and the span and log collections of context tools. `has_more` and `next_cursor` continue the same query."
           },
           "cursor": {
             "$ref": "#/components/schemas/Common.Cursor"
@@ -16610,7 +16654,8 @@
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 43200
+            "maximum": 43200,
+            "description": "Minutes before `end_time` (or now) when `start_time` is omitted. Default 60; list_releases defaults to 10080 (7 days). Maximum 43200 (30 days)."
           },
           "start_time": {
             "type": "string",
@@ -16717,7 +16762,8 @@
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 43200
+            "maximum": 43200,
+            "description": "Minutes before `end_time` (or now) when `start_time` is omitted. Default 60; list_releases defaults to 10080 (7 days). Maximum 43200 (30 days)."
           },
           "start_time": {
             "type": "string",
@@ -16734,13 +16780,15 @@
             "items": {
               "$ref": "#/components/schemas/Common.TelemetryMatcher"
             },
-            "maxItems": 32
+            "maxItems": 32,
+            "description": "Attribute predicates that every matched span, resource or log must satisfy; up to 32. Omit for no filtering. discover_attributes lists the keys and values that are recorded."
           },
           "limit": {
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 200
+            "maximum": 200,
+            "description": "Items per page. Omit for the tool's default: 20 groups for aggregate_telemetry, 100 for list_failures, discover_attributes, get_mcp_stats and the span and log collections of context tools. `has_more` and `next_cursor` continue the same query."
           },
           "cursor": {
             "$ref": "#/components/schemas/Common.Cursor"
@@ -16840,25 +16888,29 @@
               "errors",
               "errors_with_ancestors",
               "critical_path"
-            ]
+            ],
+            "description": "Which spans to return: `all` (default), `errors` (error status only), `errors_with_ancestors` (error spans plus their path to the root; the ancestors carry `role: context`) or `critical_path` (the chain of longest child spans from the root, each with `self_time_ms`). Start with `errors_with_ancestors` when diagnosing a failure and widen to `all` only when the error path is not enough."
           },
           "attributes": {
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "Attribute keys to keep on each returned span; omit for every recorded attribute."
           },
           "include_logs": {
             "type": "integer",
             "format": "int32",
             "minimum": 0,
-            "maximum": 50
+            "maximum": 50,
+            "description": "Number of correlated log records to include, 0 to 50. Default 0, no logs; search_logs with the same `trace_id` returns the rest."
           },
           "lookback_minutes": {
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 43200
+            "maximum": 43200,
+            "description": "Minutes before `end_time` (or now) when `start_time` is omitted. Default 60; list_releases defaults to 10080 (7 days). Maximum 43200 (30 days)."
           },
           "start_time": {
             "type": "string",
@@ -16883,7 +16935,7 @@
             "format": "int32",
             "minimum": 1,
             "maximum": 1000,
-            "description": "Maximum spans to return after filtering; omit to keep all matching spans."
+            "description": "Maximum spans per page after `selection` is applied. Default 100, maximum 1000. When more spans match, `has_more` is true and `next_cursor` continues the same trace; `coverage` and `omitted` report what the page left out."
           },
           "include_attributes": {
             "type": "boolean",
@@ -17065,7 +17117,8 @@
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 43200
+            "maximum": 43200,
+            "description": "Minutes before `end_time` (or now) when `start_time` is omitted. Default 60; list_releases defaults to 10080 (7 days). Maximum 43200 (30 days)."
           },
           "start_time": {
             "type": "string",
@@ -17082,13 +17135,15 @@
             "items": {
               "$ref": "#/components/schemas/Common.TelemetryMatcher"
             },
-            "maxItems": 32
+            "maxItems": 32,
+            "description": "Attribute predicates that every matched span, resource or log must satisfy; up to 32. Omit for no filtering. discover_attributes lists the keys and values that are recorded."
           },
           "limit": {
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 200
+            "maximum": 200,
+            "description": "Items per page. Omit for the tool's default: 20 groups for aggregate_telemetry, 100 for list_failures, discover_attributes, get_mcp_stats and the span and log collections of context tools. `has_more` and `next_cursor` continue the same query."
           },
           "cursor": {
             "$ref": "#/components/schemas/Common.Cursor"
@@ -17195,7 +17250,8 @@
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 43200
+            "maximum": 43200,
+            "description": "Minutes before `end_time` (or now) when `start_time` is omitted. Default 60; list_releases defaults to 10080 (7 days). Maximum 43200 (30 days)."
           },
           "start_time": {
             "type": "string",
@@ -17282,7 +17338,8 @@
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 43200
+            "maximum": 43200,
+            "description": "Minutes before `end_time` (or now) when `start_time` is omitted. Default 60; list_releases defaults to 10080 (7 days). Maximum 43200 (30 days)."
           },
           "start_time": {
             "type": "string",
@@ -17299,13 +17356,15 @@
             "items": {
               "$ref": "#/components/schemas/Common.TelemetryMatcher"
             },
-            "maxItems": 32
+            "maxItems": 32,
+            "description": "Attribute predicates that every matched span, resource or log must satisfy; up to 32. Omit for no filtering. discover_attributes lists the keys and values that are recorded."
           },
           "limit": {
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 200
+            "maximum": 200,
+            "description": "Items per page. Omit for the tool's default: 20 groups for aggregate_telemetry, 100 for list_failures, discover_attributes, get_mcp_stats and the span and log collections of context tools. `has_more` and `next_cursor` continue the same query."
           },
           "cursor": {
             "$ref": "#/components/schemas/Common.Cursor"
@@ -17382,7 +17441,8 @@
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 43200
+            "maximum": 43200,
+            "description": "Minutes before `end_time` (or now) when `start_time` is omitted. Default 60; list_releases defaults to 10080 (7 days). Maximum 43200 (30 days)."
           },
           "start_time": {
             "type": "string",
@@ -17521,7 +17581,8 @@
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 43200
+            "maximum": 43200,
+            "description": "Minutes before `end_time` (or now) when `start_time` is omitted. Default 60; list_releases defaults to 10080 (7 days). Maximum 43200 (30 days)."
           },
           "start_time": {
             "type": "string",
@@ -17679,7 +17740,8 @@
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 43200
+            "maximum": 43200,
+            "description": "Minutes before `end_time` (or now) when `start_time` is omitted. Default 60; list_releases defaults to 10080 (7 days). Maximum 43200 (30 days)."
           },
           "start_time": {
             "type": "string",
@@ -18952,7 +19014,8 @@
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 43200
+            "maximum": 43200,
+            "description": "Minutes before `end_time` (or now) when `start_time` is omitted. Default 60; list_releases defaults to 10080 (7 days). Maximum 43200 (30 days)."
           },
           "start_time": {
             "type": "string",
@@ -19074,7 +19137,8 @@
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 43200
+            "maximum": 43200,
+            "description": "Minutes before `end_time` (or now) when `start_time` is omitted. Default 60; list_releases defaults to 10080 (7 days). Maximum 43200 (30 days)."
           },
           "start_time": {
             "type": "string",
@@ -19091,13 +19155,15 @@
             "items": {
               "$ref": "#/components/schemas/Common.TelemetryMatcher"
             },
-            "maxItems": 32
+            "maxItems": 32,
+            "description": "Attribute predicates that every matched span, resource or log must satisfy; up to 32. Omit for no filtering. discover_attributes lists the keys and values that are recorded."
           },
           "limit": {
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 200
+            "maximum": 200,
+            "description": "Items per page. Omit for the tool's default: 20 groups for aggregate_telemetry, 100 for list_failures, discover_attributes, get_mcp_stats and the span and log collections of context tools. `has_more` and `next_cursor` continue the same query."
           },
           "cursor": {
             "$ref": "#/components/schemas/Common.Cursor"
@@ -19606,7 +19672,8 @@
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 43200
+            "maximum": 43200,
+            "description": "Minutes before `end_time` (or now) when `start_time` is omitted. Default 60; list_releases defaults to 10080 (7 days). Maximum 43200 (30 days)."
           },
           "start_time": {
             "type": "string",
@@ -19622,7 +19689,7 @@
         "unevaluatedProperties": {
           "not": {}
         },
-        "description": "Time-range members of a tool input."
+        "description": "Time-range members of a tool input. Omit all three for the tool's default window ending now; the result's `window` reports the bounds that were applied, so a follow-up call can pass them as `start_time` and `end_time` to keep the same window."
       },
       "Mcp.Tools.ToolTrace": {
         "type": "object",
@@ -19907,7 +19974,8 @@
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 43200
+            "maximum": 43200,
+            "description": "Minutes before `end_time` (or now) when `start_time` is omitted. Default 60; list_releases defaults to 10080 (7 days). Maximum 43200 (30 days)."
           },
           "start_time": {
             "type": "string",
@@ -19924,7 +19992,8 @@
             "items": {
               "$ref": "#/components/schemas/Common.TelemetryMatcher"
             },
-            "maxItems": 32
+            "maxItems": 32,
+            "description": "Attribute predicates that every matched span, resource or log must satisfy; up to 32. Omit for no filtering. discover_attributes lists the keys and values that are recorded."
           },
           "cursor": {
             "$ref": "#/components/schemas/Common.Cursor"
@@ -19939,7 +20008,8 @@
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 50
+            "maximum": 50,
+            "description": "Ranked failures to return, 1 to 50. Default 10; new failures keep reserved slots ahead of ongoing ones."
           },
           "baseline": {
             "$ref": "#/components/schemas/Mcp.Tools.AnalysisBaseline"
@@ -20254,7 +20324,8 @@
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 43200
+            "maximum": 43200,
+            "description": "Minutes before `end_time` (or now) when `start_time` is omitted. Default 60; list_releases defaults to 10080 (7 days). Maximum 43200 (30 days)."
           },
           "start_time": {
             "type": "string",
@@ -20271,13 +20342,15 @@
             "items": {
               "$ref": "#/components/schemas/Common.TelemetryMatcher"
             },
-            "maxItems": 32
+            "maxItems": 32,
+            "description": "Attribute predicates that every matched span, resource or log must satisfy; up to 32. Omit for no filtering. discover_attributes lists the keys and values that are recorded."
           },
           "limit": {
             "type": "integer",
             "format": "int32",
             "minimum": 1,
-            "maximum": 200
+            "maximum": 200,
+            "description": "Items per page. Omit for the tool's default: 20 groups for aggregate_telemetry, 100 for list_failures, discover_attributes, get_mcp_stats and the span and log collections of context tools. `has_more` and `next_cursor` continue the same query."
           },
           "cursor": {
             "$ref": "#/components/schemas/Common.Cursor"

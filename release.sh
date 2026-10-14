@@ -138,7 +138,10 @@ git rev-parse -q --verify "refs/tags/v$version" >/dev/null && die "tag v$version
 [[ -z $(npm view "$NPM_PKG@$version" version --registry="$NPM_REGISTRY" "--@ancplua:registry=$NPM_REGISTRY" 2>/dev/null) ]] || die "$NPM_PKG@$version is already on npm"
 curl -fsSL "$NUGET_FLAT/index.json" | grep -q "\"$version\"" && die "$NUGET_PKG $version is already on NuGet"
 gh auth status >/dev/null 2>&1 || die "gh is not logged in"
-grep -q "^## $version" CHANGELOG.md || die "CHANGELOG.md has no '## $version' entry at the top"
+if ! grep -q "^## $version" CHANGELOG.md; then
+  (( dry )) || die "CHANGELOG.md has no '## $version' entry at the top"
+  echo "warning: CHANGELOG.md has no '## $version' entry yet; the real run refuses without it"
+fi
 
 # npm auth through a private userconfig so the token never reaches a command line.
 npmrc=$(mktemp); chmod 600 "$npmrc"

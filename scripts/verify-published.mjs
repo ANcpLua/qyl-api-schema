@@ -1,5 +1,9 @@
+import { mkdirSync, writeFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { releaseVersionPattern, verifyConsumers } from "./verify-consumers.mjs";
 
+// Fallout's VerifyRelease runs this in release.sh's detached verification: wait until npm and
+// nuget.org serve <version>, then install both registry packages into the consumer probes.
 const version = process.argv[2];
 if (!releaseVersionPattern.test(version ?? "")) {
   throw new Error("usage: node scripts/verify-published.mjs <version>");
@@ -8,12 +12,21 @@ if (!releaseVersionPattern.test(version ?? "")) {
 const npmPackage = "@ancplua/qyl-api-schema";
 const nugetPackage = "Qyl.Api.Contracts";
 const lowerVersion = version.toLowerCase();
-const waitAttempts = 180;
-const waitDelayMs = 10_000;
+// One deadline for all three waits; polls back off from 5 s to 60 s.
+const deadlineMs = 45 * 60_000;
+const started = Date.now();
+const elapsed = () => Math.round((Date.now() - started) / 1000);
+
+// release.sh reads this file: "indexed" lets the snapshot refresh run, "timed-out" makes a failure
+// a retry (exit 3) instead of a patch release.
+const statusFile = fileURLToPath(new URL(`../artifacts/release-${version}-index.status`, import.meta.url));
+mkdirSync(fileURLToPath(new URL("../artifacts/", import.meta.url)), { recursive: true });
+const writeStatus = (state) => writeFileSync(statusFile, `${state} elapsed=${elapsed()}s at=${new Date().toISOString()}\n`);
+writeStatus("waiting");
 
 async function waitFor(url, matches, label) {
   let lastError = "not registered";
-  for (let attempt = 1; attempt <= waitAttempts; attempt += 1) {
+  for (let attempt = 1, delayMs = 5_000; ; attempt += 1, delayMs = Math.min(delayMs * 2, 60_000)) {
     try {
       const requestUrl = new URL(url);
       requestUrl.searchParams.set("attempt", String(attempt));
@@ -24,7 +37,10 @@ async function waitFor(url, matches, label) {
       const body = await response.text();
       if (response.ok) {
         try {
-          if (matches(JSON.parse(body))) return;
+          if (matches(JSON.parse(body))) {
+            console.log(`indexed: ${label} after ${elapsed()} s`);
+            return;
+          }
           lastError = `HTTP ${response.status}; registration did not contain ${version}`;
         } catch (error) {
           lastError = `HTTP ${response.status}; invalid JSON: ${error instanceof Error ? error.message : String(error)}`;
@@ -35,10 +51,12 @@ async function waitFor(url, matches, label) {
     } catch (error) {
       lastError = error instanceof Error ? error.message : String(error);
     }
-    if (attempt === waitAttempts) {
-      throw new Error(`${label} was not registered after retries: ${lastError}`);
+    if (Date.now() - started + delayMs > deadlineMs) {
+      writeStatus("timed-out");
+      console.error(`${label} was not registered after ${elapsed()} s: ${lastError}`);
+      process.exit(3);
     }
-    await new Promise((resolve) => setTimeout(resolve, waitDelayMs));
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
   }
 }
 
@@ -61,6 +79,8 @@ await waitFor(
   (index) => Array.isArray(index.versions) && index.versions.includes(lowerVersion),
   `${nugetPackage}@${version} package index`,
 );
+
+writeStatus("indexed");
 
 await verifyConsumers({
   version,

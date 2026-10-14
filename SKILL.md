@@ -17,10 +17,9 @@ One agent per qyl-dev repo (qyl, qyl.mcp, qyl-api-schema, Qyl.Telemetry.AutoInst
 ## Release
 
 1. `mise run check` green on `main`.
-2. `./release.sh <x.y.z>` (`--dry-run` first only when a step is new or unsure; the script refuses before publishing when anything is off).
-3. If it ends "not indexed yet", poll every 30 s; nothing else about this release until both are indexed.
-4. Both indexed: notify the consumers, qyl before qyl.mcp.
-5. Run `/Users/alexandernachtmann/RiderProjects/qyl.at/scripts/refresh-published-versions.sh` (rewrites, commits and pushes `published-versions.yaml` in qyl.at, the snapshot every agent reads first).
+2. `./release.sh <x.y.z>` (`--dry-run` first only when a step is new or unsure; the script refuses before publishing when anything is off). It returns before indexing, once both registries accepted the push and the tag and GitHub release exist; a detached job runs `./build.sh VerifyRelease --published-version <x.y.z>` (index wait, registry consumers) and then the snapshot refresh (`published-versions.yaml` in qyl.at), logging to `artifacts/release-<x.y.z>-verify.log`. Do not run the snapshot refresh by hand.
+3. `./release.sh --wait <x.y.z>` blocks until that log ends in VERIFIED or FAILED; nothing else about this release until then. Exit 3 = not indexed in time, `./release.sh --verify <x.y.z>` checks again; any other FAILED after publication is a patch release.
+4. VERIFIED: notify the consumers, qyl before qyl.mcp.
 
 ## Notify
 

@@ -376,6 +376,22 @@ sealed class Build : FalloutBuild
                 .AssertZeroExitCode();
         });
 
+    [Parameter("VerifyRelease: the released version to verify on npm and nuget.org")]
+    readonly string? PublishedVersion;
+
+    // release.sh runs this in its detached verification once the tag and GitHub release exist;
+    // rerun it by hand after a patch release. scripts/verify-published.mjs polls npm, the NuGet
+    // registration and the flat-container index (up to 30 minutes each), then installs both
+    // registry packages into the VerifyPackedConsumers probes.
+    Target VerifyRelease => _ => _
+        .Description("Wait until npm and nuget.org serve --published-version, then install both registry packages into the consumer probes.")
+        .Requires(() => PublishedVersion)
+        .Executes(() =>
+        {
+            ProcessTasks.StartProcess("node", $"scripts/verify-published.mjs {PublishedVersion}", DomainSpecRoot)
+                .AssertZeroExitCode();
+        });
+
     Target Check => _ => _
         .Description("Local everything-green gate: restore -> lint both surfaces -> compile -> generated/contract invariants -> emit deterministically -> pack npm and C# contracts -> install both into clean consumers.")
         .DependsOn(

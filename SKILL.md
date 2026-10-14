@@ -1,4 +1,4 @@
-# qyl-api-schema: release, pins and agent hand-offs
+# qyl-api-schema: release and pins
 
 Who reads this: the one agent working on this repository's `main`. Agent, user and owner are
 the same word. There is one agent per repository, six in all (qyl, qyl.mcp, qyl-api-schema,
@@ -59,9 +59,7 @@ bun is the package manager (`bun.lock`); npm is used only for `npm version`, `np
 ## Notify
 
 One message per consumer repo, to its running agent through the session's agent-messaging
-tool when there is one (Claude Code: `ListAgents`, then `SendMessage`). If the consumer has
-no running agent, append the same text to the handoff file above under "Pending re-pins";
-the owner relays it. Text:
+tool when there is one (Claude Code: `ListAgents`, then `SendMessage`). Text:
 
 ```
 RELEASE @ancplua/qyl-api-schema + Qyl.Api.Contracts <version> indexed <UTC time>

@@ -1,6 +1,6 @@
 # qyl-api-schema
 
-Release, re-pin and agent hand-offs: follow [`SKILL.md`](SKILL.md) at this repo root (canonical clone `/Users/alexandernachtmann/RiderProjects/qyl-api-schema/SKILL.md`); the one command is `./release.sh`. Published versions: `/Users/alexandernachtmann/Downloads/qyl-codex-claude/qyl-published-versions.yaml`.
+Release and re-pin: follow [`SKILL.md`](SKILL.md) at this repo root (canonical clone `/Users/alexandernachtmann/RiderProjects/qyl-api-schema/SKILL.md`); the one command is `./release.sh`. Published versions come from the registries (`npm view @ancplua/qyl-api-schema version`, the NuGet index for `Qyl.Api.Contracts`) or the release tags.
 
 ## Publishing across the qyl-dev repos
 
@@ -15,11 +15,11 @@ A release is done from the developer's machine with the registry API keys regist
 | AutoInstrumentation | `Directory.Build.props` `Version` | the six `Qyl.Telemetry.*` packages (NuGet) |
 | qyl | `Version.props` `QylVersion` | `qyl`, `qyl.<rid>` ×6, `Qyl.Api.Sdk` (NuGet) |
 | qyl.mcp | `server/package.json` `version` plus a `server/README.md` release-notes entry | `qyl-mcp-server` (npm) |
-| qyl.at | none | `./release.sh` deploys `qyl.at` from `main` |
+| qyl.at | none | nothing to a registry; `./release.sh` deploys `main` to the `qyl-at` Worker |
 
 Downstream pins move in the change that consumes the publish: qyl-api-schema → qyl (`Version.props` `QylApiContractsVersion`, `services/qyl.dashboard/package.json`, `bun.lock`, the README table) → qyl.mcp (`server`, `workbench` and `dashboard` `package.json`, `bun.lock`); SemanticConventions → AutoInstrumentation (`Directory.Packages.props`, `SEMCONV_REF`), qyl (`QylSemanticConventionsVersion`) and qyl.mcp (`server` and `workbench` convention-package references and `bun.lock`), with qyl.at serving `public/schemas/<version>`; AutoInstrumentation → qyl (`QylTelemetryVersion`); every producer → qyl.at `src/data/site.ts`. One production rule stays: when the contract revision changes, push the Collector (qyl `main`) first, wait until `api.qyl.at/health` serves the new revision, then push qyl.mcp; `mcp.qyl.at` refuses a Collector on another revision.
 
-Pushing `main` also deploys: qyl → `qyl-collector` (`api.qyl.at`, Railway), qyl.mcp → `qyl-mcp` (`mcp.qyl.at`, Railway). qyl.at deploys the `qyl-at` Worker (`qyl.at`, Cloudflare) through `./release.sh`.
+Pushing `main` also deploys: qyl → `qyl-collector` (`api.qyl.at`, Railway), qyl.mcp → `qyl-mcp` (`mcp.qyl.at`, Railway). qyl.at deploys nothing on push: its `./release.sh` (the release entry) and `bun run deploy` both run `wrangler deploy` to the `qyl-at` Worker (`qyl.at`, Cloudflare).
 
 ## Telemetry boundary
 

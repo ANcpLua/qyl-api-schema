@@ -32,15 +32,18 @@ The contract covers every client-visible surface of a qyl collector and runner:
   resource, span and log projections (`otel/`).
 
 Telemetry itself is never changed or deleted through this contract; retention
-removes it. The only writable resources are the ones a user creates:
-annotations (`/api/v1/annotations`, a note of at most 2000 characters on a trace,
-span or session) and saved queries (`/api/v1/saved-queries`, a named structured
-filter for traces, logs or metrics, run with `POST …/{saved_query_id}:run`). Both
-extend the shared write base in `common/resource.tsp`: server-assigned `id`,
-`created_at`, `updated_at` and `etag`; `Idempotency-Key` on create, which answers
-`201` with `Location`; `If-Match` on `PATCH` and `DELETE`, refused with `428` when
-missing and `412` when stale. Collector keys carry the roles `ingest`, `read`,
-`write` and `delete` (`CollectorKeyRole`); writes need `write`, deletes `delete`.
+removes it. The only writable resources are annotations (`/api/v1/annotations`,
+a note of at most 2000 characters on a trace, span or session), saved queries
+(`/api/v1/saved-queries`, a named structured filter for traces, logs or metrics,
+run with `POST …/{saved_query_id}:run`) and failure status
+(`PATCH /api/v1/failures/{failure_id}`, a recorded failure's status, assignee or
+ignore-until time). Annotations and saved queries extend the shared write base in
+`common/resource.tsp`: server-assigned `id`, `created_at`, `updated_at` and `etag`;
+`Idempotency-Key` on create, which answers `201` with `Location`; `If-Match` on
+`PATCH` and `DELETE`, refused with `428` when missing and `412` when stale. The
+failure status `PATCH` takes the same `If-Match`. Collector keys carry the roles
+`ingest`, `read`, `write` and `delete` (`CollectorKeyRole`); writes need `write`,
+deletes `delete`.
 
 ## Errors and pages
 
@@ -151,14 +154,6 @@ document from the release tag, and the tracked document keeps TypeSpec's `0.0.0`
 digest excludes `info.version`, so a release that changes nothing but its version keeps
 the revision.
 
-## Contributing
-
-How to build, lint, regenerate and publish is in [CONTRIBUTING.md](CONTRIBUTING.md).
-
-## License
-
-Apache-2.0
-
 ## Investigation contracts
 
 The generated `Mcp.Tools` surface covers the 32-tool qyl MCP set. Each of the 26 read tools has a distinct, typed `POST /api/v1/analysis/<tool_name>` operation. Structured predicates support the shared matcher operators; read results carry the absolute `window` and `coverage` with nullable unknown counts. Existing trace, log, metric and session REST routes remain available.
@@ -166,3 +161,11 @@ The generated `Mcp.Tools` surface covers the 32-tool qyl MCP set. Each of the 26
 Failure status is updated through `PATCH /api/v1/failures/{failure_id}` with `If-Match`. Failure handles, verification tokens and cursors are scoped and validated by the collector. Annotation contracts support failure targets, labels, classifications and retry keys. These contracts carry product data only; telemetry runtime dependencies remain in their producer repositories.
 
 The schema gate checks all read operation/type pairs, answer-key result shapes and invalid inputs, then verifies the packed npm and NuGet consumers. Collector behavior and the seeded live tool answers are tested by the collector and MCP suites against the same generated contracts.
+
+## Contributing
+
+How to build, lint, regenerate and publish is in [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## License
+
+Apache-2.0

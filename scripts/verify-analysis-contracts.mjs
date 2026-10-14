@@ -22,6 +22,7 @@ const divergence={a_span:es,b_span:{...es,status:'OK'},kind:'status'};
 const totals={requests:40,errors:8,error_rate:.2,p50_ms:100,p95_ms:300,unit:'requests'};
 const group={...totals,name:'search_logs',example_trace_ids:[trace]};
 const classes={transport:0,protocol:0,tool_result:0,authentication:0,cancellation:0,timeout:8};
+/** @type {Array<[string, Record<string, unknown>, string]>} */
 const cases=[
  ['TriageOutput',{...read,failures:[tf,{...tf,failure_id:'opaque-project-R',count:2}],regressions:[],releases:[tf.coinciding_release],silent_services:[{service:'billing',last_seen:'2026-10-12T08:00:00Z',usual_rate:1,unit:'spans/minute'}]},'triage F first, rare R retained, billing silent'],
  ['ListFailuresOutput',{...read,failures:[failure,{...failure,failure_id:'opaque-checkout',service:'checkout'}],has_more:false},'db chain exactly two stable failure records'],
@@ -39,7 +40,7 @@ const cases=[
  ['UpdateFailureStatusOutput',{failure:{...failure,status:'ignored',ignore_until:at,etag:'v2'}},'ignored status and new etag'],
  ['UpdateFailureStatusOutput',{failure:{...failure,status:'resolved',etag:'v3'}},'resolved status for recurrence detection'],
 ];
-for(const [name,value,label]of cases){assertValid(V(name),value,label);if(name.endsWith('Output')&&name!=='UpdateFailureStatusOutput'){const {coverage:_,...missing}=value;assertInvalid(V(name),missing,`${label} requires coverage`);}}
+for(const [name,value,label]of cases){assertValid(V(name),value,label);if(name.endsWith('Output')&&name!=='UpdateFailureStatusOutput'){const missing={...value};delete missing.coverage;assertInvalid(V(name),missing,`${label} requires coverage`);}}
 for(const op of ['eq','neq','in','prefix','contains','exists','gt','gte','lt','lte'])assertValid(C('TelemetryMatcher'),{key:'http.status_code',op,...(op==='exists'?{}:op==='in'?{values:[200,500]}:{value:op==='gt'?400:'500'}),scope:'span'},`matcher ${op}`);
 assertInvalid(C('TelemetryMatcher'),{key:'x',op:'regex',value:'x'},'unplanned matcher operator');
 assertValid(C('ToolCoverage'),{...coverage,examined:null,matched:null,returned:null},'unknown coverage is null');
@@ -53,11 +54,11 @@ assertInvalid(V('UpdateFailureStatusInput'),{failure_id:'opaque-project-F',etag:
 console.log(`analysis contracts: ${names.length} typed read routes, ${cases.length} answer-key output shapes, ${inputCases.length} upgraded input cases`);
 
 const matcher = {key:'service.name',scope:'resource',op:'exists'};
-for (const [name, base] of [
+for (const [name, base] of /** @type {Array<[string, Record<string, unknown>]>} */ ([
  ['CompareGroup',{}], ['MetricRatio',{metric_name:'requests'}],
  ['FetchTelemetryTracesInput',{view:'traces'}], ['FetchTelemetryTraceInput',{view:'trace',trace_id:trace}],
  ['FetchTelemetryLogsInput',{view:'logs'}], ['FetchTelemetryMcpStatsInput',{view:'mcp_stats'}],
-]) {
+])) {
  assertValid(V(name), {...base,matchers:Array(32).fill(matcher)}, `${name} accepts 32 matchers`);
  assertInvalid(V(name), {...base,matchers:Array(33).fill(matcher)}, `${name} rejects 33 matchers`);
 }

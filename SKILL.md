@@ -5,7 +5,7 @@ One agent per qyl-dev repo (qyl, qyl.mcp, qyl-api-schema, Qyl.Telemetry.AutoInst
 ## This repository
 
 - Publishes `@ancplua/qyl-api-schema` (npm) and `Qyl.Api.Contracts` (NuGet) at one version from one commit.
-- Version source: the tag. `package.json` stays `0.0.0-development` on `main`; never commit a version bump (`./release.sh` sets and restores it; its header says the rest).
+- Version source: the tag, plus a `## <x.y.z>` entry at the top of `CHANGELOG.md` (release.sh refuses without it and uses it as the GitHub release notes). `package.json` stays `0.0.0-development` on `main`; never commit a version bump (`./release.sh` sets and restores it; its header says the rest).
 - Keys: Vitals entries "qyl-api-schema and qyl.mcp manual publish and release (npm)" (`~/.config/vitals/npm-qyl-manual-publish-token`) and "qyl-dev manual publish and release (NuGet)" (`~/.config/vitals/nuget-qyl-manual-publish-key`), read by the script. Never print, paste, commit or log a key. Entry missing, note expired, "npm token rejected" or an npm one-time-password prompt: stop and tell the owner.
 - Upstream pins: none from the qyl-dev repos.
 

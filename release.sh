@@ -6,7 +6,8 @@
 #                                   once both registries accepted the push and the tag and the GitHub
 #                                   release exist, and leaves the verification below running detached
 #   ./release.sh <x.y.z> --dry-run  every check, the real pack at <x.y.z>, `npm publish --dry-run`
-#                                   and a NuGet key probe for Qyl.Api.Contracts; nothing is pushed,
+#                                   (skipped when npm already holds <x.y.z>: npm refuses it there) and
+#                                   a NuGet key probe for Qyl.Api.Contracts; nothing is pushed,
 #                                   registries and git stay unchanged. Checks the real run enforces
 #                                   (tag, already on npm or NuGet, CHANGELOG entry) only warn. Prints
 #                                   what the detached job would do
@@ -162,7 +163,9 @@ release_commit=$(git rev-parse HEAD)  # the commit the checks and the pack run o
 echo "release commit: $release_commit"
 [[ -z $(git ls-remote --tags origin "refs/tags/v$version") ]] || refuse "tag v$version already on origin"
 git rev-parse -q --verify "refs/tags/v$version" >/dev/null && refuse "tag v$version already exists locally"
-[[ -z $(npm view "$NPM_PKG@$version" version --registry="$NPM_REGISTRY" "--@ancplua:registry=$NPM_REGISTRY" 2>/dev/null) ]] || refuse "$NPM_PKG@$version is already on npm"
+npm_published=0
+[[ -z $(npm view "$NPM_PKG@$version" version --registry="$NPM_REGISTRY" "--@ancplua:registry=$NPM_REGISTRY" 2>/dev/null) ]] ||
+  { npm_published=1; refuse "$NPM_PKG@$version is already on npm"; }
 curl -fsSL "$NUGET_FLAT/index.json" | grep -q "\"$version\"" && refuse "$NUGET_PKG $version is already on NuGet"
 gh auth status >/dev/null 2>&1 || die "gh is not logged in"
 grep -q "^## $version" CHANGELOG.md || refuse "CHANGELOG.md has no '## $version' entry at the top"
@@ -176,13 +179,13 @@ who=$(npm whoami --registry="$NPM_REGISTRY") || die "npm token rejected (vitals 
 echo "npm token belongs to: $who"
 
 say "version $version (working tree only, restored on exit)"
-trap 'git checkout -q -- package.json; rm -f "$npmrc"' EXIT
+tgz=ancplua-qyl-api-schema-$version.tgz
+trap 'git checkout -q -- package.json; rm -f "$npmrc" "$tgz"' EXIT
 npm version "$version" --no-git-tag-version >/dev/null
 
 say "pack (Fallout)"
 ./build.sh PackApiPackage
 ./build.sh PackContractsNuget
-tgz=ancplua-qyl-api-schema-$version.tgz
 nupkg=Artifacts/nuget/$NUGET_PKG.$version.nupkg
 [[ -f $tgz ]]   || die "npm tarball not found: $tgz"
 [[ -f $nupkg ]] || die "nupkg not found: $nupkg"
@@ -193,8 +196,13 @@ say "npm publish"
 # .npmrc maps @ancplua to GitHub Packages for dependencies; the scope override sends this
 # publish to npmjs.org. --provenance=false: publishConfig asks for provenance, which only
 # CI OIDC can supply.
-npm publish "./$tgz" --registry="$NPM_REGISTRY" "--@ancplua:registry=$NPM_REGISTRY" \
-  --provenance=false --access public $( (( dry )) && echo --dry-run )
+if (( dry && npm_published )); then
+  # npm's publish --dry-run refuses a published version; npm whoami above proved the token.
+  echo "dry run: $NPM_PKG@$version is on npm already, so npm publish --dry-run is skipped"
+else
+  npm publish "./$tgz" --registry="$NPM_REGISTRY" "--@ancplua:registry=$NPM_REGISTRY" \
+    --provenance=false --access public $( (( dry )) && echo --dry-run )
+fi
 
 say "NuGet push"
 if (( dry )); then
@@ -211,7 +219,6 @@ else
 fi
 
 if (( dry )); then
-  rm -f "$tgz"
   git checkout -q -- package.json
   say "dry run finished: nothing published, nothing tagged"
   git status --short --untracked-files=no
@@ -234,7 +241,6 @@ else
   gh release create "v$version" --title "v$version" --notes-file "$notes" "./$tgz" "$nupkg"
 fi
 rm -f "$notes"
-rm -f "$tgz"
 
 start_verification
 say "next (SKILL.md): ./release.sh --wait $version, then notify the consumers"

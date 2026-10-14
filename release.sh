@@ -133,6 +133,8 @@ say "checks"
 [[ -z $(git status --porcelain --untracked-files=no) ]] || die "working tree not clean"
 git fetch -q origin main
 [[ $(git rev-parse HEAD) == $(git rev-parse origin/main) ]] || die "main differs from origin/main"
+release_commit=$(git rev-parse HEAD)  # the commit the checks and the pack run on; the tag names it
+echo "release commit: $release_commit"
 [[ -z $(git ls-remote --tags origin "refs/tags/v$version") ]] || die "tag v$version already on origin"
 git rev-parse -q --verify "refs/tags/v$version" >/dev/null && die "tag v$version already exists locally"
 [[ -z $(npm view "$NPM_PKG@$version" version --registry="$NPM_REGISTRY" "--@ancplua:registry=$NPM_REGISTRY" 2>/dev/null) ]] || die "$NPM_PKG@$version is already on npm"
@@ -197,9 +199,11 @@ fi
 
 say "tag and GitHub release"
 git checkout -q -- package.json
-git tag -a "v$version" -m "v$version"
+[[ $(git rev-parse HEAD) == "$release_commit" ]] ||
+  echo "warning: HEAD moved to $(git rev-parse --short HEAD) during the release; v$version tags the packed $release_commit"
+git tag -a "v$version" "$release_commit" -m "v$version"
 git push -q origin "v$version"
-notes=$(mktemp); awk -v v="$version" 'index($0, "## " v) == 1 {on=1; next} on && /^## / {exit} on' CHANGELOG.md >"$notes"
+notes=$(mktemp); git show "$release_commit:CHANGELOG.md" | awk -v v="$version" 'index($0, "## " v) == 1 {on=1; next} on && /^## / {exit} on' >"$notes"
 if gh release view "v$version" >/dev/null 2>&1; then
   gh release upload "v$version" "./$tgz" "$nupkg" --clobber
 else

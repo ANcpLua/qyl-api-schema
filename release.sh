@@ -6,7 +6,9 @@
 #                                   once both registries accepted the push and the tag and the GitHub
 #                                   release exist, and leaves the verification below running detached
 #   ./release.sh <x.y.z> --dry-run  every check, the real pack at <x.y.z>, `npm publish --dry-run`
-#                                   and a NuGet key probe; registries and git stay unchanged; prints
+#                                   and a NuGet key probe for Qyl.Api.Contracts; nothing is pushed,
+#                                   registries and git stay unchanged. Checks the real run enforces
+#                                   (tag, already on npm or NuGet, CHANGELOG entry) only warn. Prints
 #                                   what the detached job would do
 #   ./release.sh --wait <x.y.z>     blocks until artifacts/release-<x.y.z>-verify.log ends in VERIFIED
 #                                   (exit 0) or FAILED (exit 1; exit 3 when not indexed in time),
@@ -30,6 +32,7 @@ NUGET_PKG=Qyl.Api.Contracts
 NPM_REGISTRY=https://registry.npmjs.org
 NUGET_SOURCE=https://api.nuget.org/v3/index.json
 NUGET_FLAT=https://api.nuget.org/v3-flatcontainer/qyl.api.contracts
+NUGET_GALLERY=https://www.nuget.org/api/v2
 NPM_TOKEN_FILE=$HOME/.config/vitals/npm-qyl-manual-publish-token          # vitals keys: "... manual publish and release (npm)"
 NUGET_KEY_FILE=$HOME/.config/vitals/nuget-qyl-manual-publish-key  # vitals keys: "qyl-dev manual publish and release (NuGet)"
 RELEASE_NAME="$NPM_PKG + $NUGET_PKG"
@@ -132,6 +135,22 @@ case $mode in
     exit 0 ;;
 esac
 
+# A check the real run enforces; a dry run reports it and goes on.
+refuse() { (( dry )) || die "$*"; echo "warning: $*; the real run refuses"; }
+# The key probe publishes nothing: it is NuGet's push-symbols handshake. The key mints a one-use
+# package verification key for <id> <version> (only a live key with push scope can), and that key
+# verifies with 200 only when the key's account owns <id>; the verify call consumes it. The key
+# travels in a curl config on stdin, never on a command line.
+key_probe() {
+  local id=$1 version=$2 minted temp
+  minted=$(printf 'header = "X-NuGet-ApiKey: %s"\n' "$(<"$NUGET_KEY_FILE")" |
+    curl -fsS -X POST -H 'Content-Length: 0' -K - "$NUGET_GALLERY/package/create-verification-key/$id/$version") || return 1
+  temp=$(sed -n 's/.*"Key":"\([^"]*\)".*/\1/p' <<<"$minted")
+  [[ -n $temp ]] || return 1
+  [[ $(printf 'header = "X-NuGet-ApiKey: %s"\n' "$temp" |
+    curl -sS -o /dev/null -w '%{http_code}' -K - "$NUGET_GALLERY/verifykey/$id/$version") == 200 ]]
+}
+
 say "checks"
 [[ -r $NPM_TOKEN_FILE ]]  || die "npm token missing: $NPM_TOKEN_FILE (vitals keys)"
 [[ -r $NUGET_KEY_FILE ]]  || die "NuGet key missing: $NUGET_KEY_FILE (vitals keys)"
@@ -141,27 +160,23 @@ git fetch -q origin main
 [[ $(git rev-parse HEAD) == $(git rev-parse origin/main) ]] || die "main differs from origin/main"
 release_commit=$(git rev-parse HEAD)  # the commit the checks and the pack run on; the tag names it
 echo "release commit: $release_commit"
-[[ -z $(git ls-remote --tags origin "refs/tags/v$version") ]] || die "tag v$version already on origin"
-git rev-parse -q --verify "refs/tags/v$version" >/dev/null && die "tag v$version already exists locally"
-[[ -z $(npm view "$NPM_PKG@$version" version --registry="$NPM_REGISTRY" "--@ancplua:registry=$NPM_REGISTRY" 2>/dev/null) ]] || die "$NPM_PKG@$version is already on npm"
-curl -fsSL "$NUGET_FLAT/index.json" | grep -q "\"$version\"" && die "$NUGET_PKG $version is already on NuGet"
+[[ -z $(git ls-remote --tags origin "refs/tags/v$version") ]] || refuse "tag v$version already on origin"
+git rev-parse -q --verify "refs/tags/v$version" >/dev/null && refuse "tag v$version already exists locally"
+[[ -z $(npm view "$NPM_PKG@$version" version --registry="$NPM_REGISTRY" "--@ancplua:registry=$NPM_REGISTRY" 2>/dev/null) ]] || refuse "$NPM_PKG@$version is already on npm"
+curl -fsSL "$NUGET_FLAT/index.json" | grep -q "\"$version\"" && refuse "$NUGET_PKG $version is already on NuGet"
 gh auth status >/dev/null 2>&1 || die "gh is not logged in"
-if ! grep -q "^## $version" CHANGELOG.md; then
-  (( dry )) || die "CHANGELOG.md has no '## $version' entry at the top"
-  echo "warning: CHANGELOG.md has no '## $version' entry yet; the real run refuses without it"
-fi
+grep -q "^## $version" CHANGELOG.md || refuse "CHANGELOG.md has no '## $version' entry at the top"
 
 # npm auth through a private userconfig so the token never reaches a command line.
 npmrc=$(mktemp); chmod 600 "$npmrc"
-probe_dir=$(mktemp -d)
-trap 'rm -rf "$npmrc" "$probe_dir"' EXIT
+trap 'rm -f "$npmrc"' EXIT
 printf '//registry.npmjs.org/:_authToken=%s\n' "$(<"$NPM_TOKEN_FILE")" >"$npmrc"
 export NPM_CONFIG_USERCONFIG=$npmrc
 who=$(npm whoami --registry="$NPM_REGISTRY") || die "npm token rejected (vitals keys)"
 echo "npm token belongs to: $who"
 
 say "version $version (working tree only, restored on exit)"
-trap 'git checkout -q -- package.json; rm -rf "$npmrc" "$probe_dir"' EXIT
+trap 'git checkout -q -- package.json; rm -f "$npmrc"' EXIT
 npm version "$version" --no-git-tag-version >/dev/null
 
 say "pack (Fallout)"
@@ -183,10 +198,13 @@ npm publish "./$tgz" --registry="$NPM_REGISTRY" "--@ancplua:registry=$NPM_REGIST
 
 say "NuGet push"
 if (( dry )); then
-  latest=$(curl -fsSL "$NUGET_FLAT/index.json" | python3 -I -c 'import json,sys; print(json.load(sys.stdin)["versions"][-1])')
-  curl -fsSL -o "$probe_dir/probe.nupkg" "$NUGET_FLAT/$latest/qyl.api.contracts.$latest.nupkg"
-  echo "dry run: pushing the published $latest again with --skip-duplicate to prove the key (expect 'already exists')"
-  dotnet nuget push "$probe_dir/probe.nupkg" --api-key "$(<"$NUGET_KEY_FILE")" --source "$NUGET_SOURCE" --skip-duplicate
+  published=$(curl -fsSL "$NUGET_FLAT/index.json" 2>/dev/null | grep -o '"[0-9][^"]*"' | tail -1 | tr -d '"' || true)
+  [[ -n $published ]] || die "cannot read the published versions of $NUGET_PKG from NuGet"
+  # A rejected key fails every attempt; a dropped connection does not.
+  probed=0
+  for _ in 1 2 3; do key_probe "$NUGET_PKG" "$published" && { probed=1; break; }; sleep 3; done
+  (( probed )) || die "the NuGet key failed the probe for $NUGET_PKG three times: expired, revoked, without push scope, or its account does not own $NUGET_PKG (vitals keys)"
+  echo "key probe: $NUGET_PKG ok (verified against $published, nothing published)"
 else
   # --skip-duplicate: a rerun after a partial failure (pushed, not indexed yet) goes on.
   dotnet nuget push "$nupkg" --api-key "$(<"$NUGET_KEY_FILE")" --source "$NUGET_SOURCE" --skip-duplicate

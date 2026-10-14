@@ -17,7 +17,7 @@ One agent per qyl-dev repo (qyl, qyl.mcp, qyl-api-schema, Qyl.Telemetry.AutoInst
 ## Release
 
 1. `mise run check` green on `main`.
-2. `./release.sh <x.y.z>` (`--dry-run` first only when a step is new or unsure; the script refuses before publishing when anything is off). It returns before indexing, once both registries accepted the push and the tag and GitHub release exist; a detached job runs `./build.sh VerifyRelease --published-version <x.y.z>` (index wait, registry consumers) and then the snapshot refresh (`published-versions.yaml` in qyl.at), logging to `artifacts/release-<x.y.z>-verify.log`. Do not run the snapshot refresh by hand.
+2. `./release.sh <x.y.z>` (`--dry-run` first only when a step is new or unsure; the script refuses before publishing when anything is off). A dry run pushes nothing: it proves the NuGet key for Qyl.Api.Contracts through NuGet's package-verification handshake (a one-use key minted and verified against the latest published version, three attempts) and runs `npm publish --dry-run`; an existing tag or published version only warns. The real run returns before indexing, once both registries accepted the push and the tag and GitHub release exist; a detached job runs `./build.sh VerifyRelease --published-version <x.y.z>` (index wait, registry consumers) and then the snapshot refresh (`published-versions.yaml` in qyl.at), logging to `artifacts/release-<x.y.z>-verify.log`. Do not run the snapshot refresh by hand.
 3. `./release.sh --wait <x.y.z>` blocks until that log ends in VERIFIED or FAILED; nothing else about this release until then. Exit 3 = not indexed in time, `./release.sh --verify <x.y.z>` checks again; any other FAILED after publication is a patch release.
 4. VERIFIED: notify the consumers, qyl before qyl.mcp.
 

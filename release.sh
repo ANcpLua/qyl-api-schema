@@ -99,5 +99,5 @@ for _ in $(seq 1 20); do
 done
 curl -fsSL "$NUGET_FLAT/index.json" | grep -q "\"$version\"" || echo "nuget: $version pushed, not indexed yet; check $NUGET_FLAT/index.json later"
 
-say "next: release ripple (AGENTS.md)"
+say "next (SKILL.md): notify the consumers once both are indexed, then refresh the snapshot"
 echo "re-pin $NPM_PKG $version in qyl (Collector) first, wait for its Railway deployment and api.qyl.at to serve the new revision, then in qyl.mcp."

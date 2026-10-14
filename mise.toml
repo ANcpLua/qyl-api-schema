@@ -1,5 +1,5 @@
-# The toolchain this repository builds with. CI installs it with jdx/mise-action;
-# locally `mise install` does the same. dotnet also keeps global.json, which dotnet itself reads.
+# The toolchain this repository builds with; `mise install` installs it.
+# dotnet also keeps global.json, which dotnet itself reads.
 [tools]
 "bun" = "1.4.3"
 "dotnet" = "10.0.401"
@@ -8,7 +8,7 @@
 "node" = "24.21.0"
 
 [tasks.check]
-description = "The gate: what CI runs, in order"
+description = "The gate before a push or a release, in order"
 run = [
   "bun install --frozen-lockfile",
   "bun run lint",

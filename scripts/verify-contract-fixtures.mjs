@@ -23,6 +23,34 @@ const csharpLogsRuntime = await readFile(
 );
 const defs = schema.$defs ?? {};
 
+const validateRunnerState = validatorFor("Runner.RunnerResourceState");
+const runnerState = {
+  name: "worker", lifecycle: "ready", timestamp: "2026-10-16T12:00:00Z",
+  allocated_port: 4318, endpoint: "http://127.0.0.1:4318", last_error: "Process exited (code 1)",
+};
+for (const kind of ["collector", "project", "command"]) {
+  assertValid(validateRunnerState, { ...runnerState, kind }, `runner process kind ${kind}`);
+}
+for (const kind of ["stdio", "http", "inproc"]) {
+  assertInvalid(validateRunnerState, { ...runnerState, kind }, `runner rejects MCP transport ${kind}`);
+}
+for (const field of ["server_identity", "tool_count", "restarts"]) {
+  assertInvalid(validateRunnerState, { ...runnerState, [field]: 0 }, `runner rejects unsupported field ${field}`);
+}
+for (const allocated_port of [0, 65536, 1.5]) {
+  assertInvalid(validateRunnerState, { ...runnerState, allocated_port }, `runner rejects port ${allocated_port}`);
+}
+
+assertValid(validatorFor("Workbench.WorkbenchInitializationSnapshot"), {
+  initialized_at: "2026-10-16T12:00:00Z", protocol_version: "2026-07-28",
+  server_identity: { name: "fixture-server", version: "1.0.0" },
+  capabilities: { tools: {} },
+  result: {
+    protocolVersion: "2026-07-28", serverInfo: { name: "fixture-server", version: "1.0.0" },
+    capabilities: { tools: {} },
+  },
+}, "Workbench retains MCP initialization evidence");
+
 const validateGetTrace = validatorFor("Mcp.Tools.GetTraceInput");
 const traceInput = { trace_id: "0123456789abcdef0123456789abcdef" };
 assertValid(validateGetTrace, traceInput, "get_trace existing input without projection options");

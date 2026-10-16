@@ -26,7 +26,7 @@ using OTelResource = Qyl.Api.Contracts.OTel.Resource.Resource;
 
 var health = JsonSerializer.Serialize(HealthStatus.Healthy);
 var lifecycle = JsonSerializer.Serialize(RunnerResourceLifecycle.Ready);
-var kind = JsonSerializer.Serialize(RunnerResourceKind.Stdio);
+var kind = JsonSerializer.Serialize(RunnerResourceKind.Command);
 
 var eventLog = new LogRecord
 {
@@ -105,8 +105,32 @@ var state = new RunnerResourceState
     Name = "demo",
     Lifecycle = RunnerResourceLifecycle.Ready,
     Timestamp = DateTimeOffset.UnixEpoch,
-    Kind = RunnerResourceKind.Stdio,
+    Kind = RunnerResourceKind.Command,
+    AllocatedPort = 4318,
+    Endpoint = new Uri("http://127.0.0.1:4318"),
+    LastError = "Process exited (code 1)",
 };
+var stateWire = JsonSerializer.SerializeToElement(state);
+var runnerStateWireShape = stateWire.EnumerateObject().Select(property => property.Name)
+    .Order(StringComparer.Ordinal).SequenceEqual(new[]
+    {
+        "allocated_port", "endpoint", "kind", "last_error", "lifecycle", "name", "timestamp",
+    });
+var runnerKindsMatchProcesses = Enum.GetNames<RunnerResourceKind>()
+    .SequenceEqual(new[] { "Collector", "Project", "Command" });
+var obsoleteRunnerKindRejected = true;
+foreach (var obsoleteKind in new[] { "stdio", "http", "inproc" })
+{
+    try
+    {
+        JsonSerializer.Deserialize<RunnerResourceKind>($"\"{obsoleteKind}\"");
+        obsoleteRunnerKindRejected = false;
+    }
+    catch (JsonException)
+    {
+        // Removed wire values must fail instead of masquerading as processes.
+    }
+}
 
 WorkbenchServerConfiguration serverConfiguration = new WorkbenchStdioServerConfiguration
 {
@@ -242,8 +266,15 @@ var checks = new (string Name, bool Ok)[]
         type.Namespace is not null && type.Namespace.StartsWith("Qyl.Api.Contracts.Cost"))),
     ("healthStatusHealthy", health == "\"healthy\""),
     ("runnerResourceLifecycleReady", lifecycle == "\"ready\""),
-    ("runnerResourceKindStdio", kind == "\"stdio\""),
-    ("runnerResourceStateKind", state.Kind == RunnerResourceKind.Stdio),
+    ("runnerResourceKindCommand", kind == "\"command\""),
+    ("runnerKindsMatchProcesses", runnerKindsMatchProcesses),
+    ("runnerStateWireShape", runnerStateWireShape),
+    ("obsoleteRunnerKindRejected", obsoleteRunnerKindRejected),
+    ("runnerResourceStateRoundTrip", JsonSerializer.Deserialize<RunnerResourceState>(stateWire)
+        is { Name: "demo", Lifecycle: RunnerResourceLifecycle.Ready, Kind: RunnerResourceKind.Command,
+            AllocatedPort: 4318, LastError: "Process exited (code 1)" } restoredState
+        && restoredState.Timestamp == DateTimeOffset.UnixEpoch
+        && restoredState.Endpoint == new Uri("http://127.0.0.1:4318")),
     ("fetchTelemetryViewTraces", toolInputWire.Contains("\"view\":\"traces\"")
         && JsonSerializer.Deserialize<FetchTelemetryInput>(toolInputWire) is FetchTelemetryTracesInput),
     ("serverConfigurationRoundTrip", serverConfigurationRoundTrip is WorkbenchStdioServerConfiguration),

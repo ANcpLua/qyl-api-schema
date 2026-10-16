@@ -26,7 +26,9 @@ The contract covers every client-visible surface of a qyl collector and runner:
   streams, executions, test cases, suites, evaluation runs and exports
   (`api/workbench.tsp`, `models/workbench.tsp`).
 - **Runner** — the local runner's loopback-only `/runner/resources` snapshot, SSE
-  streams, logs and restart/stop actions (`api/runner.tsp`, `models/runner.tsp`).
+  streams, logs and restart/stop actions for `collector`, `project` and `command`
+  processes (`api/runner.tsp`, `models/runner.tsp`). MCP server identity and tool
+  discovery are exposed by Workbench connection and discovery snapshots.
 - **Shared** — RFC 9457 problem details (`common/errors.tsp`), cursor pagination
   (`common/pagination.tsp`) and the common scalars (`common/`), plus the OTel
   resource, span and log projections (`otel/`).

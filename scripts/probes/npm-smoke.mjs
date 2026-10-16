@@ -63,6 +63,31 @@ const opaqueSdkBoundaries = !schema.$defs["Workbench.WorkbenchContent"]
     && !executionRequest?.properties?.arguments?.$ref
     && !schema.$defs["Workbench.WorkbenchExecutionRecord"]?.properties?.result?.$ref;
 
+const runnerState = publishedContractSchema("Runner.RunnerResourceState");
+const runnerStateFixture = {
+    name: "demo",
+    lifecycle: "ready",
+    timestamp: "1970-01-01T00:00:00Z",
+    kind: "command",
+    allocated_port: 4318,
+    endpoint: "http://127.0.0.1:4318",
+    last_error: "Process exited (code 1)",
+};
+const runnerKindsMatchProcesses = JSON.stringify(Object.values(RunnerResourceKindValues))
+    === JSON.stringify(["collector", "project", "command"]);
+const runnerStateWireShape = JSON.stringify(
+    Object.keys(schema.$defs["Runner.RunnerResourceState"]?.properties ?? {}).sort(),
+) === JSON.stringify(Object.keys(runnerStateFixture).sort());
+const runnerStateValidates = runnerState.safeParse(runnerStateFixture).success
+    && ["stdio", "http", "inproc"].every((kind) =>
+        !runnerState.safeParse({ ...runnerStateFixture, kind }).success)
+    && ["server_identity", "tool_count", "restarts"].every((field) =>
+        !runnerState.safeParse({ ...runnerStateFixture, [field]: 0 }).success);
+const workbenchMcpDiscoveryRetained =
+    Boolean(schema.$defs["Workbench.WorkbenchInitializationSnapshot"]?.properties?.server_identity)
+    && Boolean(schema.$defs["Workbench.WorkbenchDiscoverySnapshot"]?.properties?.tools)
+    && exactServerConfigurationUnion;
+
 const attributeVariants = schema.$defs["Common.AttributeValue"]?.anyOf ?? [];
 const attributeObjectValue = schema.$defs["Common.AttributeObjectValue"];
 const attributeObjectVariants = attributeObjectValue?.oneOf ?? [];
@@ -277,7 +302,10 @@ const checks = [
     ["costSurfaceAbsent", costSurfaceAbsent],
     ["healthStatusHealthy", HealthStatusValues.healthy === "healthy"],
     ["runnerResourceLifecycleReady", RunnerResourceLifecycleValues.ready === "ready"],
-    ["runnerResourceKindStdio", RunnerResourceKindValues.stdio === "stdio"],
+    ["runnerKindsMatchProcesses", runnerKindsMatchProcesses],
+    ["runnerStateWireShape", runnerStateWireShape],
+    ["runnerStateValidates", runnerStateValidates],
+    ["workbenchMcpDiscoveryRetained", workbenchMcpDiscoveryRetained],
     ["workbenchExecutionStatusTimedOut", WorkbenchExecutionStatusValues.timedOut === "timed_out"],
     ["workbenchEvaluationExportFormatReport", WorkbenchEvaluationExportFormatValues.report === "report"],
     ["fetchTelemetryInputDefined", Boolean(schema.$defs["Mcp.Tools.FetchTelemetryInput"])],

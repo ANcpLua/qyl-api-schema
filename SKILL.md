@@ -12,7 +12,7 @@ One agent per qyl-dev repo (qyl, qyl.mcp, qyl-api-schema, Qyl.Telemetry.AutoInst
 ## Stale-version guard, before any work
 
 1. `git pull --ff-only origin main`, `mise install`, `bun install --frozen-lockfile`.
-2. `npm view @ancplua/qyl-api-schema version` and the last entry of `curl -fsSL https://api.nuget.org/v3-flatcontainer/qyl.api.contracts/index.json` agree; the next release is one above both. Never reuse a version that exists on either registry.
+2. `npm view @ancplua/qyl-api-schema version --registry=https://registry.npmjs.org --@ancplua:registry=https://registry.npmjs.org` and the last entry of `curl -fsSL https://api.nuget.org/v3-flatcontainer/qyl.api.contracts/index.json` agree. Override the scoped registry as well: a global `@ancplua:registry` can otherwise redirect the probe to GitHub Packages. Choose the next version for the change, including a new major for breaking contracts. Never reuse a version that exists on either registry.
 
 ## Release
 

@@ -14,14 +14,11 @@ enum RunnerResourceLifecycle {
   failed: "failed",
 }
 
-@doc("Kind of process or connection supervised by the local qyl runner.")
+@doc("Kind of process supervised by the local qyl runner. MCP connections belong to the Workbench API.")
 enum RunnerResourceKind {
   collector: "collector",
   project: "project",
   command: "command",
-  stdio: "stdio",
-  http: "http",
-  inproc: "inproc",
 }
 
 @doc("Current client-visible state of one runner resource.")
@@ -39,17 +36,6 @@ model RunnerResourceState {
   endpoint?: url;
   @encodedName("application/json", "last_error")
   lastError?: string;
-
-  @doc("Opaque SDK server-info entity when this resource is an initialized MCP connection.")
-  @encodedName("application/json", "server_identity")
-  serverIdentity?: unknown;
-
-  @minValue(0)
-  @encodedName("application/json", "tool_count")
-  toolCount?: int32;
-
-  @minValue(0)
-  restarts?: int32;
 }
 
 @doc("A runner lifecycle action was accepted and continues asynchronously.")

@@ -2,6 +2,13 @@
 
 `@ancplua/qyl-api-schema` (npm) and `Qyl.Api.Contracts` (NuGet), released together. Each entry becomes the GitHub release notes of its tag; releases before 12.1.0 keep GitHub's generated notes.
 
+## 13.0.0 — 2026-10-16
+
+- Remove unsupported runner resource kinds `stdio`, `http` and `inproc`. The process runner exposes `collector`, `project` and `command`; MCP transports, initialization and tool discovery remain in the Workbench API.
+- Remove the runner's never-populated `server_identity`, `tool_count` and `restarts` fields. Process restart actions remain supported. Read MCP server identity and discovered tools from Workbench connection and discovery snapshots.
+- Verify the runner's exact wire shape and retained MCP contracts in clean npm and NuGet consumers.
+- Probe npmjs.org explicitly when checking the published version, including the scoped registry override.
+
 ## 12.1.2 — 2026-10-14
 
 - docs: state defaults, accepted values and paging in the MCP tool inputs

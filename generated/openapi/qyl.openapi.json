@@ -21671,12 +21671,9 @@
         "enum": [
           "collector",
           "project",
-          "command",
-          "stdio",
-          "http",
-          "inproc"
+          "command"
         ],
-        "description": "Kind of process or connection supervised by the local qyl runner."
+        "description": "Kind of process supervised by the local qyl runner. MCP connections belong to the Workbench API."
       },
       "Runner.RunnerResourceLifecycle": {
         "type": "string",
@@ -21723,19 +21720,6 @@
           },
           "last_error": {
             "type": "string"
-          },
-          "server_identity": {
-            "description": "Opaque SDK server-info entity when this resource is an initialized MCP connection."
-          },
-          "tool_count": {
-            "type": "integer",
-            "format": "int32",
-            "minimum": 0
-          },
-          "restarts": {
-            "type": "integer",
-            "format": "int32",
-            "minimum": 0
           }
         },
         "unevaluatedProperties": {

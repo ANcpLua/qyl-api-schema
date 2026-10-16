@@ -13,52 +13,6 @@ using Qyl.Api.Contracts.Common;
 namespace Qyl.Api.Contracts.Domains.Observe.Session;
 
 // =============================================================================
-// Session Attributes
-// =============================================================================
-
-@doc("Session span/event attributes")
-model SessionAttributes {
-  @doc("Session ID")
-  @encodedName("application/json", "session_id")
-  sessionId: SessionId;
-
-  @doc("Previous session ID (for session continuity)")
-  @encodedName("application/json", "previous_session_id")
-  previousSessionId?: SessionId;
-}
-
-// =============================================================================
-// Session Event Models
-// =============================================================================
-
-@doc("Session lifecycle event")
-model SessionEvent {
-  @doc("Event name")
-  @encodedName("application/json", "event_name")
-  eventName: SessionEventName;
-
-  @doc("Session ID")
-  @encodedName("application/json", "session_id")
-  sessionId: SessionId;
-
-  @doc("Event timestamp")
-  timestamp: utcDateTime;
-
-  @doc("Event domain")
-  @encodedName("application/json", "event_domain")
-  eventDomain: "session";
-}
-
-@doc("Session event names")
-enum SessionEventName {
-  @doc("Session started")
-  sessionStart: "session.start",
-
-  @doc("Session ended")
-  sessionEnd: "session.end",
-}
-
-// =============================================================================
 // Session Entity Model (Full Session Record)
 // =============================================================================
 

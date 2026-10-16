@@ -81,7 +81,7 @@ model Span {
   status: SpanStatus;
 
   @doc("Span flags")
-  flags?: int32;
+  flags?: OtlpFlags;
 
   @doc("Resource describing the entity that produced this span")
   resource: Qyl.Api.Contracts.OTel.Resource.Resource;
@@ -140,7 +140,7 @@ model SpanLink {
   droppedAttributesCount?: Count;
 
   @doc("Link flags")
-  flags?: int32;
+  flags?: OtlpFlags;
 }
 
 // =============================================================================
@@ -186,76 +186,4 @@ model TraceSummary {
 model Trace extends TraceSummary {
   @doc("All spans in this trace")
   spans: Span[];
-}
-
-// =============================================================================
-// Span Aggregations
-// =============================================================================
-
-@doc("Aggregated span statistics")
-model SpanStats {
-  @doc("Total span count")
-  @encodedName("application/json", "total_count")
-  totalCount: Count;
-
-  @doc("Error count")
-  @encodedName("application/json", "error_count")
-  errorCount: Count;
-
-  @doc("Error rate (0.0 - 1.0)")
-  @encodedName("application/json", "error_rate")
-  errorRate: Ratio;
-
-  @doc("Average duration in nanoseconds")
-  @encodedName("application/json", "avg_duration_ns")
-  avgDurationNs: float64;
-
-  @doc("P50 duration in nanoseconds")
-  @encodedName("application/json", "p50_duration_ns")
-  p50DurationNs: DurationNs;
-
-  @doc("P90 duration in nanoseconds")
-  @encodedName("application/json", "p90_duration_ns")
-  p90DurationNs: DurationNs;
-
-  @doc("P99 duration in nanoseconds")
-  @encodedName("application/json", "p99_duration_ns")
-  p99DurationNs: DurationNs;
-
-  @doc("Minimum duration in nanoseconds")
-  @encodedName("application/json", "min_duration_ns")
-  minDurationNs: DurationNs;
-
-  @doc("Maximum duration in nanoseconds")
-  @encodedName("application/json", "max_duration_ns")
-  maxDurationNs: DurationNs;
-
-  @doc("Throughput (spans per second)")
-  @encodedName("application/json", "throughput_per_second")
-  throughputPerSecond: float64;
-
-  @doc("Stats grouped by service")
-  @encodedName("application/json", "by_service")
-  byService?: SpanStatsByDimension[];
-
-  @doc("Stats grouped by operation name")
-  @encodedName("application/json", "by_operation")
-  byOperation?: SpanStatsByDimension[];
-}
-
-@doc("Span statistics for a specific dimension value")
-model SpanStatsByDimension {
-  @doc("Dimension value (e.g., service name)")
-  dimension: string;
-
-  @doc("Span count for this dimension")
-  count: Count;
-
-  @doc("Average duration in nanoseconds")
-  @encodedName("application/json", "avg_duration_ns")
-  avgDurationNs: float64;
-
-  @doc("Error rate for this dimension")
-  @encodedName("application/json", "error_rate")
-  errorRate: Ratio;
 }

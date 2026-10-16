@@ -72,6 +72,7 @@
     "common/resource.tsp",
     "models/health.tsp",
     "models/metrics.tsp",
+    "models/metric-points.tsp",
     "models/runner.tsp",
     "models/workbench.tsp",
     "models/annotations.tsp",

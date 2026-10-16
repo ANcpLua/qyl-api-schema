@@ -12,7 +12,7 @@ import {
     ProblemDetailsMediaType,
     RunnerResourceKindValues,
     RunnerResourceLifecycleValues,
-    SessionEventNameValues,
+    RunnerLogStreamValues,
     WorkbenchEvaluationExportFormatValues,
     WorkbenchExecutionStatusValues,
     // Unused below on purpose: a named ESM import of a missing binding is a
@@ -235,8 +235,34 @@ const metricSurfacePresent = [
     "OTel.Metrics.MetricQueryResult",
     "OTel.Metrics.MetricAggregation",
 ].every((name) => name in schema.$defs)
-    && ["/api/v1/metrics", "/api/v1/metrics/{metric_name}/series", "/api/v1/metrics/{metric_name}/query"]
+    && ["/api/v1/metrics", "/api/v1/metrics/{metric_name}/series", "/api/v1/metrics/{metric_name}/query",
+        "/api/v1/metrics/{metric_name}/series/{series_id}/points"]
         .every((path) => openapi.paths[path]?.get !== undefined);
+
+const metricPointSchema = contractSchema("OTel.Metrics.MetricPoint");
+const pointFixture = {
+    observation_id: "original", has_conflict: false, series_id: "series", time_unix_nano: "100", attributes: [],
+    data: { type: "number", value: { type: "int", value: "9007199254740993" } },
+};
+const parsedPoint = metricPointSchema.parse(JSON.parse(JSON.stringify(pointFixture)));
+const metricOriginalsRemainExact = parsedPoint.data.value.value === "9007199254740993"
+    && BigInt(parsedPoint.data.value.value) === 9007199254740993n
+    && !metricPointSchema.safeParse({ ...pointFixture, data: { type: "number", value: { type: "int", value: 9007199254740992 } } }).success
+    && !metricPointSchema.safeParse({ ...pointFixture, data: { type: "number", value: { type: "int", value: "9223372036854775808" } } }).success
+    && !contractSchema("OTel.Metrics.MetricCount").safeParse("18446744073709551616").success
+    && metricPointSchema.safeParse({
+        ...pointFixture, data: {
+            type: "exponential_histogram", count: "18446744073709551615", scale: -4, zero_count: "4", zero_threshold: 0.01,
+            positive: { offset: -2, bucket_counts: ["5", "18446744073709551606"] },
+        },
+    }).success
+    && metricPointSchema.safeParse({
+        ...pointFixture, data: { type: "summary", count: "2", sum: 3, quantile_values: [{ quantile: 0.5, value: 1.5 }] },
+    }).success;
+const historicalPoint = metricPointSchema.parse({ ...pointFixture, data: null, projection: { value: 9007199254740992 } });
+const unknownOriginalStaysUnknown = historicalPoint.data === null
+    && historicalPoint.flags === undefined && historicalPoint.exemplars === undefined
+    && !metricPointSchema.safeParse({ ...pointFixture, data: undefined }).success;
 
 const costSurfaceAbsent = Object.keys(schema.$defs).every((name) => !name.startsWith("Cost."))
     && Object.keys(openapi.paths).every((path) => !path.startsWith("/api/v1/cost"));
@@ -265,18 +291,14 @@ const zodExportValidatesContracts =
     && !zodProblemDetails.safeParse({ ...internalProblem, type: "about:blank" }).success
     && contractDefinitionNames().length === Object.keys(schema.$defs).length;
 
-// The npm and NuGet faces of one contract have to agree on bytes, not just on
-// field names. SessionEvent is the fixture because every field is required and
-// scalar: there is no optional to omit on one side and write as null on the
-// other, so a byte difference can only be a real wire divergence — a renamed
-// property, a reordered member, or a changed date-time or enum encoding.
-const sessionEventFixture = {
-    event_name: SessionEventNameValues.sessionStart,
-    session_id: "sess-0001",
-    timestamp: "2026-07-28T12:34:56+00:00",
-    event_domain: "session",
+// Compare a real runner response across both packages, with every required
+// field supplied so omission and null policies cannot mask a wire difference.
+const runnerLogFixture = {
+    resource: "worker",
+    stream: RunnerLogStreamValues.stderr,
+    line: "startup failed",
 };
-const sessionEventFixtureWire = JSON.stringify(sessionEventFixture);
+const runnerLogFixtureWire = JSON.stringify(runnerLogFixture);
 
 // Each entry is reported by name when it fails. A single OR-chained exit code
 // tells a release operator that something is wrong and nothing about what.
@@ -289,6 +311,8 @@ const checks = [
     ["typedQueryValidationResponsesDeclared", typedQueryValidationResponsesDeclared],
     ["profileSurfaceAbsent", profileSurfaceAbsent],
     ["metricSurfacePresent", metricSurfacePresent],
+    ["metricOriginalsRemainExact", metricOriginalsRemainExact],
+    ["unknownOriginalStaysUnknown", unknownOriginalStaysUnknown],
     ["eventLogContract", eventLogContract],
     ["losslessAttributeValue", losslessAttributeValue],
     ["runtimeDecodesEveryVariant", runtimeDecodesEveryVariant],
@@ -326,5 +350,5 @@ console.log(`contract-revision=${CONTRACT_REVISION}`);
 // prepack stamps the release version into the packed OpenAPI document; the
 // caller compares it with the version it installed.
 console.log(`openapi-version=${openapi.info.version}`);
-console.log(`session-event-fixture=${Buffer.from(sessionEventFixtureWire).toString("base64")}`);
+console.log(`runner-log-fixture=${Buffer.from(runnerLogFixtureWire).toString("base64")}`);
 console.log(`npm consumer probe passed ${checks.length} checks`);

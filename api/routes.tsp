@@ -9,6 +9,7 @@ import "../otel/logs.tsp";
 import "../models/session.tsp";
 import "../models/health.tsp";
 import "../models/metrics.tsp";
+import "../models/metric-points.tsp";
 import "../common/resource.tsp";
 import "../common/auth.tsp";
 import "../models/annotations.tsp";
@@ -150,8 +151,8 @@ interface LogsApi {
 //
 // Modelled on the Grafana/Prometheus range query — metric, label matchers,
 // range, step — because the primary consumer is a coding agent over MCP. The
-// collector aggregates server-side and returns buckets; raw points are never
-// served, so a payload stays small no matter how dense the underlying stream.
+// collector aggregates server-side and returns buckets. Exact-series point reads
+// page the original representation separately, keeping each response bounded.
 // -----------------------------------------------------------------------------
 
 @route("/api/v1/metrics")
@@ -202,6 +203,24 @@ interface MetricsApi {
     | UnauthorizedError
     | CollectorServerErrorResponse;
 
+  @doc("Read original points from one exact series. The associated resource and instrumentation scope come from listSeries.")
+  @list
+  @get
+  @route("/{metric_name}/series/{series_id}/points")
+  listPoints(
+    ...ProjectScopeHeader,
+    @path("metric_name") metricName: string,
+    @path("series_id") seriesId: string,
+    @query("start_time") startTime?: utcDateTime,
+    @query("end_time") endTime?: utcDateTime,
+    ...CursorPageQuery,
+  ):
+    | CursorPage<MetricPoint>
+    | ValidationError
+    | NotFoundError
+    | UnauthorizedError
+    | CollectorServerErrorResponse;
+
   @doc("""
     Aggregate one metric over a time range into buckets of `step_ms`.
     Percentile aggregations require a histogram kind.
@@ -221,6 +240,11 @@ interface MetricsApi {
     stepMs?: int64 = 60000,
 
     @query aggregation?: MetricAggregation = MetricAggregation.avg,
+
+    @doc("Select one exact series from listSeries. Required when the matched instrument descriptors are incompatible.")
+    @query("series_id")
+    @minLength(1)
+    seriesId?: string,
 
     @doc("Attribute keys to split the result by, repeatable. Omitted, every matching series collapses into one stream.")
     @query(#{ name: "group_by", explode: true })
@@ -242,6 +266,7 @@ interface MetricsApi {
   ):
     | MetricQueryResult
     | ValidationError
+    | ConflictError
     | NotFoundError
     | UnauthorizedError
     | CollectorServerErrorResponse;

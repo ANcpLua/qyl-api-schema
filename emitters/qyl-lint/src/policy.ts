@@ -116,6 +116,7 @@ export const IDENTITIES: readonly IdentityBinding[] = [
       exampleTraceIds: "bounded evidence example traces",
       nearestSuccessTraceId: "the closest successful execution used for comparison",
       exemplarTraceIds: "metric exemplar traces",
+      historicalExemplarTraceIds: "trace links retained without complete original metric exemplars",
       comparisonTraceId: "the trace selected as the comparison baseline",
       recurrences: "bounded trace evidence for failure recurrences",
     },

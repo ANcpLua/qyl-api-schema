@@ -6,17 +6,18 @@
 // It asserts wire shape, not just type shape — the Contains checks below read
 // serialized JSON, so a rename that keeps C# compiling still fails here.
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text;
 using ModelContextProtocol;
 using ModelContextProtocol.Protocol;
 using Qyl.Api.Contracts;
 using Qyl.Api.Contracts.Common.Errors;
-using Qyl.Api.Contracts.Domains.Observe.Session;
 using System.Linq;
 using Qyl.Api.Contracts.Health;
 using Qyl.Api.Contracts.Mcp.Tools;
 using Qyl.Api.Contracts.OTel.Enums;
 using Qyl.Api.Contracts.OTel.Logs;
+using Qyl.Api.Contracts.OTel.Metrics;
 using Qyl.Api.Contracts.Runner;
 using Qyl.Api.Contracts.Workbench;
 #pragma warning disable MCPEXP001
@@ -33,11 +34,21 @@ var eventLog = new LogRecord
     TimeUnixNano = 2,
     ObservedTimeUnixNano = 3,
     SeverityNumber = SeverityNumber.Info,
+    SeverityText = "NOTICE",
+    Flags = uint.MaxValue,
+    InstrumentationScope = new InstrumentationScope
+    {
+        ScopeName = "custom.instrumentation",
+        ScopeVersion = "main/7b3e019",
+        SchemaUrl = "https://opentelemetry.io/schemas/1.44.0",
+        DroppedAttributesCount = 3,
+    },
     Body = new AttributeValue.StringValue("evaluation completed"),
     EventName = "gen_ai.evaluation.result",
     Resource = new OTelResource { ServiceName = "evaluator" },
 };
 var eventLogWire = JsonSerializer.Serialize(eventLog);
+var eventLogRoundTrip = JsonSerializer.Deserialize<LogRecord>(eventLogWire);
 
 var emptyAttribute = new OTelAttribute { Key = "empty", Value = null };
 var intAttribute = new OTelAttribute
@@ -208,16 +219,14 @@ var notFound = new NotFoundError
 var notFoundWire = JsonSerializer.Serialize(notFound);
 var notFoundRoundTrip = JsonSerializer.Deserialize<NotFoundError>(notFoundWire);
 
-// The .NET half of the cross-language wire fixture; see npm-smoke.mjs for why
-// SessionEvent is the shape both faces are compared on.
-var sessionEvent = new SessionEvent
+// Compare a real runner response with the npm consumer's exact wire fixture.
+var runnerLog = new RunnerLogLine
 {
-    EventName = SessionEventName.SessionStart,
-    SessionId = "sess-0001",
-    Timestamp = new DateTimeOffset(2026, 7, 28, 12, 34, 56, TimeSpan.Zero),
-    EventDomain = "session",
+    Resource = "worker",
+    Stream = RunnerLogStream.Stderr,
+    Line = "startup failed",
 };
-var sessionEventFixtureWire = JsonSerializer.Serialize(sessionEvent);
+var runnerLogFixtureWire = JsonSerializer.Serialize(runnerLog);
 
 var serverConfigurationWire = JsonSerializer.Serialize(serverConfiguration);
 var serverConfigurationRoundTrip = JsonSerializer.Deserialize<WorkbenchServerConfiguration>(serverConfigurationWire);
@@ -248,6 +257,52 @@ var metricContractsPresent = new[] { "MetricDescriptor", "MetricSeries", "Metric
     .All(name => contractTypes.Any(type =>
         type.Namespace == "Qyl.Api.Contracts.OTel.Metrics" && type.Name == name));
 
+// These are restored-package runtime checks. The reused Common numeric models
+// must implement both discriminated unions, and nullable original data must
+// remain typed instead of degrading to JsonElement/object in the C# emitter.
+var integerPoint = JsonSerializer.Deserialize<MetricPoint>("""
+    {"observation_id":"int","has_conflict":false,"series_id":"s","time_unix_nano":"100",
+     "attributes":[],"flags":4294967295,"resource_dropped_attributes_count":2,"scope_dropped_attributes_count":3,
+     "data":{"type":"number","value":{"type":"int","value":"9007199254740993"}},
+     "exemplars":[
+       {"time_unix_nano":"98","value":{"type":"int","value":"9223372036854775807"},"filtered_attributes":[]},
+       {"time_unix_nano":"99","value":{"type":"double","value":"Infinity"},"filtered_attributes":[]}]}
+    """)!;
+var integerPointWire = JsonSerializer.Serialize(integerPoint);
+var integerPointAgain = JsonSerializer.Deserialize<MetricPoint>(integerPointWire)!;
+var nativePoint = JsonSerializer.Deserialize<MetricPoint>("""
+    {"observation_id":"native","has_conflict":false,"series_id":"s","time_unix_nano":"101","attributes":[],
+     "data":{"type":"exponential_histogram","count":"18446744073709551615","sum":"NaN","scale":-3,
+       "zero_count":"4","zero_threshold":0.01,"positive":{"offset":-2,"bucket_counts":["5","18446744073709551606"]},
+       "negative":{"offset":7,"bucket_counts":["0"]}}}
+    """)!;
+var nativeAgain = JsonSerializer.Deserialize<MetricPoint>(JsonSerializer.Serialize(nativePoint))!;
+var histogramPoint = JsonSerializer.Deserialize<MetricPoint>("""
+    {"observation_id":"explicit","has_conflict":true,"series_id":"s","time_unix_nano":"102","attributes":[],
+     "data":{"type":"histogram","count":"2","min":"-Infinity","max":"Infinity",
+       "explicit_bounds":["-Infinity",0,"Infinity"],"bucket_counts":["0","1","1","0"]}}
+    """)!;
+var histogramAgain = JsonSerializer.Deserialize<MetricPoint>(JsonSerializer.Serialize(histogramPoint))!;
+var summaryPoint = JsonSerializer.Deserialize<MetricPoint>("""
+    {"observation_id":"summary","has_conflict":false,"series_id":"s","time_unix_nano":"103","attributes":[],
+     "data":{"type":"summary","count":"2","sum":3,"quantile_values":[{"quantile":0.5,"value":1.5}]}}
+    """)!;
+var summaryAgain = JsonSerializer.Deserialize<MetricPoint>(JsonSerializer.Serialize(summaryPoint))!;
+var historicalPoint = JsonSerializer.Deserialize<MetricPoint>("""
+    {"observation_id":"historical","has_conflict":false,"series_id":"s","time_unix_nano":"104","attributes":[],
+     "data":null,"historical_exemplar_trace_ids":["0123456789abcdef0123456789abcdef"],
+     "projection":{"value":9007199254740992,"count":"18446744073709551615","sum":4,"min":1,"max":3}}
+    """)!;
+var historicalWire = JsonSerializer.Serialize(historicalPoint, new JsonSerializerOptions
+{
+    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+});
+var historicalAgain = JsonSerializer.Deserialize<MetricPoint>(historicalWire)!;
+var unknownLog = JsonSerializer.Deserialize<LogRecord>("""
+    {"severity_number":9,"body":"historical","resource":{"service_name":"legacy"}}
+    """)!;
+var unknownLogWire = JsonSerializer.SerializeToElement(unknownLog);
+
 // Each entry is reported by name when it fails. A single OR-chained exit code
 // tells a release operator that something is wrong and nothing about what.
 var checks = new (string Name, bool Ok)[]
@@ -257,10 +312,38 @@ var checks = new (string Name, bool Ok)[]
     ("problemCodeWire", notFoundWire.Contains("\"code\":\"not_found\"")),
     ("problemRoundTrip", notFoundRoundTrip is { Type: ProblemType.NotFound, Code: ProblemCode.NotFound }),
     ("eventLogWireEventName", eventLogWire.Contains("\"event_name\":\"gen_ai.evaluation.result\"")),
+    ("producerLogMetadataRoundTrip", eventLogRoundTrip is
+        { SeverityText: "NOTICE", Flags: uint.MaxValue, InstrumentationScope:
+            { ScopeVersion: "main/7b3e019", SchemaUrl: "https://opentelemetry.io/schemas/1.44.0", DroppedAttributesCount: 3 } }),
     ("otlpFidelityValid", otlpFidelityValid),
     ("identityAgreesAcrossLanguages", identityAgreesAcrossLanguages),
     ("removedSignalContractsAbsent", removedSignalContractsAbsent),
     ("metricContractsPresent", metricContractsPresent),
+    ("metricExactSignedInteger", integerPointAgain.Data is MetricNumberPointData
+        { Value: AttributeIntValue { Value: 9007199254740993L } }
+        && integerPointWire.Contains("\"value\":\"9007199254740993\"")),
+    ("metricOrderedExemplars", integerPointAgain.Exemplars is { Count: 2 } exemplars
+        && exemplars[0] is { TimeUnixNano: 98, Value: AttributeIntValue { Value: long.MaxValue } }
+        && exemplars[1] is { TimeUnixNano: 99, Value: AttributeDoubleValue { Value: double.PositiveInfinity } }),
+    ("metricObservationMetadata", integerPointAgain is
+        { Flags: uint.MaxValue, ResourceDroppedAttributesCount: 2, ScopeDroppedAttributesCount: 3 }),
+    ("nativeExponentialHistogram", nativeAgain.Data is MetricExponentialHistogramPointData
+        { Count: ulong.MaxValue, Scale: -3, ZeroCount: 4, ZeroThreshold: 0.01, Sum: double.NaN,
+            Positive: { Offset: -2, BucketCounts.Count: 2 } positive, Negative.Offset: 7 }
+        && positive.BucketCounts[0] == 5 && positive.BucketCounts[1] == 18446744073709551606UL),
+    ("histogramNonFiniteBounds", histogramAgain.Data is MetricHistogramPointData
+        { ExplicitBounds.Count: 3, BucketCounts.Count: 4, Min: double.NegativeInfinity, Max: double.PositiveInfinity } histogram
+        && double.IsNegativeInfinity(histogram.ExplicitBounds[0]) && histogram.ExplicitBounds[1] == 0
+        && double.IsPositiveInfinity(histogram.ExplicitBounds[2]) && histogram.BucketCounts[1] == 1),
+    ("summaryOriginalQuantiles", summaryAgain.Data is MetricSummaryPointData
+        { Count: 2, Sum: 3, QuantileValues.Count: 1 } summary
+        && summary.QuantileValues[0] is { Quantile: 0.5, Value: 1.5 }),
+    ("historicalOriginalRemainsUnknown", historicalAgain is { Data: null, Flags: null, Exemplars: null,
+            Projection: { Count: ulong.MaxValue, Sum: 4, Min: 1, Max: 3 }, HistoricalExemplarTraceIds.Count: 1 }
+        && historicalWire.Contains("\"data\":null")),
+    ("unknownLogTimesRemainAbsent", unknownLog.TimeUnixNano is null && unknownLog.ObservedTimeUnixNano is null
+        && !unknownLogWire.TryGetProperty("time_unix_nano", out _)
+        && !unknownLogWire.TryGetProperty("observed_time_unix_nano", out _)),
     ("fetchTelemetryInputNamespace", typeof(FetchTelemetryInput).Namespace == "Qyl.Api.Contracts.Mcp.Tools"),
     ("costSurfaceAbsent", !contractTypes.Any(type =>
         type.Namespace is not null && type.Namespace.StartsWith("Qyl.Api.Contracts.Cost"))),
@@ -308,6 +391,6 @@ if (failed.Length > 0)
 }
 
 Console.WriteLine($"contract-revision={ContractRevision.Value}");
-Console.WriteLine($"session-event-fixture={Convert.ToBase64String(Encoding.UTF8.GetBytes(sessionEventFixtureWire))}");
+Console.WriteLine($"runner-log-fixture={Convert.ToBase64String(Encoding.UTF8.GetBytes(runnerLogFixtureWire))}");
 Console.WriteLine($"dotnet consumer probe passed {checks.Length} checks");
 return 0;

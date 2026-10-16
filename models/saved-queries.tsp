@@ -91,6 +91,10 @@ model SavedLogQueryFilter {
 
 @doc("A saved metric range query.")
 model SavedMetricQueryFilter {
+  @doc("Select one exact metric series, when the query must disambiguate instruments.")
+  @encodedName("application/json", "series_id")
+  @minLength(1)
+  seriesId?: string;
   signal: "metrics";
   ...SavedQueryWindow;
 

@@ -6,6 +6,7 @@ import "../otel/logs.tsp";
 import "../otel/span.tsp";
 import "./session.tsp";
 import "./metrics.tsp";
+import "./metric-points.tsp";
 import "./annotations.tsp";
 import "./saved-queries.tsp";
 import "../common/resource.tsp";
@@ -13,6 +14,7 @@ import "../common/resource.tsp";
 using TypeSpec.OpenAPI;
 using Qyl.Api.Contracts.Common.Errors;
 using Qyl.Api.Contracts.Common;
+using Qyl.Api.Contracts.Common.Pagination;
 using Qyl.Api.Contracts.Annotations;
 using Qyl.Api.Contracts.SavedQueries;
 using Qyl.Api.Contracts.OTel.Metrics;
@@ -52,6 +54,9 @@ union ToolErrorCode {
   collectorRejected: "collector_rejected",
   collectorError: "collector_error",
   contractMismatch: "contract_mismatch",
+
+  @doc("One complete original record exceeds the MCP response budget. It remains available through the exact HTTP API; it was not truncated or rewritten.")
+  responseTooLarge: "response_too_large",
 
   @doc("The token lacks the scope the tool needs: qyl:write or qyl:delete.")
   insufficientScope: "insufficient_scope",
@@ -866,6 +871,21 @@ model ListMetricsOutput {
 model GetMetricSeriesInput {
   ...ToolTimeRange;
 
+  @doc("Select one exact series and include its first page of original points. Omitted, list series metadata only. Original points are never compacted; a point exceeding the MCP response budget returns response_too_large and remains available through the HTTP points API.")
+  @encodedName("application/json", "series_id")
+  @minLength(1)
+  seriesId?: string;
+
+  @doc("Continuation of the selected series' points page; requires series_id.")
+  @encodedName("application/json", "points_cursor")
+  pointsCursor?: Cursor;
+
+  @doc("Page size for original points from the selected series.")
+  @encodedName("application/json", "points_limit")
+  @minValue(1)
+  @maxValue(1000)
+  pointsLimit?: int32 = 100;
+
   @encodedName("application/json", "metric_name")
   @minLength(1)
   metricName: string;
@@ -884,6 +904,9 @@ model GetMetricSeriesInput {
 
 @doc("Structured output for get_metric_series.")
 model GetMetricSeriesOutput {
+  @doc("Original points, present only when one exact series_id was selected. Continue with points_cursor.")
+  points?: CursorPage<MetricPoint>;
+
   keys?: MetricKeySummary[];
   @encodedName("application/json", "suggested_group_by")
   suggestedGroupBy?: string[];
@@ -925,6 +948,11 @@ model QueryMetricInput {
 
   aggregation?: MetricAggregation = MetricAggregation.avg;
 
+  @doc("Select one exact metric series; disambiguates scopes and conflicting instrument descriptors.")
+  @encodedName("application/json", "series_id")
+  @minLength(1)
+  seriesId?: string;
+
   @doc("Attribute keys to split the result by.")
   @encodedName("application/json", "group_by")
   @maxItems(16)
@@ -943,7 +971,6 @@ model QueryMetricInput {
 @doc("Structured output for query_metric: the collector's range-query result.")
 model QueryMetricOutput {
   method?: string;
-  approximate?: boolean;
   @encodedName("application/json", "exemplar_trace_ids")
   exemplarTraceIds?: TraceId[];
   comparison?: MetricComparisonResult;

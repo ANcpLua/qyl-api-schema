@@ -14,7 +14,9 @@ The contract covers every client-visible surface of a qyl collector and runner:
   recorded for a project, `GET /api/v1/metrics/{metric_name}/series` lists the
   distinct attribute streams under one metric name, and
   `GET /api/v1/metrics/{metric_name}/query` aggregates one metric over a time range
-  into buckets (`models/metrics.tsp`). Metric points are written over OTLP, which
+  into buckets (`models/metrics.tsp`). Series retain their resource and instrumentation
+  scope. Use `series_id` to select one exact stream when instrument descriptors conflict;
+  ambiguous range queries return 409. Metric points are written over OTLP, which
   this contract does not describe. Profiles are not supported.
 - **Sessions** — `GET /api/v1/sessions`, one session, its traces and `/stats`
   (`models/session.tsp`).
@@ -73,8 +75,8 @@ authored Qyl TypeSpec
 ```
 
 Qyl domain models, routes, responses, stream events, and errors are authored here.
-The OTel-compatible models target schema `https://opentelemetry.io/schemas/1.44.0`;
-attribute keys cross the wire as open string maps, so this contract carries no
+The OTel-compatible models carry the values a producer sent; `Qyl.Telemetry.SemanticConventions` owns the
+registry vocabulary and semantic validation. Attribute keys cross the wire as open string maps, so this contract carries no
 enumeration of the OpenTelemetry attribute registry.
 
 ## Boundary

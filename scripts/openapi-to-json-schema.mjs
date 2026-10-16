@@ -10,6 +10,24 @@ if (!schemas || typeof schemas !== "object") {
 
 const compareNames = (left, right) => left === right ? 0 : left < right ? -1 : 1;
 
+// JSON Schema numeric bounds do not apply to decimal strings. Encode the exact
+// 64-bit boundary in the portable pattern so JS and CLR consumers agree.
+function decimalAtMost(maximum, includeZero) {
+  const digits = maximum.toString();
+  const alternatives = includeZero ? ["0"] : [];
+  if (digits.length > 1) alternatives.push(`[1-9][0-9]{0,${digits.length - 2}}`);
+  for (let index = 0; index < digits.length; index += 1) {
+    const lower = index === 0 ? 1 : 0;
+    const upper = Number(digits[index]) - 1;
+    if (upper < lower) continue;
+    const digit = lower === upper ? String(lower) : `[${lower}-${upper}]`;
+    const remaining = digits.length - index - 1;
+    alternatives.push(digits.slice(0, index) + digit + (remaining === 0 ? "" : `[0-9]{${remaining}}`));
+  }
+  alternatives.push(digits);
+  return `(?:${alternatives.join("|")})`;
+}
+
 function rewriteReferences(value) {
   if (Array.isArray(value)) return value.map(rewriteReferences);
   if (value === null || typeof value !== "object") return value;
@@ -24,8 +42,7 @@ function rewriteReferences(value) {
   // OpenAPI represents @encode(string) numeric scalars as strings while retaining
   // their numeric minimum/maximum keywords. Those keywords are invalid on JSON
   // Schema strings and are ignored by validators. Preserve canonical decimal wire
-  // syntax instead; the format plus generated language types enforce the exact CLR
-  // range at deserialization.
+  // syntax and the signed/unsigned range in every generated runtime validator.
   if (rewritten.type === "string" && (rewritten.format === "uint64" || rewritten.format === "int64")) {
     const nonZero = rewritten.format === "uint64" && Number(rewritten.minimum ?? 0) >= 1;
     delete rewritten.minimum;
@@ -33,8 +50,8 @@ function rewriteReferences(value) {
     delete rewritten.exclusiveMinimum;
     delete rewritten.exclusiveMaximum;
     rewritten.pattern = rewritten.format === "uint64"
-      ? nonZero ? "^[1-9][0-9]*$" : "^(0|[1-9][0-9]*)$"
-      : "^(0|-?[1-9][0-9]*)$";
+      ? `^${decimalAtMost((1n << 64n) - 1n, !nonZero)}$`
+      : `^(?:${decimalAtMost((1n << 63n) - 1n, true)}|-${decimalAtMost(1n << 63n, false)})$`;
     rewritten.maxLength = 20;
   }
 

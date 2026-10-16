@@ -23,6 +23,57 @@ const csharpLogsRuntime = await readFile(
 );
 const defs = schema.$defs ?? {};
 
+const producerResource = {
+  service_name: "orders",
+  attributes: [
+    { key: "service.version", value: "main/7b3e019" },
+    { key: "cloud.provider", value: "custom-cloud" },
+    { key: "telemetry.sdk.language", value: "custom-runtime" },
+  ],
+  schema_url: "https://opentelemetry.io/schemas/1.44.0",
+  dropped_attributes_count: 2,
+};
+const producerScope = {
+  name: "custom.instrumentation", version: "main/7b3e019",
+  schema_url: "https://opentelemetry.io/schemas/1.44.0",
+  attributes: [{ key: "qyl.app.component", value: "checkout" }], dropped_attributes_count: 3,
+};
+const validateResource = validatorFor("OTel.Resource.Resource");
+assertValid(validateResource, producerResource, "resource retains open semantic-convention values");
+for (const field of ["service_version", "telemetry_sdk_language", "cloud_provider", "host_arch", "os_type"]) {
+  assertInvalid(validateResource, { ...producerResource, [field]: "custom" }, `resource rejects duplicate flattened field ${field}`);
+}
+assertValid(validatorFor("Common.InstrumentationScope"), producerScope, "scope retains non-semver library version and metadata");
+
+const validateLog = validatorFor("OTel.Logs.LogRecord");
+const producerLog = {
+  time_unix_nano: "1", observed_time_unix_nano: "2", severity_number: 9,
+  severity_text: "NOTICE", body: "order received", flags: 4294967295,
+  resource: producerResource, instrumentation_scope: producerScope,
+};
+assertValid(validateLog, producerLog, "log retains producer severity text and full OTLP flags");
+assertValid(validateLog, {
+  severity_number: 9, body: "historical source with unknown times", resource: producerResource,
+}, "unknown historical log times remain absent");
+assertValid(validatorFor("Streaming.LogStreamEvent"), {
+  type: "log", data: { severity_number: 9, body: "historical source", resource: producerResource },
+}, "streamed historical logs do not fabricate an event timestamp");
+for (const flags of [-1, 4294967296, 0.5]) {
+  assertInvalid(validateLog, { ...producerLog, flags }, `log rejects non-uint32 flags ${flags}`);
+}
+
+const duplicateVocabulary = [
+  "OTel.Resource.CloudProvider", "OTel.Resource.HostArch", "OTel.Resource.OsType",
+  "OTel.Enums.TelemetrySdkLanguage", "OTel.Enums.ErrorType", "OTel.Enums.EventDomain",
+  "OTel.Enums.SpanFlags", "OTel.Enums.SeverityText",
+  "Domains.Observe.Session.SessionAttributes", "Domains.Observe.Session.SessionEvent",
+  "Domains.Observe.Session.SessionEventName", "OTel.Logs.LogTemplate",
+  "OTel.Traces.SpanStats", "OTel.Traces.SpanStatsByDimension",
+];
+for (const name of duplicateVocabulary) {
+  if (name in defs) throw new Error(`Removed duplicate or unused contract is still published: ${name}`);
+}
+
 const validateRunnerState = validatorFor("Runner.RunnerResourceState");
 const runnerState = {
   name: "worker", lifecycle: "ready", timestamp: "2026-10-16T12:00:00Z",
@@ -494,6 +545,9 @@ const eventLogRecord = {
   resource: { "service_name": "evaluator" },
 };
 assertValid(validateLogRecord, eventLogRecord, "OTLP event log record");
+assertValid(validateLogRecord,
+  Object.fromEntries(Object.entries(eventLogRecord).filter(([key]) => key !== "observed_time_unix_nano")),
+  "historical log with no known observation timestamp");
 assertValid(
   validateLogRecord,
   Object.fromEntries(Object.entries(eventLogRecord).filter(([key]) => key !== "event_name")),
@@ -891,6 +945,73 @@ const missingMetricSurface = [
 );
 if (missingMetricSurface.length > 0) {
   throw new Error(`Metric query contract is incomplete: ${missingMetricSurface.join(", ")}.`);
+}
+
+const validateMetricSeries = validatorFor("OTel.Metrics.MetricSeries");
+assertValid(validateMetricSeries, {
+  series_id: "scoped-stream", name: "checkout.orders.created", kind: "sum", attributes: [],
+  first_seen: "2026-10-16T12:00:00Z", last_seen: "2026-10-16T12:01:00Z",
+  resource: { service_name: "checkout", schema_url: "https://example.test/resource-v2", attributes: [] },
+  instrumentation_scope: {
+    version: "main/7b3e019", schema_url: "https://example.test/scope-v3",
+    attributes: [{ key: "pipeline", value: "green" }], dropped_attributes_count: 4,
+  },
+}, "metric series with independent resource and unnamed instrumentation scope metadata");
+const validateMetricConflict = validatorFor("OTel.Metrics.MetricDescriptorConflict");
+const conflictingMetric = { kind: "sum", temporality: "delta", monotonic: true, unit: "{order}", services: ["checkout"] };
+assertValid(validateMetricConflict, conflictingMetric, "metric conflict with the actual temporality and monotonicity");
+assertInvalid(validateMetricConflict, { ...conflictingMetric, temporality: "mixed" }, "invented metric conflict temporality");
+assertInvalid(validateMetricConflict,
+  Object.fromEntries(Object.entries(conflictingMetric).filter(([key]) => key !== "monotonic")),
+  "metric conflict that omits monotonicity");
+const queryMetricParams = validatorFor("Mcp.Tools.QueryMetricInput");
+assertValid(queryMetricParams, { metric_name: "checkout.orders.created", series_id: "scoped-stream" }, "exact metric series selection");
+assertInvalid(queryMetricParams, { metric_name: "checkout.orders.created", series_id: "" }, "empty metric series selection");
+const validateMetricPoint = validatorFor("OTel.Metrics.MetricPoint");
+assertValid(validatorFor("Mcp.Tools.ToolError"), {
+  code: "response_too_large", message: "The complete original point exceeds the MCP response budget.", retryable: false,
+}, "original record budget failure remains explicit");
+assertValid(validatorFor("OTel.Metrics.MetricCount"), "18446744073709551615", "exact uint64 maximum count");
+assertInvalid(validatorFor("OTel.Metrics.MetricCount"), "18446744073709551616", "uint64 count overflow");
+assertInvalid(validatorFor("Common.AttributeInt64"), "9223372036854775808", "signed int64 positive overflow");
+assertInvalid(validatorFor("Common.AttributeInt64"), "-9223372036854775809", "signed int64 negative overflow");
+const point = {
+  observation_id: "original", has_conflict: false, series_id: "scoped-stream",
+  time_unix_nano: "1792152000000000001", attributes: [],
+};
+const numberData = { type: "number", value: { type: "int", value: "9007199254740993" } };
+assertValid(validateMetricPoint, {
+  ...point, data: numberData, flags: 4294967295,
+  resource_dropped_attributes_count: 2, scope_dropped_attributes_count: 3,
+  exemplars: [{ time_unix_nano: "1792152000000000000", value: numberData.value, filtered_attributes: [] }],
+}, "exact original integer and observation metadata");
+assertValid(validateMetricPoint, {
+  ...point, data: {
+    type: "exponential_histogram", count: "18446744073709551615", scale: -4,
+    zero_count: "4", zero_threshold: 0.01,
+    positive: { offset: -2, bucket_counts: ["5", "18446744073709551606"] },
+    negative: { offset: 7, bucket_counts: ["0"] },
+  },
+}, "original exponential scale, offsets and unsigned counts");
+assertValid(validateMetricPoint, {
+  ...point, data: { type: "summary", count: "2", sum: 3, quantile_values: [{ quantile: 0.5, value: 1.5 }] },
+}, "original summary quantiles without invented histogram buckets");
+assertValid(validateMetricPoint, {
+  ...point, data: null, historical_exemplar_trace_ids: ["0123456789abcdef0123456789abcdef"],
+  projection: { value: 9007199254740992 },
+}, "historical original data is explicitly unknown while the approximate projection remains readable");
+assertInvalid(validateMetricPoint, point, "omitted original data hides the historical-unknown boundary");
+assertInvalid(validateMetricPoint, { ...point, data: { type: "number", value: { type: "int", value: 9007199254740992 } } },
+  "original int64 cannot be a rounded JSON number");
+assertInvalid(validateMetricPoint, { ...point, data: { type: "summary", count: "2", sum: 3, quantile_values: [{ quantile: 2, value: 1 }] } },
+  "summary quantile is outside its valid range");
+if (!openapi.paths["/api/v1/metrics/{metric_name}/series/{series_id}/points"]?.get) {
+  throw new Error("Exact original metric points must be available through the paged HTTP route.");
+}
+const metricQueryOperation = openapi.paths["/api/v1/metrics/{metric_name}/query"].get;
+if (!metricQueryOperation.parameters.some((parameter) => parameter.name === "series_id" && parameter.in === "query")
+  || !metricQueryOperation.responses["409"]) {
+  throw new Error("Metric range queries must expose exact series selection and descriptor conflicts.");
 }
 
 await import("./verify-analysis-contracts.mjs");

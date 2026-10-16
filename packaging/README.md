@@ -20,8 +20,8 @@ var revision = ContractRevision.Value;   // "sha256:…", the contract this pack
 ## What is in it
 
 - Traces, logs and metrics as the collector serves them over `/api/v1/`: the OTel-shaped models
-  are client-facing JSON projections of the wire, targeting OpenTelemetry schema
-  `https://opentelemetry.io/schemas/1.44.0`.
+  are client-facing JSON projections of the wire; they carry producer values, and
+  `Qyl.Telemetry.SemanticConventions` owns the registry vocabulary and semantic validation.
 - The runner and workbench models, the streaming events, and the error shapes.
 - `ContractRevision`, the deterministic digest of the contract. A collector reports the revision
   it was built against on its health response, so a client can detect a peer built from a

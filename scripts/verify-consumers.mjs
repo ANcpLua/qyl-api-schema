@@ -78,6 +78,9 @@ export async function verifyConsumers({ version, npmSpec, npmInstallArgs = [], n
   const root = await mkdtemp(join(tmpdir(), "qyl-contract-consumers-"));
   let succeeded = false;
   try {
+    // The consumer runs outside the checkout. Carry the repository SDK policy
+    // with it so an installed preview SDK cannot silently change the verifier.
+    await copyFile(fileURLToPath(new URL("../global.json", import.meta.url)), join(root, "global.json"));
     const npmDir = join(root, "npm");
     await mkdir(npmDir);
     run("npm", ["init", "--yes"], npmDir);
@@ -177,11 +180,11 @@ export async function verifyConsumers({ version, npmSpec, npmInstallArgs = [], n
       );
     }
 
-    const npmSessionEventFixture = probeValue(npmProbeOutput, "session-event-fixture");
-    const dotnetSessionEventFixture = probeValue(dotnetProbeOutput, "session-event-fixture");
-    if (npmSessionEventFixture !== dotnetSessionEventFixture) {
+    const npmRunnerLogFixture = probeValue(npmProbeOutput, "runner-log-fixture");
+    const dotnetRunnerLogFixture = probeValue(dotnetProbeOutput, "runner-log-fixture");
+    if (npmRunnerLogFixture !== dotnetRunnerLogFixture) {
       throw new Error(
-        "packed TypeScript and .NET session-event fixtures are not wire-equivalent",
+        "packed TypeScript and .NET runner-log fixtures are not wire-equivalent",
       );
     }
 

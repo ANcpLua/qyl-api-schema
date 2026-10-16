@@ -1,5 +1,6 @@
 import "../common/telemetry-query.tsp";
 import "../common/types.tsp";
+import "../otel/resource.tsp";
 
 using Qyl.Api.Contracts.Common;
 
@@ -22,6 +23,9 @@ enum MetricKind {
     distinct name records only where the distribution came from.
     """)
   exponential_histogram: "exponential_histogram",
+
+  @doc("A legacy OTLP summary, retaining its original quantiles and count/sum.")
+  summary: "summary",
 }
 
 @doc("How successive points of a sum or histogram relate to each other.")
@@ -60,10 +64,26 @@ enum MetricAggregation {
 }
 
 @doc("""
-  One metric name recorded for a project, collapsed across all of its series.
-  This is the catalog entry a client reads before it knows which series exist.
+  One resource, instrumentation scope and metric name recorded for a project.
+  Incompatible instrument descriptors within that group are reported as conflicts.
+  The primary descriptor is an actual recorded variant, never a combination of variants.
   """)
 model MetricDescriptor {
+  @doc("Whether this resource/scope/name group contains incompatible recorded descriptors. The conflicts array lists the actual variants.")
+  @encodedName("application/json", "has_conflict")
+  hasConflict: boolean;
+
+  @doc("Stable catalog group identifier, derived from resource, instrumentation scope and metric name.")
+  @encodedName("application/json", "instrument_id")
+  instrumentId: string;
+
+  @doc("Resource that owns this metric group, when recorded.")
+  resource?: Qyl.Api.Contracts.OTel.Resource.Resource;
+
+  @doc("Instrumentation scope that owns this metric group, when recorded.")
+  @encodedName("application/json", "instrumentation_scope")
+  instrumentationScope?: InstrumentationScope;
+
   @encodedName("application/json", "supported_aggregations")
   supportedAggregations?: MetricAggregation[];
   services?: string[];
@@ -99,7 +119,7 @@ model MetricSeries {
   new?: boolean;
   stale?: boolean;
 
-  @doc("Stable identifier for this stream, derived from its name, attributes and resource.")
+  @doc("Stable identifier for this stream, derived from its instrument descriptor, attributes, resource and instrumentation scope.")
   @encodedName("application/json", "series_id")
   seriesId: string;
 
@@ -113,6 +133,13 @@ model MetricSeries {
 
   @encodedName("application/json", "service_name")
   serviceName?: string;
+
+  @doc("Resource that emitted this stream, with its attributes and schema URL.")
+  resource?: Qyl.Api.Contracts.OTel.Resource.Resource;
+
+  @doc("Instrumentation scope that owns this instrument; distinct scopes never merge into one series.")
+  @encodedName("application/json", "instrumentation_scope")
+  instrumentationScope?: InstrumentationScope;
 
   unit?: string;
 
@@ -155,6 +182,12 @@ model MetricSeriesResult {
 
 @doc("The answer to a metric range query: what was asked, and the streams it produced.")
 model MetricQueryResult {
+  @doc("Aggregate buckets use a potentially approximate float64 projection. Read original points for exact signed int64 and native histogram data.")
+  @encodedName("application/json", "numeric_representation")
+  numericRepresentation: "float64";
+
+  @doc("Whether the reducer estimates or interpolates values, beyond the stated numeric representation.")
+  approximate: boolean;
   @doc("Instrument name the query ran against.")
   name: string;
 
@@ -195,6 +228,8 @@ model MetricAttributeMatcher {
 @doc("MetricDescriptorConflict contract.")
 model MetricDescriptorConflict {
   kind: MetricKind;
+  temporality: MetricTemporality;
+  monotonic: boolean;
   unit?: string;
   services: string[];
 }

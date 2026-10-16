@@ -77,9 +77,10 @@ export async function $onEmit(context: EmitContext): Promise<void> {
     },
   });
 
+  const unions = [...buckets.values()].flatMap((bucket) => bucket.unions);
   for (const [ns, bucket] of buckets) {
     const path = `${context.emitterOutputDir}/${ns.replace(/\./g, "/")}.cs`;
-    await emitFile(program, { path, content: renderBucket(program, bucket) });
+    await emitFile(program, { path, content: renderBucket(program, bucket, unions) });
   }
 }
 
@@ -124,7 +125,7 @@ function resolveNamespace(program: Program, type: Model | Enum | Scalar | Union)
   return undefined;
 }
 
-function renderBucket(program: Program, bucket: Bucket): string {
+function renderBucket(program: Program, bucket: Bucket, unions: Union[]): string {
   const out: string[] = [HEADER];
   out.push(`namespace ${bucket.namespace};\n`);
   for (const scalar of bucket.scalars) out.push(renderBrandedScalar(scalar));
@@ -135,7 +136,7 @@ function renderBucket(program: Program, bucket: Bucket): string {
   }
   const internalBases = polymorphicBaseModels(bucket.unions);
   for (const [m, name] of bucket.models) {
-    if (!internalBases.has(m)) out.push(renderModel(program, m, name, bucket.unions));
+    if (!internalBases.has(m)) out.push(renderModel(program, m, name, unions));
   }
   for (const e of bucket.enums) out.push(renderEnum(program, e));
   return out.join("\n");
@@ -219,17 +220,18 @@ function taggedUnionInfo(program: Program, union: Union): { property: string; ta
 
 function renderModel(program: Program, model: Model, emittedName: string, unions: Union[]): string {
   const keyword = "public sealed class";
-  const union = unions.find((candidate) =>
+  const memberships = unions.filter((candidate) =>
     !mixedUnionShape(program, candidate) &&
     [...candidate.variants.values()].some((variant) => variant.type === model),
   );
-  const implementsUnion = union ? ` : ${union.name}` : "";
-  const discriminator = union ? taggedUnionInfo(program, union)?.property : undefined;
+  const implementsUnion = memberships.length
+    ? ` : ${memberships.map((union) => localOrQualifiedType(program, model, union)).join(", ")}` : "";
+  const discriminators = new Set(memberships.map((union) => taggedUnionInfo(program, union)?.property));
   const props: string[] = [];
   for (const prop of inheritedProperties(model)) {
     if (isHttpMetadata(program, prop)) continue;
     const jsonName = escapeCsharpString(resolveEncodedName(program, prop, "application/json"));
-    if (discriminator && jsonName === discriminator) continue;
+    if (discriminators.has(jsonName)) continue;
     const type = mapType(program, prop.type);
     const name = pascal(prop.name);
     const numberHandling = renderNumberHandling(program, prop);
@@ -252,10 +254,21 @@ function renderNumberHandling(program: Program, property: ModelProperty): string
   if (isStringEncodedNumber(program, property)) {
     return "    [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)]\n";
   }
-  if (isNamedFloatingPointUnion(property.type)) {
+  if (hasNamedFloatingPointValues(property.type)) {
     return "    [JsonNumberHandling(JsonNumberHandling.AllowNamedFloatingPointLiterals)]\n";
   }
   return "";
+}
+
+function hasNamedFloatingPointValues(type: Type): boolean {
+  if (isNamedFloatingPointUnion(type)) return true;
+  if (type.kind === "Model" && isArrayModelType(type)) return hasNamedFloatingPointValues(type.indexer!.value);
+  if (type.kind === "Union") {
+    const nonNull = [...type.variants.values()].map((variant) => variant.type)
+      .filter((member) => member.kind !== "Intrinsic" || member.name !== "null");
+    return nonNull.length === 1 && hasNamedFloatingPointValues(nonNull[0]!);
+  }
+  return false;
 }
 
 function isStringEncodedNumber(program: Program, property: ModelProperty): boolean {
@@ -298,7 +311,7 @@ function renderPolymorphicUnion(program: Program, union: Union): string {
   const tagged = taggedUnionInfo(program, union);
   if (tagged) {
     const attributes = variants.map((model) =>
-      `[JsonDerivedType(typeof(${model.name}), "${escapeCsharpString(tagged.tagOf(model))}")]`,
+      `[JsonDerivedType(typeof(${localOrQualifiedType(program, union, model)}), "${escapeCsharpString(tagged.tagOf(model))}")]`,
     );
     // The tag is a plain property on the wire. System.Text.Json reads it first by default; a
     // consumer that receives it in any position sets AllowOutOfOrderMetadataProperties on its
@@ -335,6 +348,11 @@ function renderPolymorphicUnion(program: Program, union: Union): string {
     `            case ${model.name} typed:\n                JsonSerializer.Serialize(writer, typed, options.GetTypeInfo(typeof(${model.name})));\n                return;`,
   ).join("\n");
   return `[JsonConverter(typeof(${converter}))]\npublic interface ${union.name}\n{\n}\n\npublic sealed class ${converter} : JsonConverter<${union.name}>\n{\n    public override ${union.name}? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)\n    {\n        if (reader.TokenType == JsonTokenType.Null) return null;\n        using var document = JsonDocument.ParseValue(ref reader);\n        var root = document.RootElement;\n        if (root.ValueKind != JsonValueKind.Object) throw new JsonException("${union.name} must be a JSON object.");\n${presence}\n        if (${count} != 1) throw new JsonException("${union.name} must contain exactly one variant field.");\n${reads}\n        throw new JsonException("${union.name} did not match a known variant.");\n    }\n\n    public override void Write(Utf8JsonWriter writer, ${union.name} value, JsonSerializerOptions options)\n    {\n        switch (value)\n        {\n${writes}\n            default:\n                throw new JsonException($"Unknown ${union.name} implementation '{value.GetType().FullName}'.");\n        }\n    }\n}\n`;
+}
+
+function localOrQualifiedType(program: Program, owner: Model | Union, type: Model | Union): string {
+  if (!type.name) throw new Error("A polymorphic model or union must have an emitted name.");
+  return resolveNamespace(program, owner) === resolveNamespace(program, type) ? type.name : mapType(program, type);
 }
 
 /**

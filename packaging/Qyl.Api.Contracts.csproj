@@ -9,6 +9,7 @@
     <Description>Generated C# request, response, enum, and model contract types for the qyl observability API, emitted from @ancplua/qyl-api-schema.</Description>
     <PackageTags>qyl;observability;contracts;typespec</PackageTags>
     <RepositoryUrl>https://github.com/ANcpLua/qyl-api-schema</RepositoryUrl>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <IsPackable>true</IsPackable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

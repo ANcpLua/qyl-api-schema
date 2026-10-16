@@ -2,7 +2,7 @@
 // qyl common types and scalars
 // =============================================================================
 // Foundational types used across qyl API contracts and OTel-compatible models.
-// The contract targets OpenTelemetry semantic conventions schema https://opentelemetry.io/schemas/1.44.0.
+// Telemetry wire projections carry producer values; Qyl.Telemetry.SemanticConventions owns registry vocabulary and semantic validation.
 // =============================================================================
 
 import "@typespec/openapi";
@@ -37,6 +37,11 @@ scalar TraceParent extends string;
 @doc("W3C Trace Context tracestate header (vendor-specific key-value pairs)")
 @example("rojo=00f067aa0ba902b7,congo=t61rcWkgMzE")
 scalar TraceState extends string;
+
+@doc("The complete unsigned 32-bit OTLP flags field, including protocol bits unknown to this API revision.")
+@minValue(0)
+@maxValue(4294967295)
+scalar OtlpFlags extends uint32;
 
 @doc("Unique session identifier: URL-safe characters, at least one, at most 128, not only dots. The same rule the SDK enforces on the baggage header.")
 @minLength(1)
@@ -335,11 +340,15 @@ model EntityRef {
 model InstrumentationScope {
   @doc("Name of the instrumentation scope (library name)")
   @encodedName("application/json", "name")
-  scopeName: string;
+  scopeName?: string;
 
   @doc("Version of the instrumentation scope")
   @encodedName("application/json", "version")
-  scopeVersion?: SemVer;
+  scopeVersion?: string;
+
+  @doc("Scope schema URL supplied by the producer.")
+  @encodedName("application/json", "schema_url")
+  schemaUrl?: string;
 
   @doc("Additional attributes for the scope")
   @encodedName("application/json", "attributes")

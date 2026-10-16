@@ -24,21 +24,21 @@ namespace Qyl.Api.Contracts.OTel.Logs;
 
 @doc("OpenTelemetry Log Record")
 model LogRecord {
-  @doc("Timestamp when the event occurred (nanoseconds since epoch)")
+  @doc("Timestamp when the event occurred (nanoseconds since epoch). Absent when the source timestamp is unknown; use observed_time_unix_nano as the display fallback when present.")
   @encodedName("application/json", "time_unix_nano")
-  timeUnixNano: UnixNanos;
+  timeUnixNano?: UnixNanos;
 
-  @doc("Timestamp when the log was observed/collected (nanoseconds since epoch)")
+  @doc("Timestamp when the log was observed/collected (nanoseconds since epoch). Absent when a historical record did not capture it.")
   @encodedName("application/json", "observed_time_unix_nano")
-  observedTimeUnixNano: UnixNanos;
+  observedTimeUnixNano?: UnixNanos;
 
   @doc("Severity number (1-24)")
   @encodedName("application/json", "severity_number")
   severityNumber: SeverityNumber;
 
-  @doc("Severity text (DEBUG, INFO, WARN, ERROR, etc.)")
+  @doc("Severity text exactly as supplied by the producer; classification uses severity_number.")
   @encodedName("application/json", "severity_text")
-  severityText?: SeverityText;
+  severityText?: string;
 
   @doc("Log body: the OTLP AnyValue, projected exactly like an attribute value")
   body: AttributeValue;
@@ -51,7 +51,7 @@ model LogRecord {
   droppedAttributesCount?: Count;
 
   @doc("Flags (trace flags)")
-  flags?: int32;
+  flags?: OtlpFlags;
 
   @doc("Associated trace ID")
   @encodedName("application/json", "trace_id")
@@ -71,25 +71,4 @@ model LogRecord {
   @doc("Instrumentation scope")
   @encodedName("application/json", "instrumentation_scope")
   instrumentationScope?: InstrumentationScope;
-}
-
-// =============================================================================
-// Log Body Types (Discriminated Union)
-// =============================================================================
-
-// =============================================================================
-// Structured Log Templates
-// =============================================================================
-
-@doc("Log message template with placeholders")
-model LogTemplate {
-  @doc("Template string with {placeholder} syntax")
-  template: string;
-
-  @doc("Template parameters")
-  parameters: Attribute[];
-
-  @doc("Rendered message")
-  @encodedName("application/json", "rendered_message")
-  renderedMessage?: string;
 }

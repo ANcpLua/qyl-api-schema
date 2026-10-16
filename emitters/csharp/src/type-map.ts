@@ -55,8 +55,16 @@ export function mapType(program: Program, type: Type): string {
       if (isDiscriminatedUnion(program, type)) return qualifyModelOrEnum(program, type);
       const mixed = mixedUnionShape(program, type);
       if (mixed) return `${qualifyModelOrEnum(program, type)}${mixed.hasNull ? "?" : ""}`;
-      if ([...type.variants.values()].some((variant) =>
-        variant.type.kind === "Intrinsic" && (variant.type as { name?: string }).name === "null")) {
+      const members = [...type.variants.values()].map((variant) => variant.type);
+      const nonNull = members.filter((member) => member.kind !== "Intrinsic" || member.name !== "null");
+      if (nonNull.length !== members.length) {
+        // Nullability must not erase a named model/union (or a primitive) into object.
+        // For example, MetricPointData | null is still the polymorphic point contract.
+        const mapped = new Set(nonNull.map((member) => mapType(program, member)));
+        if (mapped.size === 1) {
+          const inner = [...mapped][0]!;
+          return inner.endsWith("?") ? inner : `${inner}?`;
+        }
         return "object?";
       }
       // Preserve homogeneous primitive literal unions as their wire primitive. Structural

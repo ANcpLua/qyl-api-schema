@@ -2,6 +2,21 @@
 
 `@ancplua/qyl-api-schema` (npm) and `Qyl.Api.Contracts` (NuGet), released together. Each entry becomes the GitHub release notes of its tag; releases before 12.1.0 keep GitHub's generated notes.
 
+## 14.0.0 — 2026-10-16
+
+- Keep resource metadata in its attribute collection instead of duplicating semantic-convention vocabulary in never-populated flattened fields and closed provider/language enums. SemanticConventions owns the generated vocabulary.
+- Remove unused session-event, log-template and span-statistics DTOs and unused error, event-domain and span-flag enums. Verify cross-language serialization with the runner log response that the API actually serves.
+- Preserve producer severity text as a string, allow arbitrary instrumentation library versions, expose scope/resource schema URLs and use unsigned 32-bit span/link/log flags.
+- Declare the NuGet package's Apache-2.0 license metadata.
+- Preserve metric resource and instrumentation scope metadata, expose complete conflicting instrument descriptors, and allow an exact `series_id` selector on range and saved queries. Ambiguous range queries can return 409.
+- Represent unknown historical log observation timestamps and unnamed instrumentation scopes without inventing values.
+- Make unknown log event and streaming timestamps optional and keep span start and end timestamps required.
+- Expose paged original metric points with exact signed integers, unsigned counts, ordered exemplars, native exponential buckets and summary quantiles. Keep historical originals explicitly unknown and label derived range-query values as float64 projections.
+- Generate typed nullable C# unions and support numeric variants shared between contract namespaces; verify the restored package with real JSON round trips.
+- Enforce the exact signed and unsigned 64-bit ranges in JSON Schema and Zod decimal-string validators, matching .NET deserialization.
+- Add an explicit `response_too_large` tool failure for an original record that cannot fit a complete MCP response; raw metric points must not be compacted into partial evidence.
+- Pin .NET SDK 10.0.401 in `global.json`, matching the repository toolchain and preventing an installed preview SDK from being selected implicitly.
+
 ## 13.0.0 — 2026-10-16
 
 - Remove unsupported runner resource kinds `stdio`, `http` and `inproc`. The process runner exposes `collector`, `project` and `command`; MCP transports, initialization and tool discovery remain in the Workbench API.

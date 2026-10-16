@@ -21,7 +21,7 @@ import type {
     NotFoundError,
     ProblemDetails,
     Resource,
-    SessionEvent,
+    RunnerLogLine,
     SessionId,
 } from "@ancplua/qyl-api-schema/types";
 
@@ -99,11 +99,10 @@ const ciLog: CiLogOutput = {
     mode: "live",
 };
 
-const sessionEvent: SessionEvent = {
-    event_name: "session.start",
-    session_id: "sess-0001" as SessionId,
-    timestamp: "2026-07-28T12:34:56+00:00",
-    event_domain: "session",
+const runnerLog: RunnerLogLine = {
+    resource: "worker",
+    stream: "err",
+    line: "startup failed",
 };
 
 // A problem names its type by URI and by code, and each error type fixes both.
@@ -150,5 +149,5 @@ void [
     healthReport,
     parsedHealthReport,
     ciLog,
-    sessionEvent,
+    runnerLog,
 ];

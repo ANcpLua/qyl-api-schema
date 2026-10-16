@@ -133,6 +133,23 @@ if (!unixNanos.safeParse("1742000000123456789").success) {
 if (unixNanos.safeParse("1.5").success || unixNanos.safeParse(1742000000123456789).success) {
   throw new Error("Common.UnixNanos must reject non-integral strings and unencoded numbers.");
 }
+/** @type {Array<[string, string[], string[]]>} */
+const decimalRangeCases = [
+  ["Common.AttributeInt64", ["0", "9007199254740993", "9223372036854775807", "-9223372036854775808"],
+    ["9223372036854775808", "-9223372036854775809", "99999999999999999999", "-0", "+1", "01"]],
+  ["OTel.Metrics.MetricCount", ["0", "9007199254740993", "18446744073709551615"],
+    ["18446744073709551616", "99999999999999999999", "-1", "01"]],
+  ["Common.UnixNanos", ["0", "18446744073709551615"], ["18446744073709551616", "-1"]],
+];
+for (const [name, accepted, rejected] of decimalRangeCases) {
+  const validator = publishedContractSchema(name);
+  for (const value of accepted) if (!validator.safeParse(value).success) {
+    throw new Error(`${name} rejected an exact in-range decimal ${value}`);
+  }
+  for (const value of rejected) if (validator.safeParse(value).success) {
+    throw new Error(`${name} accepted an out-of-range or noncanonical decimal ${value}`);
+  }
+}
 const byteSize = publishedContractSchema("Common.ByteSize");
 // 2^53 + 1: the first integer JavaScript numbers cannot represent exactly, and
 // the boundary Zod's int64 conversion would have refused.

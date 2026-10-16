@@ -19,7 +19,8 @@ namespace Qyl.Api.Contracts.Streaming;
 model LogStreamEvent {
   type: "log";
   data: LogRecord;
-  timestamp: utcDateTime;
+  @doc("Event timestamp, falling back to the observed timestamp. Absent when both are historically unknown; this is not the stream emission time.")
+  timestamp?: utcDateTime;
 }
 
 @doc("Keep-alive event emitted while no new log is available.")

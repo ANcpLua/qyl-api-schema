@@ -1,7 +1,7 @@
 // =============================================================================
 // OpenTelemetry JSON projection enumerations
 // =============================================================================
-// All OTel standard enumerations following OTel Semantic Conventions.
+// Closed numeric enums from the OpenTelemetry protocol data model. Semantic-convention vocabulary is owned by Qyl.Telemetry.SemanticConventions.
 // =============================================================================
 
 namespace Qyl.Api.Contracts.OTel.Enums;
@@ -41,18 +41,6 @@ enum SpanStatusCode {
 
   @doc("Operation failed with an error")
   error: 2,
-}
-
-@doc("Span flags as defined in W3C Trace Context")
-enum SpanFlags {
-  @doc("No flags set")
-  none: 0x00,
-
-  @doc("Trace is sampled")
-  sampled: 0x01,
-
-  @doc("Trace is random (non-deterministic)")
-  random: 0x02,
 }
 
 // =============================================================================
@@ -135,136 +123,4 @@ enum SeverityNumber {
 
   @doc("FATAL4 level")
   fatal4: 24,
-}
-
-@doc("Log severity text (human-readable)")
-enum SeverityText {
-  @doc("Trace level logging")
-  TRACE: "TRACE",
-
-  @doc("Debug level logging")
-  DEBUG: "DEBUG",
-
-  @doc("Informational logging")
-  INFO: "INFO",
-
-  @doc("Warning level logging")
-  WARN: "WARN",
-
-  @doc("Error level logging")
-  ERROR: "ERROR",
-
-  @doc("Fatal/critical level logging")
-  FATAL: "FATAL",
-}
-
-// =============================================================================
-// Resource Enumerations
-// =============================================================================
-
-@doc("Telemetry SDK language")
-enum TelemetrySdkLanguage {
-  @doc("C++")
-  cpp: "cpp",
-
-  @doc(".NET (C#, F#, VB.NET)")
-  dotnet: "dotnet",
-
-  @doc("Erlang")
-  erlang: "erlang",
-
-  @doc("Go")
-  go: "go",
-
-  @doc("Java")
-  java: "java",
-
-  @doc("Node.js")
-  nodejs: "nodejs",
-
-  @doc("PHP")
-  php: "php",
-
-  @doc("Python")
-  python: "python",
-
-  @doc("Ruby")
-  ruby: "ruby",
-
-  @doc("Rust")
-  rust: "rust",
-
-  @doc("Swift")
-  swift: "swift",
-
-  @doc("Web browser JavaScript")
-  webjs: "webjs",
-}
-
-// =============================================================================
-// Error Enumerations
-// =============================================================================
-
-@doc("Standardized error types")
-enum ErrorType {
-  @doc("Generic error")
-  error: "_OTHER",
-
-  @doc("Timeout error")
-  timeout: "TIMEOUT",
-
-  @doc("Connection refused")
-  connectionRefused: "CONNECTION_REFUSED",
-
-  @doc("DNS resolution failed")
-  dnsError: "DNS_ERROR",
-
-  @doc("TLS/SSL handshake error")
-  tlsError: "TLS_ERROR",
-
-  @doc("Authentication failed")
-  authError: "AUTH_ERROR",
-
-  @doc("Permission denied")
-  permissionDenied: "PERMISSION_DENIED",
-
-  @doc("Resource not found")
-  notFound: "NOT_FOUND",
-
-  @doc("Resource exhausted/rate limited")
-  resourceExhausted: "RESOURCE_EXHAUSTED",
-
-  @doc("Invalid argument")
-  invalidArgument: "INVALID_ARGUMENT",
-
-  @doc("Operation cancelled")
-  cancelled: "CANCELLED",
-}
-
-// =============================================================================
-// Event Domain Types
-// =============================================================================
-
-@doc("Event domain (namespace for event types)")
-enum EventDomain {
-  @doc("Browser/RUM events")
-  browser: "browser",
-
-  @doc("Device events")
-  device: "device",
-
-  @doc("Kubernetes events")
-  k8s: "k8s",
-
-  @doc("User/session lifecycle events")
-  session: "session",
-
-  @doc("GenAI events")
-  genAi: "gen_ai",
-
-  @doc("Exception events")
-  exception: "exception",
-
-  @doc("Log events")
-  log: "log",
 }

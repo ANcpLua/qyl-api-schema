@@ -4,8 +4,7 @@ import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
-// The version argument both release verifiers take, checked before either one
-// spends a registry poll or a consumer install on it.
+// Validate the requested version before a package consumer install.
 export const releaseVersionPattern = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
 
 const nugetPackage = "Qyl.Api.Contracts";

@@ -15,9 +15,6 @@ import {
   publishedContractSchema,
 } from "../generated/zod-runtime/index.js";
 
-// The fixture corpus is a script, not a data file: running it is what fills the
-// recording this gate replays. A failure here is a corpus failure and says so,
-// because the same script is also its own Check target.
 try {
   await import("./verify-contract-fixtures.mjs");
 } catch (cause) {

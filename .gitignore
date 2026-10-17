@@ -13,13 +13,7 @@ generated/json-schema/
 generated/zod-runtime/
 generated/runtime/
 
-# Fallout build host outputs.
-build/bin/
-build/obj/
-.fallout/temp/
-.fallout/build.schema.json
-
-# Fallout emitter outputs (run via `./build.sh ...`).
+# Release artifacts, including the historical output directory.
 Artifacts/
 
 # npm pack tarballs.

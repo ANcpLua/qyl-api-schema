@@ -10,16 +10,11 @@ dependencies: bun copies a `file:` dependency before `prepare` builds it, which 
 TypeSpec resolving a library with no `dist/`. Published npm artifacts support
 maintained Node.js releases from 22 onward.
 
-```bash
-mise run check
-```
-
 `bun run compile` writes everything under `generated/`. Only the OpenAPI document is
 tracked; the rest is gitignored, rebuilt by `compile` and by `prepack`, and packed from
 there:
 
-- `generated/openapi/qyl.openapi.json` — tracked; `VerifyGeneratedArtifactsCurrent`
-  fails when it lags the `.tsp` sources. Its `info.version` is TypeSpec's `0.0.0`:
+- `generated/openapi/qyl.openapi.json` — tracked. Its `info.version` is TypeSpec's `0.0.0`:
   `prepack` stamps the package version into the packed copy
   (`scripts/stamp-openapi-version.mjs`) and `postpack` puts `0.0.0` back, so a local
   pack leaves no diff
@@ -36,29 +31,9 @@ there:
 - `generated/runtime/**` — the `./runtime` export: `src/runtime/` compiled by
   `tsconfig.runtime.json`
 
-The one gate is `mise run check`: it lints both TypeSpec surfaces, runs `compile` and
-`lint:js`, then `./build.sh Check` (Fallout) runs the generated-current, route, fixture,
-Zod-parity, lint-rule and determinism invariants and installs the packed npm and NuGet
-artifacts into clean consumers. Run it before every push; `./release.sh` runs the pack
-targets again before publishing. It prints one line per step and Fallout target, the failing
-one's last lines and the log path under `artifacts/logs/`; `QYL_VERBOSE=1` (or
-`./build.sh <Target> --verbose`) prints everything.
-
 Generated files are not editing surfaces. OpenAPI comes from the official TypeSpec
 emitter; the bundled JSON Schema is a deterministic projection of its component
 schemas and exposes inline route bodies as stable
 `Operations.<operationId>.Request` and
 `Operations.<operationId>.Response.<status>` definitions. Both artifacts preserve
 the same wire names. Change TypeSpec or the owning generator and regenerate.
-
-## Publish
-
-npm remains only for `npm version`, `npm pack` and `npm publish`. Install, lint, emit and every
-verify target run on bun.
-
-A release is published from your machine by `./release.sh <x.y.z>`: it sets the one version for npm and
-NuGet in the working tree, runs the Fallout pack targets, publishes with `npm publish` (scope override to
-npmjs.org, `--provenance=false`) and `dotnet nuget push` using the npm token and the NuGet API key
-registered in Vitals (never in the repository), then tags `v<x.y.z>` and creates the GitHub release.
-`./release.sh <x.y.z> --dry-run` rehearses every step without publishing. The tag is the only version
-source; package.json stays at `0.0.0-development` on `main`.

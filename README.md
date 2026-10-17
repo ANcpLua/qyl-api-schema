@@ -164,7 +164,7 @@ The generated `Mcp.Tools` surface covers the 32-tool qyl MCP set. Each of the 26
 
 Failure status is updated through `PATCH /api/v1/failures/{failure_id}` with `If-Match`. Failure handles, verification tokens and cursors are scoped and validated by the collector. Annotation contracts support failure targets, labels, classifications and retry keys. These contracts carry product data only; telemetry runtime dependencies remain in their producer repositories.
 
-The schema gate checks all read operation/type pairs, answer-key result shapes and invalid inputs, then verifies the packed npm and NuGet consumers. Collector behavior and the seeded live tool answers are tested by the collector and MCP suites against the same generated contracts.
+Collector behavior and the seeded live tool answers are tested by the collector and MCP suites against the same generated contracts.
 
 ## Contributing
 

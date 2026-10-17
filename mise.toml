@@ -6,16 +6,3 @@
 # bun installs and runs the scripts; node runs the TypeSpec compiler, the scripts/*.mjs gates
 # and npm's version/pack/publish, so it must stay inside engines.node (>=22).
 "node" = "24.21.0"
-
-[tasks.check]
-description = "The gate before a push or a release, in order; a line per step and Fallout target, full log in artifacts/logs, QYL_VERBOSE=1 prints everything"
-quiet = true
-run = '''
-scripts/quiet.sh check \
-  'bun install --frozen-lockfile' \
-  'bun run lint' \
-  'bun run lint:public' \
-  'bun run compile' \
-  'bun run lint:js' \
-  './build.sh Check'
-'''

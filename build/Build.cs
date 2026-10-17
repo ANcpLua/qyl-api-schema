@@ -1,6 +1,3 @@
-using System;
-using System.IO;
-using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Fallout.Common;
@@ -17,25 +14,25 @@ using static Fallout.Common.Tools.Git.GitTasks;
 ///
 /// Owns qyl-api-schema's restore, compile, deterministic-emission, and package gates.
 /// </summary>
-sealed class Build : FalloutBuild
+internal sealed partial class Build : FalloutBuild
 {
     public static int Main() => Execute<Build>(x => x.EmitAll);
 
-    static readonly string[] Emitters = ["csharp", "ts-types"];
-    AbsolutePath DomainSpecRoot => RootDirectory;
-    AbsolutePath EmitOutputDir => RootDirectory / "Artifacts" / "emit";
+    private static readonly string[] Emitters = ["csharp", "ts-types"];
+    private static AbsolutePath DomainSpecRoot => RootDirectory;
+    private static AbsolutePath EmitOutputDir => RootDirectory / "Artifacts" / "emit";
 
-    AbsolutePath ArtifactsDir => RootDirectory / "Artifacts";
+    private static AbsolutePath ArtifactsDir => RootDirectory / "Artifacts";
 
     // Fallout ships no Bun tool, so bun is driven through ProcessTasks. npm survives
     // in exactly one place -- PackApiPackage -- because `npm pack` feeds the OIDC
     // trusted-publishing path, which bun cannot do. Everything upstream of the
     // tarball installs, lints and verifies on bun.
-    static void BunInstall(AbsolutePath workingDirectory) =>
+    private static void BunInstall(AbsolutePath workingDirectory) =>
         ProcessTasks.StartProcess("bun", "install --frozen-lockfile", workingDirectory)
             .AssertZeroExitCode();
 
-    static void BunRun(string script, AbsolutePath workingDirectory) =>
+    private static void BunRun(string script, AbsolutePath workingDirectory) =>
         ProcessTasks.StartProcess("bun", $"run {script}", workingDirectory)
             .AssertZeroExitCode();
 
@@ -43,18 +40,18 @@ sealed class Build : FalloutBuild
     // and it cannot silently fetch a compiler the lockfile does not pin. Going through
     // bunx here also loses the argument split -- Fallout hands the process one argument
     // string, and tsp then sees the whole tail as a single unknown argument.
-    static void BunTsp(string arguments, AbsolutePath workingDirectory) =>
+    private static void BunTsp(string arguments, AbsolutePath workingDirectory) =>
         ProcessTasks.StartProcess(workingDirectory / "node_modules" / ".bin" / "tsp", arguments, workingDirectory)
             .AssertZeroExitCode();
 
-    Target RestoreTypeSpecDeps => _ => _
+    private Target RestoreTypeSpecDeps { get; } = target => target
         .Description("Restore dependencies (bun install --frozen-lockfile) for the TypeSpec spec.")
         .Executes(() =>
         {
             BunInstall(DomainSpecRoot);
         });
 
-    Target CompileDomainSpec => _ => _
+    private Target CompileDomainSpec => target => target
         .Description("Compile the published TypeSpec surface (index.tsp) with --no-emit --warn-as-error via `npm run lint:public`.")
         .DependsOn(RestoreTypeSpecDeps)
         .Executes(() =>
@@ -63,26 +60,26 @@ sealed class Build : FalloutBuild
             BunRun("lint:public", spec);
         });
 
-    Target EmitCSharp => _ => _
+    private Target EmitCSharp => target => target
         .Description("Run the C# TypeSpec emitter into Artifacts/emit/csharp.")
         .DependsOn(CompileDomainSpec)
         .Executes(() => RunTypeSpecEmitter("@ancplua/typespec-emit-csharp", "csharp"));
 
-    Target EmitTsTypes => _ => _
+    private Target EmitTsTypes => target => target
         .Description("Run the TypeScript-types TypeSpec emitter into Artifacts/emit/ts-types.")
         .DependsOn(CompileDomainSpec)
         .Executes(() => RunTypeSpecEmitter("@ancplua/typespec-emit-ts-types", "ts-types"));
 
-    Target EmitAll => _ => _
+    private Target EmitAll => target => target
         .Description("Run the C# and TypeScript contract emitters.")
         .DependsOn(
             EmitCSharp,
             EmitTsTypes);
 
-    void RunTypeSpecEmitter(string emitterPackage, string outputSubdir)
+    private static void RunTypeSpecEmitter(string emitterPackage, string outputSubdir)
         => RunTypeSpecEmitter(emitterPackage, EmitOutputDir / outputSubdir);
 
-    void RunTypeSpecEmitter(string emitterPackage, AbsolutePath outDir)
+    private static void RunTypeSpecEmitter(string emitterPackage, AbsolutePath outDir)
     {
         var spec = DomainSpecRoot;
         EnsureCleanDirectory(outDir);
@@ -93,7 +90,7 @@ sealed class Build : FalloutBuild
             spec);
     }
 
-    Target VerifyEmitDeterministic => _ => _
+    private Target VerifyEmitDeterministic => target => target
         .Description("Run every emitter twice into Artifacts/emit-a and Artifacts/emit-b; fail on any byte difference.")
         .DependsOn(RestoreTypeSpecDeps)
         .Executes(() =>
@@ -111,11 +108,11 @@ sealed class Build : FalloutBuild
                 throw new InvalidOperationException(msg);
             }
 
-            Log.Information("VerifyEmitDeterministic: '{A}' and '{B}' are byte-identical across {Count} emitter(s).",
+            Log.Information("VerifyEmitDeterministic: '{A}' and '{B}' are byte-identical across {Count} emitter(s)",
                 dirA, dirB, Emitters.Length);
         });
 
-    void RunEmittersInto(AbsolutePath root)
+    private static void RunEmittersInto(AbsolutePath root)
     {
         var spec = DomainSpecRoot;
         EnsureCleanDirectory(root);
@@ -131,14 +128,14 @@ sealed class Build : FalloutBuild
         }
     }
 
-    static (string Package, string Subdir) ResolveEmitter(string emitter) => emitter switch
+    private static (string Package, string Subdir) ResolveEmitter(string emitter) => emitter switch
     {
         "csharp" => ("@ancplua/typespec-emit-csharp", "csharp"),
         "ts-types" => ("@ancplua/typespec-emit-ts-types", "ts-types"),
-        _ => throw new ArgumentException($"Unknown emitter '{emitter}'. Expected: csharp or ts-types.", nameof(emitter)),
+        _ => throw new ArgumentException($"Unknown emitter '{emitter}'. Expected: csharp or ts-types.", nameof(emitter))
     };
 
-    static (bool Ok, string? FirstDiff) DiffDirectoriesBytewise(AbsolutePath a, AbsolutePath b)
+    private static (bool Ok, string? FirstDiff) DiffDirectoriesBytewise(AbsolutePath a, AbsolutePath b)
     {
         var filesA = Directory.Exists(a)
             ? Directory.GetFiles(a, "*", SearchOption.AllDirectories).Select(p => Path.GetRelativePath(a, p).Replace('\\', '/')).OrderBy(p => p, StringComparer.Ordinal).ToArray()
@@ -167,7 +164,7 @@ sealed class Build : FalloutBuild
         return (true, null);
     }
 
-    static void EnsureCleanDirectory(AbsolutePath path)
+    private static void EnsureCleanDirectory(AbsolutePath path)
     {
         if (Directory.Exists(path))
         {
@@ -177,7 +174,7 @@ sealed class Build : FalloutBuild
     }
 
     // Compare regenerated tracked output without requiring a clean checkout.
-    Target VerifyGeneratedArtifactsCurrent => _ => _
+    private Target VerifyGeneratedArtifactsCurrent => target => target
         .Description("Regenerate tracked OpenAPI output into scratch and fail on drift or unexpected untracked generated files.")
         .DependsOn(CompileDomainSpec)
         .Executes(() =>
@@ -213,10 +210,10 @@ sealed class Build : FalloutBuild
                     + string.Join(Environment.NewLine, untracked));
             }
 
-            Log.Information("VerifyGeneratedArtifactsCurrent: tracked OpenAPI output matches a fresh emit.");
+            Log.Information("VerifyGeneratedArtifactsCurrent: tracked OpenAPI output matches a fresh emit");
         });
 
-    Target VerifyRouteContracts => _ => _
+    private Target VerifyRouteContracts => target => target
         .Description("Assert implemented route guards, capacity failures, and typed-query validation failures are declared in OpenAPI.")
         .DependsOn(VerifyGeneratedArtifactsCurrent)
         .Executes(() =>
@@ -224,7 +221,7 @@ sealed class Build : FalloutBuild
             BunRun("verify:routes", DomainSpecRoot);
         });
 
-    Target VerifyContractFixtures => _ => _
+    private Target VerifyContractFixtures => target => target
         .Description("Validate recursive attribute fixtures and exact MCP content/resource unions against emitted JSON Schema.")
         .DependsOn(VerifyGeneratedArtifactsCurrent)
         .Executes(() =>
@@ -235,7 +232,7 @@ sealed class Build : FalloutBuild
     // `verify:zod-contracts` rebuilds generated/zod-runtime first: the runtime is
     // compiled from tracked src/zod, so unlike the emitter outputs it has no
     // upstream Fallout target to depend on.
-    Target VerifyZodContracts => _ => _
+    private Target VerifyZodContracts => target => target
         .Description("Build the ./zod runtime and assert its validators agree with the published JSON Schema on every definition and fixture.")
         .DependsOn(VerifyContractFixtures)
         .Executes(() =>
@@ -243,7 +240,7 @@ sealed class Build : FalloutBuild
             BunRun("verify:zod-contracts", DomainSpecRoot);
         });
 
-    Target VerifyLintRules => _ => _
+    private Target VerifyLintRules => target => target
         .Description("Assert the qyl contract invariants actually reject a negative fixture; a rule that matches nothing passes like a clean tree.")
         .DependsOn(RestoreTypeSpecDeps)
         .Executes(() =>
@@ -254,7 +251,7 @@ sealed class Build : FalloutBuild
     // CompileDomainSpec covers index.tsp, the published subset. main.tsp additionally
     // pulls in emit-config.tsp and anything not re-exported, so a warning there passed
     // this gate and failed only at publish time, which lints both surfaces.
-    Target LintFullSurface => _ => _
+    private Target LintFullSurface => target => target
         .Description("Compile the full TypeSpec surface (main.tsp) with --warn-as-error via `npm run lint`.")
         .DependsOn(RestoreTypeSpecDeps)
         .Executes(() =>
@@ -262,7 +259,7 @@ sealed class Build : FalloutBuild
             BunRun("lint", DomainSpecRoot);
         });
 
-    Target PackApiPackage => _ => _
+    private Target PackApiPackage => target => target
         .Description("Run `npm pack` to validate package.json#files and produce the tarball.")
         .DependsOn(
             VerifyEmitDeterministic,
@@ -275,16 +272,16 @@ sealed class Build : FalloutBuild
         });
 
     // npm and NuGet artifacts share package.json's version.
-    AbsolutePath PackagingProject => RootDirectory / "packaging" / "Qyl.Api.Contracts.csproj";
-    AbsolutePath NugetOutputDir => ArtifactsDir / "nuget";
+    private static AbsolutePath PackagingProject => RootDirectory / "packaging" / "Qyl.Api.Contracts.csproj";
+    private static AbsolutePath NugetOutputDir => ArtifactsDir / "nuget";
 
-    AbsolutePath ContractsEmitDir => DomainSpecRoot / "generated" / "contracts";
+    private static AbsolutePath ContractsEmitDir => DomainSpecRoot / "generated" / "contracts";
 
     // NuGet-compatible SemVer (MAJOR.MINOR.PATCH[-prerelease]); no build metadata.
-    static readonly Regex NugetVersionPattern =
-        new(@"^\d+\.\d+\.\d+(-[A-Za-z0-9][A-Za-z0-9.-]*)?$", RegexOptions.Compiled);
+    [GeneratedRegex(@"^\d+\.\d+\.\d+(-[A-Za-z0-9][A-Za-z0-9.-]*)?$")]
+    private static partial Regex NugetVersionPattern();
 
-    string PackageJsonVersion()
+    private static string PackageJsonVersion()
     {
         var pkgJson = DomainSpecRoot / "package.json";
         using var doc = JsonDocument.Parse(File.ReadAllText(pkgJson));
@@ -295,11 +292,11 @@ sealed class Build : FalloutBuild
     // NuGet rejects npm-legal build metadata (e.g. 1.2.3+build.5) and other forms package.json
     // may carry. Strip build metadata and require NuGet-compatible SemVer, so a version that
     // publishes cleanly on npm cannot hard-fail the pack and silently break the npm/NuGet lockstep.
-    string NugetPackageVersion()
+    private static string NugetPackageVersion()
     {
         var raw = PackageJsonVersion();
         var version = raw.Split('+', 2)[0];
-        if (!NugetVersionPattern.IsMatch(version))
+        if (!NugetVersionPattern().IsMatch(version))
             throw new InvalidOperationException(
                 $"NugetPackageVersion: package.json version '{raw}' is not NuGet-compatible (expected MAJOR.MINOR.PATCH[-prerelease]).");
         return version;
@@ -308,11 +305,11 @@ sealed class Build : FalloutBuild
     // Clean generated/contracts before the package-specific emit. The normal EmitCSharp target
     // writes to Artifacts/emit/csharp; the NuGet path is deliberately separate so deterministic
     // verification and package assembly cannot accidentally inspect the same directory.
-    Target CleanContractsEmit => _ => _
+    private Target CleanContractsEmit { get; } = target => target
         .Unlisted()
         .Executes(() => ContractsEmitDir.CreateOrCleanDirectory());
 
-    Target PackContractsNuget => _ => _
+    private Target PackContractsNuget => target => target
         .Description("Pack the freshly-emitted C# contracts (generated/contracts) into the Qyl.Api.Contracts NuGet (versioned from package.json).")
         .DependsOn(CleanContractsEmit, VerifyGeneratedArtifactsCurrent)
         .Executes(() =>
@@ -339,7 +336,7 @@ sealed class Build : FalloutBuild
         });
 
     // npm pack's filename rule: "@scope/name" -> "scope-name-<version>.tgz".
-    AbsolutePath NpmTarball()
+    private static AbsolutePath NpmTarball()
     {
         var pkgJson = DomainSpecRoot / "package.json";
         using var doc = JsonDocument.Parse(File.ReadAllText(pkgJson));
@@ -353,7 +350,7 @@ sealed class Build : FalloutBuild
     // typecheck outside this repo, or a DTO that round-trips under the wrong wire name
     // all pack cleanly and fail on install. Without this in Check they were first seen
     // by the local publish, mid-release.
-    Target VerifyPackedConsumers => _ => _
+    private Target VerifyPackedConsumers => target => target
         .Description("Install the packed npm tarball and NuGet package into throwaway consumers and run the probes under scripts/probes.")
         .DependsOn(PackApiPackage, PackContractsNuget)
         .Executes(() =>
@@ -376,23 +373,23 @@ sealed class Build : FalloutBuild
                 .AssertZeroExitCode();
         });
 
-    [Parameter("VerifyRelease: the released version to verify on npm and nuget.org")]
-    readonly string? PublishedVersion;
+    [Parameter("VerifyRelease: the released version to verify on npm and nuget.org", Name = "published-version")]
+    private readonly string? _publishedVersion;
 
     // release.sh runs this in its detached verification once the tag and GitHub release exist;
     // rerun it by hand after a patch release. scripts/verify-published.mjs polls npm, the NuGet
     // registration and the flat-container index (up to 30 minutes each), then installs both
     // registry packages into the VerifyPackedConsumers probes.
-    Target VerifyRelease => _ => _
+    private Target VerifyRelease => target => target
         .Description("Wait until npm and nuget.org serve --published-version, then install both registry packages into the consumer probes.")
-        .Requires(() => PublishedVersion)
+        .Requires(() => _publishedVersion)
         .Executes(() =>
         {
-            ProcessTasks.StartProcess("node", $"scripts/verify-published.mjs {PublishedVersion}", DomainSpecRoot)
+            ProcessTasks.StartProcess("node", $"scripts/verify-published.mjs {_publishedVersion}", DomainSpecRoot)
                 .AssertZeroExitCode();
         });
 
-    Target Check => _ => _
+    private Target Check => target => target
         .Description("Local everything-green gate: restore -> lint both surfaces -> compile -> generated/contract invariants -> emit deterministically -> pack npm and C# contracts -> install both into clean consumers.")
         .DependsOn(
             RestoreTypeSpecDeps,

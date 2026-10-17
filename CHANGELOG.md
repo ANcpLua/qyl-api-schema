@@ -2,6 +2,12 @@
 
 `@ancplua/qyl-api-schema` (npm) and `Qyl.Api.Contracts` (NuGet), released together. Each entry becomes the GitHub release notes of its tag; releases before 12.1.0 keep GitHub's generated notes.
 
+## 14.0.1 — 2026-10-17
+
+- Package both contracts with native npm and .NET tools. Remove the redundant build host, retired check targets and workflow wrappers.
+- Add the solution used by console inspections and remove obsolete suppressions with the retired build infrastructure.
+- Keep the emitted API shapes and contract revision unchanged from 14.0.0.
+
 ## 14.0.0 — 2026-10-16
 
 - Keep resource metadata in its attribute collection instead of duplicating semantic-convention vocabulary in never-populated flattened fields and closed provider/language enums. SemanticConventions owns the generated vocabulary.
